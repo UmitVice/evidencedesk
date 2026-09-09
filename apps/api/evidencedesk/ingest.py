@@ -8,6 +8,7 @@ from uuid import NAMESPACE_URL, uuid5
 from pydantic import BaseModel, ConfigDict, Field
 
 from evidencedesk.db import connection
+from evidencedesk.tokenization import token_count
 
 DATA = Path(__file__).resolve().parents[1] / "data" / "knowledge"
 FIXTURE_MANIFEST = {
@@ -46,11 +47,28 @@ def read_document(path: Path) -> tuple[Metadata, str]:
 
 
 def chunks(body: str) -> list[tuple[str, str]]:
-    result = []
+    result: list[tuple[str, str]] = []
     for section in re.split(r"(?m)^## ", body):
         heading, _, text = section.strip().partition("\n")
-        if text.strip():
-            result.append((heading.removeprefix("# "), text.strip()))
+        heading = heading.removeprefix("# ")
+        current = ""
+        for paragraph in text.strip().split("\n\n"):
+            for word in paragraph.split():
+                candidate = (current + " " + word).strip()
+                if token_count(heading + "\n" + candidate) > 350:
+                    if not current:
+                        raise ValueError("A word exceeds the embedding budget")
+                    result.append((heading, current))
+                    current = word
+                else:
+                    current = candidate
+            if current and token_count(heading + "\n" + current) >= 250:
+                result.append((heading, current))
+                current = ""
+        if current:
+            if token_count(heading + "\n" + current) > 512:
+                raise ValueError("Embedding input exceeds model token limit")
+            result.append((heading, current))
     return result
 
 

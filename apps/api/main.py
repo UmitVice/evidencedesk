@@ -10,7 +10,9 @@ from fastapi.responses import JSONResponse
 from evidencedesk.config import settings
 from evidencedesk.db import connection
 from evidencedesk.errors import DomainError, missing
+from evidencedesk.models import AnalyzeRequest
 from evidencedesk.sessions import create_session, get_ticket, require_service, session
+from evidencedesk.workflow import analyze, read_run
 
 app = FastAPI(title="EvidenceDesk API", version="0.1.0")
 Owner = Annotated[dict[str, Any], Depends(session)]
@@ -126,3 +128,13 @@ def source(source_id: UUID, owner: Owner) -> dict[str, Any]:
     if not row:
         raise missing()
     return row
+
+
+@app.post("/tickets/{ticket_id}/analyze")
+def analyze_ticket(ticket_id: UUID, body: AnalyzeRequest, owner: Owner) -> dict[str, Any]:
+    return analyze(owner, str(ticket_id), body.question)
+
+
+@app.get("/runs/{run_id}")
+def run(run_id: UUID, owner: Owner) -> dict[str, Any]:
+    return read_run(owner, str(run_id))

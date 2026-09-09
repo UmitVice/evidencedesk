@@ -33,12 +33,16 @@ def migrate() -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="EvidenceDesk maintenance (never runs on startup)")
-    parser.add_argument("command", choices=["migrate", "seed", "cleanup"])
+    parser.add_argument("command", choices=["migrate", "seed", "ingest-live", "cleanup"])
     args = parser.parse_args()
     if args.command == "migrate":
         migrate()
     elif args.command == "seed":
         print("Changed fixture chunks:", seed())
+    elif args.command == "ingest-live":
+        from evidencedesk.live_ingest import ingest_live
+
+        print("Live chunks embedded:", ingest_live())
     else:
         with connection(migration=True) as conn:
             rows = conn.execute(
