@@ -2,6 +2,27 @@
 
 Specification read in full on 2026-09-09. Empty designated repository inspected; existing Git identity retained. No unrelated files or remotes.
 
+## Resumed resource verification (2026-09-10)
+
+This section supersedes the earlier authentication snapshot.
+
+| Resource | Created | Configured | Verified | Blocked |
+| --- | --- | --- | --- | --- |
+| GitHub | Existing public UmitVice/evidencedesk reused | HTTPS CLI identity UmitVice; master default; master/dev pushed | dev 7f01e15 passed Linux CI: 41 PostgreSQL/API tests, 6 browser tests, build/audits/scans | Final live release gates pending |
+| Vercel API | Existing prj_OgnoPz5PFagUg0wwa8dczuQ6xvMN reused | apps/api, FastAPI, master Production; GitHub link connected; distinct service secrets | Production dpl_HYYyCMCpRYYcKfu3FgEatpuqJRmp, code 31696ba; preview protection retained | Runtime database and AI token missing |
+| Vercel web | Existing prj_MPCvHinnOH8yUVwbf1HWgmynslpp reused | apps/web, Next.js, Node 24.x, master Production; GitHub link connected | Production dpl_4ncCVQZTE2RrYqeuTrKpN4U1gUWo, code 31696ba; production API origin paired | Hosted session/live flow awaits API credentials |
+| Supabase | EvidenceDesk Free organization dzjfzmicvypgsxjmldlw verified | No EvidenceDesk database created during resume | Organization remains empty; another Free organization has one Healthy Ohio project | User must confirm whether that existing project is intended for EvidenceDesk; no mutations made to it |
+| Cloudflare | Existing Active Workers AI token reused; no duplicate token | Dashboard verifies Workers AI Read/Edit for the intended account only | Token existence and scope verified; current model documentation inspected | Token value absent locally; no live requests made |
+| Local configuration | Existing root .env and web .env.local preserved | Secret files mode 600, private directory mode 700; secure interactive helper added | Only .env.example tracked; history and staged publication scan clean | Database password and AI token need no-echo terminal entry |
+
+Initial remote CI: https://github.com/UmitVice/evidencedesk/actions/runs/34411297938. Linux CI actually ran its pinned PostgreSQL/pgvector container; local database testing remains native PostgreSQL, not local Docker.
+
+The full worktree scan flagged generated local application secrets and Next.js caches (plus a Node header false positive). All findings are untracked and ignored. The separately exported publication tree and reachable Git history passed Gitleaks; no secret finding was bypassed or pushed. Added Docker-context exclusions; existing deployment and package exclusions remain in force.
+
+`codex/live-release` adds secure credential entry and explicit generation-attempt/completion counts plus measured live-case latency. A regression test confirms that local abstention does not count as a model generation. All 42 Python/API/PostgreSQL tests pass locally with no integration skips. No live metric is populated from this mocked regression test.
+
+Credential entry command: `python3 scripts/enter-cloud-credentials.py` from a real terminal. It accepts the saved database password and Workers AI token without echo, rejects noninteractive/echo-fallback input, and writes only ignored mode-600 files. Password URI encoding and production runtime-role provisioning occur only after project identity and connection metadata are verified. Root local-development DSNs and the BFF service credential are preserved.
+
 ## Sequential milestones
 
 - [x] 1. Verified stack, repository, minimal UI/API, database and CI

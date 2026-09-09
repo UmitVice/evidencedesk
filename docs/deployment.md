@@ -1,6 +1,14 @@
 # Free deployment runbook
 
-## Verified and pending
+## Resume prerequisites
+
+GitHub authentication and both project Git connections are now verified. The existing public repository has source history and passing CI at 7f01e15. Both Vercel Git links map master to Production. See the current resource checklist in implementation.md; the older deployment snapshot below remains historical.
+
+Do not construct secret files manually. Run `python3 scripts/enter-cloud-credentials.py` in a real terminal to supply an existing database password and Workers AI token using no-echo input. Empty input preserves existing values. The helper preserves local database settings and stores the database password in the ignored private directory until the actual project metadata is verified. It does not activate Live AI or point development at production.
+
+The EvidenceDesk organization is currently empty. A separate Ohio project exists, but its intended ownership must be confirmed before reuse. Do not create a duplicate production database or mutate an unconfirmed project. The existing Workers AI token is Active and scoped to Read/Edit on the intended account; its value still needs secure entry.
+
+## Historical deployment snapshot
 
 Vercel CLI account `umitvice`, team `umitvices-projects`, billing plan `hobby` verified. Created `evidencedesk-api` (FastAPI, root `apps/api`) and `evidencedesk-web` (Next.js, root `apps/web`, Node 24.x). Public `UmitVice/evidencedesk` was created through the authenticated browser with no starter commit. GitHub CLI authentication and pushes remain blocked. Supabase and Cloudflare browser sign-in is verified; database credential submission and a scoped Workers AI token grant remain pending. No production database or live model execution is verified. API preview health was verified at https://evidencedesk-pw8wuatus-umitvices-projects.vercel.app/health with supported Vercel protection bypass. The initial web deployment is available at https://evidencedesk-web.vercel.app. Vercel promoted the first web deployment to Production despite the CLI preview target; this was a static/unconfigured deployment, not a database-backed release. Final verified Production targets: API https://evidencedesk-api.vercel.app (`dpl_HYYyCMCpRYYcKfu3FgEatpuqJRmp`), web https://evidencedesk-web.vercel.app (`dpl_4ncCVQZTE2RrYqeuTrKpN4U1gUWo`). Health and all pages return 200; session creation returns the expected database-unavailable 503, also verified in the browser. This is a published static walkthrough, not a working hosted AI sandbox. Distinct production/preview service credentials are configured; production web API_ORIGIN points only to the production API. Supabase organization EvidenceDesk is Free and initially has zero projects; the prepared evidencedesk-master form uses Paris with Data API and automatic exposure disabled. Creating databases awaits user credential submission.
 
