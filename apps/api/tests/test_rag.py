@@ -34,9 +34,32 @@ def test_citation_validation_and_no_capability_escalation():
         json.dumps(valid).replace(source, str(uuid4())),
         json.dumps(valid).replace("A valid supporting quote", "A forged supporting quote"),
         json.dumps({"status": "insufficient_evidence", "claims": [], "proposed_note": "Apply"}),
+        json.dumps({**valid, "status": "insufficient_evidence", "proposed_note": None}),
     ]:
         with pytest.raises(DomainError):
             validate_response(raw, rows)
+
+
+def test_generation_uses_ticket_question_and_expresses_abstention_contract(monkeypatch):
+    monkeypatch.setenv("CLOUDFLARE_ACCOUNT_ID", "a" * 32)
+    monkeypatch.setenv("CLOUDFLARE_API_TOKEN", "test-token")
+    settings.cache_clear()
+
+    def respond(request):
+        payload = json.loads(request.content)
+        content = json.loads(payload["messages"][1]["content"])
+        assert content["question"] == "How should this delivery be recovered?"
+        assert payload["response_format"] == {"type": "json_object"}
+        assert '"claims":[],"proposed_note":null' in payload["messages"][0]["content"]
+        assert "Required JSON schema:" in payload["messages"][0]["content"]
+        return httpx.Response(200, json={"success": True, "result": {"response": {
+            "status": "insufficient_evidence", "claims": [], "proposed_note": None,
+        }}})
+
+    adapter = CloudflareProvider(httpx.MockTransport(respond))
+    raw, _ = adapter.generate({"body": "How should this delivery be recovered?"}, "", [])
+    assert validate_response(raw, []).status == "insufficient_evidence"
+    settings.cache_clear()
 
 
 def test_real_token_budget():

@@ -15,6 +15,8 @@ The user confirmed the existing Ohio project as production and supplied credenti
 
 The live ten-case evaluation at clean revision `603062b` completed ten generation calls: six expected answers, two SSO schema-validation failures, and two obsolete-policy expectation failures. All six labeled answerable cases had Recall@5 1.0 for each method; hybrid MRR was 1.0. Human review is pending. The default ten-attempt evaluation-session budget is exhausted for today; no counters were reset or identities changed to extend it. Migration 005 also removes automatic public-schema API grants for newly created objects.
 
+The first production browser/BFF analysis at `4ff6b18` exposed contradictory JSON-schema output (insufficient status with factual claims). It failed closed with no note. The `support-v2` correction uses JSON-object mode with the full schema and explicit response shapes in the system prompt, preserves strict Pydantic/citation validation, and supplies the ticket question when the optional question is empty. Two real post-fix diagnostics passed: three cited webhook claims plus a proposed note, and an unrelated-question abstention with no claims/note. The ten-case `support-v1` report is preserved as historical measured evidence; it is not a v2 quality score. Current native PostgreSQL/API checks: 43 passed.
+
 ## Historical notes — superseded snapshots
 
 
