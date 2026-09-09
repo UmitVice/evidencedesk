@@ -1,0 +1,28 @@
+[project]
+name = "evidencedesk-api"
+version = "0.1.0"
+requires-python = ">=3.13,<3.14"
+dependencies = ["fastapi==0.141.1", "pydantic==2.13.5", "pydantic-settings==2.15.0", "httpx==0.28.1", "psycopg[binary]==3.3.5", "pgvector==0.5.0", "langgraph==1.2.11", "tokenizers==0.23.2", "uvicorn==0.52.4"]
+[dependency-groups]
+dev = ["ruff==0.16.6", "pyright==1.1.413", "pytest==9.1.1", "pip-audit==2.10.1"]
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+[tool.hatch.build.targets.wheel]
+packages = ["evidencedesk"]
+[tool.pytest.ini_options]
+pythonpath = ["."]
+markers = ["integration: requires real PostgreSQL"]
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+[tool.pyright]
+pythonVersion = "3.13"
+typeCheckingMode = "standard"
+include = ["evidencedesk", "main.py"]
+venvPath = "."
+venv = ".venv"
+[tool.vercel]
+entrypoint = "main:app"
