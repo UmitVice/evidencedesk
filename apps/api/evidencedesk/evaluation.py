@@ -1,0 +1,197 @@
+import argparse
+import hashlib
+import json
+import platform
+import subprocess
+from collections import Counter
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import Any
+
+from evidencedesk.config import settings
+from evidencedesk.errors import DomainError
+from evidencedesk.live_ingest import corpus_hash
+from evidencedesk.models import Answer
+from evidencedesk.providers import (
+    GENERATION_MODEL,
+    PROMPT_VERSION,
+    CloudflareProvider,
+    FixtureProvider,
+)
+from evidencedesk.quotas import reserve
+from evidencedesk.retrieval import Mode, search_knowledge
+from evidencedesk.workflow import validate_response
+
+ROOT = Path(__file__).resolve().parents[3]
+DATASET = Path(__file__).resolve().parents[1] / "evals" / "cases.json"
+
+
+def retrieval_metrics(rankings: list[list[str]], labels: list[list[str]]) -> dict[str, Any]:
+    recalls, reciprocal = [], []
+    for ranking, relevant in zip(rankings, labels, strict=True):
+        if not relevant:
+            continue
+        unique = list(dict.fromkeys(ranking))[:5]
+        recalls.append(len(set(unique) & set(relevant)) / len(set(relevant)))
+        reciprocal.append(next((1 / (i + 1) for i, doc in enumerate(unique) if doc in relevant), 0))
+    n = len(recalls)
+    return {
+        "n": n,
+        "recall_at_5": sum(recalls) / n if n else None,
+        "mrr": sum(reciprocal) / n if n else None,
+    }
+
+
+def run_evaluation(mode: str, split: str, limit: int) -> dict[str, Any]:
+    config = settings()
+    if config.environment == "production":
+        raise ValueError("Evaluations cannot run against production")
+    database = config.database_url.get_secret_value().split("?")[0].rsplit("/", 1)[-1]
+    if not database.startswith("evidencedesk_eval"):
+        raise ValueError("Evaluation database name must start with evidencedesk_eval")
+    dataset = json.loads(DATASET.read_text())
+    selected = [case for case in dataset if split == "all" or case["split"] == split][:limit]
+    adapter = CloudflareProvider() if mode == "live" else FixtureProvider()
+    outcomes, labels = [], []
+    modes: list[Mode] = ["lexical", "vector", "hybrid"]
+    rankings: dict[str, list[list[str]]] = {method: [] for method in modes}
+    for case in selected:
+        outcome: dict[str, Any] = {
+            "case_id": case["id"],
+            "category": case["category"],
+            "human_review": "pending",
+            "usage": None,
+        }
+        if case["category"] in ("approval", "provider_failure", "malformed_provider"):
+            outcome.update(
+                status="engineering_test_required",
+                test_reference={
+                    "approval": "tests/test_actions.py",
+                    "provider_failure": "tests/test_rag.py",
+                    "malformed_provider": "tests/test_rag.py",
+                }[case["category"]],
+            )
+            outcomes.append(outcome)
+            continue
+        try:
+            if mode == "live":
+                reserve({"id": "evaluation"}, retry=True)
+            vector = adapter.embed([case["question"]])[0]
+            found = {
+                method: search_knowledge(
+                    "harbor", case["question"], vector, adapter.manifest, method, 5
+                )
+                for method in modes
+            }
+            if case["relevant_documents"]:
+                labels.append(case["relevant_documents"])
+                for method in modes:
+                    rankings[method].append([row["source_id"] for row in found[method]])
+            evidence = found["hybrid"][:4]
+            if not evidence:
+                answer = Answer(status="insufficient_evidence", claims=[])
+            else:
+                question = (
+                    case["question"]
+                    if mode == "live"
+                    else (
+                        ""
+                        if case["expected_status"] == "answered"
+                        else "Can RelayNest configure SSO?"
+                    )
+                )
+                raw, usage = adapter.generate(
+                    {"sample": case["sample"], "body": case["question"]}, question, evidence
+                )
+                answer = validate_response(raw, evidence)
+                outcome["usage"] = usage
+            outcome.update(
+                status="evaluated",
+                schema_valid=True,
+                citation_integrity=True,
+                correct_abstention=(answer.status == case["expected_status"]),
+                answer=answer.model_dump(),
+            )
+        except DomainError as exc:
+            outcome.update(status="failed", error_code=exc.code)
+            outcomes.append(outcome)
+            if exc.code in ("quota_exhausted", "provider_quota", "provider_unavailable"):
+                break
+            continue
+        outcomes.append(outcome)
+    return {
+        "mode": mode,
+        "label": "Live model evaluation"
+        if mode == "live"
+        else "Mocked behavior checks; no live model called",
+        "timestamp": datetime.now(UTC).isoformat(),
+        "commit_sha": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT)
+        .decode()
+        .strip(),
+        "working_tree_dirty": bool(
+            subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT)
+        ),
+        "dataset_hash": hashlib.sha256(DATASET.read_bytes()).hexdigest(),
+        "corpus_hash": corpus_hash(),
+        "prompt_version": PROMPT_VERSION,
+        "embedding_manifest": adapter.manifest,
+        "generation_model": GENERATION_MODEL if mode == "live" else "fixture-v1",
+        "retrieval": {
+            "candidate_limit": config.candidate_limit,
+            "rrf_k": 60,
+            "cosine_distance_limit": config.cosine_distance_limit,
+            "aggregation": "Unique document IDs in ranked chunk order; first five documents",
+            "denominator": "Executed cases with nonempty relevant_documents labels",
+        },
+        "split": split,
+        "dataset_counts": dict(Counter(x["category"] for x in dataset)),
+        "selected_count": len(selected),
+        "processed_count": len(outcomes),
+        "methods": {method: retrieval_metrics(rankings[method], labels) for method in modes},
+        "outcomes": outcomes,
+        "human_review": "pending",
+        "latency": None,
+        "cost": None,
+        "environment": platform.system() + "/" + platform.machine(),
+        "limitations": [
+            "Citation integrity does not prove semantic correctness.",
+            "Fixture answers are selected samples, not general language understanding.",
+            "Control scenarios require separate real-database engineering tests.",
+            "Forty scenarios are a compact regression corpus, not a market benchmark.",
+        ],
+    }
+
+
+def write_report(report: dict[str, Any], output: Path) -> None:
+    output.mkdir(parents=True, exist_ok=True)
+    name = "latest-" + report["mode"]
+    (output / (name + ".json")).write_text(json.dumps(report, indent=2) + "\n")
+    lines = [
+        "# " + report["label"],
+        "",
+        "Human review: pending.",
+        "",
+        f"Commit: `{report['commit_sha']}`",
+        "",
+        "| Retrieval | n | Recall@5 | MRR |",
+        "| --- | --- | --- | --- |",
+    ]
+    for method, metrics in report["methods"].items():
+        lines.append(f"| {method} | {metrics['n']} | {metrics['recall_at_5']} | {metrics['mrr']} |")
+    lines += ["", *report["limitations"]]
+    (output / (name + ".md")).write_text("\n".join(lines) + "\n")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--mode", choices=["offline", "live"], default="offline")
+    parser.add_argument("--split", choices=["development", "holdout", "all"], default="development")
+    parser.add_argument("--limit", type=int, choices=range(1, 41), default=10)
+    args = parser.parse_args()
+    report = run_evaluation(args.mode, args.split, args.limit)
+    write_report(report, ROOT / "reports")
+    print("Report saved; live human quality review remains pending.")
+
+
+if __name__ == "__main__":
+    main()

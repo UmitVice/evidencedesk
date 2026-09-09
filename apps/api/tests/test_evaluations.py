@@ -1,0 +1,62 @@
+import json
+from collections import Counter
+from concurrent.futures import ThreadPoolExecutor
+
+import pytest
+
+from evidencedesk.config import settings
+from evidencedesk.db import connection
+from evidencedesk.errors import DomainError
+from evidencedesk.evaluation import DATASET, retrieval_metrics
+from evidencedesk.quotas import reserve
+
+
+def test_dataset_split_integrity():
+    cases = json.loads(DATASET.read_text())
+    assert len(cases) == 40
+    assert Counter(c["split"] for c in cases) == {"development": 24, "holdout": 16}
+    groups = {}
+    for case in cases:
+        groups.setdefault(case["group"], set()).add(case["split"])
+    assert all(len(splits) == 1 for splits in groups.values())
+
+
+def test_document_metrics_denominator_and_duplicate_citations():
+    metrics = retrieval_metrics([["a", "a", "b"], ["x"], ["a"]], [["b"], ["a"], []])
+    assert metrics == {"n": 2, "recall_at_5": 0.5, "mrr": 0.25}
+
+
+@pytest.mark.integration
+def test_atomic_analysis_quota(db):
+    def attempt(_):
+        try:
+            reserve({"id": "concurrent-session"})
+            return True
+        except DomainError as exc:
+            assert exc.code == "quota_exhausted"
+            return False
+
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        assert sum(pool.map(attempt, range(8))) == settings().analyses_per_minute
+    with connection() as conn:
+        rows = conn.execute("SELECT count FROM evidence.usage_counters").fetchall()
+        assert all(row["count"] == 2 for row in rows)
+
+
+@pytest.mark.integration
+def test_quota_blocks_before_embedding(client, owner, monkeypatch):
+    from evidencedesk.providers import FixtureProvider
+
+    called = []
+    original = FixtureProvider.embed
+
+    def embed(self, texts):
+        called.append(1)
+        return original(self, texts)
+
+    monkeypatch.setattr(FixtureProvider, "embed", embed)
+    ticket = owner[0]["id"]
+    for _ in range(2):
+        assert client.post(f"/tickets/{ticket}/analyze", json={}).status_code == 200
+    assert client.post(f"/tickets/{ticket}/analyze", json={}).status_code == 429
+    assert len(called) == 2

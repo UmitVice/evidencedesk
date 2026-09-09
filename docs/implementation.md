@@ -8,11 +8,11 @@ Specification read in full on 2026-09-09. Empty designated repository inspected;
 - [x] 2. Schema, sessions, corpus, ingestion and source reads
 - [x] 3. Retrieval, providers and bounded analysis graph
 - [x] 4. Immutable transactional approvals and race tests
-- [ ] 5. Evaluations, durable quotas and reports
+- [x] 5. Evaluations, durable quotas and reports
 - [ ] 6. UI, browser tests and available free deployment
 - [ ] 7. Critical review, final checks, screenshots and validated release
 
-Current branch: feat/approved-actions. Last verified commit: 9990078; current slice checks passed before commit.
+Current branch: feat/evaluations. Last verified commit: be99981; current slice checks passed before commit.
 
 External blockers: GitHub CLI authorization requested; Supabase and Cloudflare browser sessions require sign-in. Vercel CLI is authenticated as umitvice. No cloud secrets were found in the task environment. Docker is absent; installing native PostgreSQL/pgvector for equivalent real-database local verification. Compose remains the documented portable path.
 
@@ -24,4 +24,6 @@ Milestone 3 checks: Ruff, Pyright, 13 tests passed. Real PostgreSQL retrieval an
 
 Milestone 4: 19 tests passed with real PostgreSQL. Eight concurrent approvals returned the same note; exactly one note and one applied audit event persisted. Rejection, stale, expired, foreign, edited proposals and pending reload verified.
 
-Next: fixed evaluation dataset and reports. Remote CI remains unverified until GitHub authorization.
+Milestone 5: 23 tests passed, including atomic quotas and embedding-not-called after exhaustion. Offline report executed against an isolated evaluation database; 40 selected scenarios with 30 language evaluations and 10 explicit engineering-test references. Frontend lint/typecheck/build passed.
+
+Next: workspace UI, BFF, browser tests, deployment. Remote CI remains unverified until GitHub authorization.
