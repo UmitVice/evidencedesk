@@ -26,6 +26,23 @@ def test_document_metrics_denominator_and_duplicate_citations():
     assert metrics == {"n": 2, "recall_at_5": 0.5, "mrr": 0.25}
 
 
+def test_live_report_does_not_count_local_abstention_as_generation(monkeypatch):
+    import evidencedesk.evaluation as evaluation
+    from evidencedesk.config import Settings
+    from evidencedesk.providers import FixtureProvider
+
+    config = Settings(database_url="postgresql://localhost/evidencedesk_eval")
+    monkeypatch.setattr(evaluation, "settings", lambda: config)
+    monkeypatch.setattr(evaluation, "CloudflareProvider", FixtureProvider)
+    monkeypatch.setattr(evaluation, "reserve", lambda *args, **kwargs: None)
+    monkeypatch.setattr(evaluation, "search_knowledge", lambda *args: [])
+    report = evaluation.run_evaluation("live", "development", 1)
+    assert report["generation_attempts"] == report["generation_completions"] == 0
+    assert report["outcomes"][0]["answer"]["status"] == "insufficient_evidence"
+    assert report["latency"]["n"] == 1
+    assert report["latency"]["p95_ms"] is None
+
+
 @pytest.mark.integration
 def test_atomic_analysis_quota(db):
     def attempt(_):

@@ -2,7 +2,9 @@ import argparse
 import hashlib
 import json
 import platform
+import statistics
 import subprocess
+import time
 from collections import Counter
 from datetime import UTC, datetime
 from pathlib import Path
@@ -61,6 +63,8 @@ def run_evaluation(mode: str, split: str, limit: int) -> dict[str, Any]:
             "category": case["category"],
             "human_review": "pending",
             "usage": None,
+            "generation_attempted": False,
+            "generation_completed": False,
         }
         if case["category"] in ("approval", "provider_failure", "malformed_provider"):
             outcome.update(
@@ -73,6 +77,7 @@ def run_evaluation(mode: str, split: str, limit: int) -> dict[str, Any]:
             )
             outcomes.append(outcome)
             continue
+        started = time.perf_counter()
         try:
             if mode == "live":
                 reserve({"id": "evaluation"}, retry=True)
@@ -116,9 +121,11 @@ def run_evaluation(mode: str, split: str, limit: int) -> dict[str, Any]:
             if not evidence:
                 answer = Answer(status="insufficient_evidence", claims=[])
             else:
+                outcome["generation_attempted"] = True
                 raw, usage = adapter.generate(
                     {"sample": case["sample"], "body": case["question"]}, case["question"], evidence
                 )
+                outcome["generation_completed"] = True
                 answer = validate_response(raw, evidence)
                 outcome["usage"] = usage
             outcome.update(
@@ -134,7 +141,11 @@ def run_evaluation(mode: str, split: str, limit: int) -> dict[str, Any]:
             if exc.code in ("quota_exhausted", "provider_quota", "provider_unavailable"):
                 break
             continue
+        finally:
+            if mode == "live":
+                outcome["elapsed_ms"] = round((time.perf_counter() - started) * 1000, 2)
         outcomes.append(outcome)
+    durations = [outcome["elapsed_ms"] for outcome in outcomes if "elapsed_ms" in outcome]
     return {
         "mode": mode,
         "label": "Live model evaluation"
@@ -166,7 +177,16 @@ def run_evaluation(mode: str, split: str, limit: int) -> dict[str, Any]:
         "methods": {method: retrieval_metrics(rankings[method], labels) for method in modes},
         "outcomes": outcomes,
         "human_review": "pending",
-        "latency": None,
+        "generation_attempts": sum(outcome["generation_attempted"] for outcome in outcomes),
+        "generation_completions": sum(outcome["generation_completed"] for outcome in outcomes),
+        "latency": {
+            "n": len(durations),
+            "measurement": "Live embedding, three retrieval methods, and optional generation; "
+            "includes failures",
+            "p50_ms": statistics.median(durations),
+            "p95_ms": statistics.quantiles(durations, n=20, method="inclusive")[18]
+            if len(durations) >= 2 else None,
+        } if durations else None,
         "cost": None,
         "environment": platform.system() + "/" + platform.machine(),
         "limitations": [
