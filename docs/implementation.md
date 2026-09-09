@@ -13,6 +13,8 @@ The user confirmed the existing Ohio project as production and supplied credenti
 - Development: local PostgreSQL remains isolated. Separate free evidencedesk-dev form prepared in the empty EvidenceDesk organization, Ohio, Data API/automatic exposure off. Creating this new database requires user submission of its new password; production credentials already work and require no re-entry.
 - Remaining work: baseline hosted verification, ten-case live evaluation, redesigned ticket-first UI, final CI/dev/production deployment and release. Do not claim current hosted live functionality until tested.
 
+The live ten-case evaluation at clean revision `603062b` completed ten generation calls: six expected answers, two SSO schema-validation failures, and two obsolete-policy expectation failures. All six labeled answerable cases had Recall@5 1.0 for each method; hybrid MRR was 1.0. Human review is pending. The default ten-attempt evaluation-session budget is exhausted for today; no counters were reset or identities changed to extend it. Migration 005 also removes automatic public-schema API grants for newly created objects.
+
 ## Historical notes — superseded snapshots
 
 

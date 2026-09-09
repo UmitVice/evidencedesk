@@ -1,0 +1,702 @@
+{
+  "mode": "live",
+  "label": "Live model evaluation",
+  "timestamp": "2026-09-09T23:01:13.599298+00:00",
+  "commit_sha": "603062b715cb7e1d761c6b204c8227006bf6bdf1",
+  "working_tree_dirty": false,
+  "dataset_hash": "cd577f8a745391e1b9c16ae992f25d333f963da66cc887ea1a757a6fd8193dba",
+  "corpus_hash": "16e987278345dbf656f4f367a2e64e1d47a968f48a9b29b01fc3bc4109fbcce9",
+  "prompt_version": "support-v1",
+  "embedding_manifest": {
+    "model": "@cf/baai/bge-small-en-v1.5",
+    "dimension": 384,
+    "pooling": "cls",
+    "preprocessing": "english-no-prefix-v1",
+    "corpus_version": "1"
+  },
+  "generation_model": "@cf/meta/llama-3.1-8b-instruct-fast",
+  "retrieval": {
+    "candidate_limit": 12,
+    "rrf_k": 60,
+    "cosine_distance_limit": 0.45,
+    "aggregation": "Unique document IDs in ranked chunk order; first five documents",
+    "denominator": "Executed cases with nonempty relevant_documents labels"
+  },
+  "split": "development",
+  "dataset_counts": {
+    "answerable": 12,
+    "insufficient_evidence": 6,
+    "obsolete_document": 4,
+    "cross_tenant": 4,
+    "prompt_injection": 4,
+    "malformed_provider": 3,
+    "provider_failure": 2,
+    "approval": 5
+  },
+  "selected_count": 10,
+  "processed_count": 10,
+  "methods": {
+    "lexical": {
+      "n": 6,
+      "recall_at_5": 1.0,
+      "mrr": 0.8055555555555555
+    },
+    "vector": {
+      "n": 6,
+      "recall_at_5": 1.0,
+      "mrr": 0.9166666666666666
+    },
+    "hybrid": {
+      "n": 6,
+      "recall_at_5": 1.0,
+      "mrr": 1.0
+    }
+  },
+  "outcomes": [
+    {
+      "case_id": "retry-recovery-1",
+      "category": "answerable",
+      "human_review": "pending",
+      "usage": {
+        "prompt_tokens": 541,
+        "completion_tokens": 463,
+        "total_tokens": 1004,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "neurons": 18.371946334838867
+      },
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "webhook-timeouts",
+          "api-rate-limits",
+          "webhook-retries",
+          "event-ordering",
+          "delivery-status"
+        ],
+        "vector": [
+          "webhook-signatures",
+          "webhook-retries",
+          "event-ordering",
+          "api-rate-limits",
+          "webhook-timeouts"
+        ],
+        "hybrid": [
+          "webhook-retries",
+          "webhook-timeouts",
+          "api-rate-limits",
+          "webhook-signatures",
+          "event-ordering"
+        ]
+      },
+      "retrieval_misses": [],
+      "status": "evaluated",
+      "schema_valid": true,
+      "citation_integrity": true,
+      "correct_abstention": true,
+      "answer": {
+        "status": "answered",
+        "claims": [
+          {
+            "text": "RelayNest retries failed webhooks after 1 minute, 5 minutes, 30 minutes, and 2 hours. A delivery that still fails is marked exhausted. Fix the receiving endpoint, then choose Replay delivery in the delivery log.",
+            "citations": [
+              {
+                "source_id": "be8c14cd-f32f-5aa6-a2a1-cc0cd8aad0e8",
+                "quote": "RelayNest retries failed webhooks after 1 minute, 5 minutes, 30 minutes, and 2 hours."
+              },
+              {
+                "source_id": "be8c14cd-f32f-5aa6-a2a1-cc0cd8aad0e8",
+                "quote": "A delivery that still fails is marked exhausted."
+              },
+              {
+                "source_id": "be8c14cd-f32f-5aa6-a2a1-cc0cd8aad0e8",
+                "quote": "Fix the receiving endpoint, then choose Replay delivery in the delivery log."
+              }
+            ]
+          },
+          {
+            "text": "The receiving endpoint must acknowledge a delivery with a 2xx response within ten seconds. Process long-running work after acknowledgment. A timeout is recorded as a failed delivery and follows the standard webhook retry schedule.",
+            "citations": [
+              {
+                "source_id": "506c3463-a42c-50c5-b053-4f45582f0681",
+                "quote": "The receiving endpoint must acknowledge a delivery with a 2xx response within ten seconds."
+              },
+              {
+                "source_id": "506c3463-a42c-50c5-b053-4f45582f0681",
+                "quote": "Process long-running work after acknowledgment."
+              },
+              {
+                "source_id": "506c3463-a42c-50c5-b053-4f45582f0681",
+                "quote": "A timeout is recorded as a failed delivery and follows the standard webhook retry schedule."
+              }
+            ]
+          }
+        ],
+        "proposed_note": null
+      },
+      "elapsed_ms": 5237.46
+    },
+    {
+      "case_id": "retry-recovery-2",
+      "category": "answerable",
+      "human_review": "pending",
+      "usage": {
+        "prompt_tokens": 548,
+        "completion_tokens": 272,
+        "total_tokens": 820,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "neurons": 11.741021156311035
+      },
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "webhook-retries",
+          "webhook-timeouts",
+          "event-ordering",
+          "delivery-status",
+          "support-boundaries"
+        ],
+        "vector": [
+          "webhook-retries",
+          "webhook-timeouts",
+          "event-ordering",
+          "delivery-status",
+          "event-retention"
+        ],
+        "hybrid": [
+          "webhook-retries",
+          "webhook-timeouts",
+          "event-ordering",
+          "delivery-status",
+          "event-retention"
+        ]
+      },
+      "retrieval_misses": [],
+      "status": "evaluated",
+      "schema_valid": true,
+      "citation_integrity": true,
+      "correct_abstention": true,
+      "answer": {
+        "status": "answered",
+        "claims": [
+          {
+            "text": "To recover an exhausted webhook delivery, fix the receiving endpoint and then choose Replay delivery in the delivery log.",
+            "citations": [
+              {
+                "source_id": "be8c14cd-f32f-5aa6-a2a1-cc0cd8aad0e8",
+                "quote": "Fix the receiving endpoint, then choose Replay delivery in the delivery log."
+              }
+            ]
+          },
+          {
+            "text": "Replay creates a new delivery attempt with the original event ID.",
+            "citations": [
+              {
+                "source_id": "be8c14cd-f32f-5aa6-a2a1-cc0cd8aad0e8",
+                "quote": "Replay creates a new delivery attempt with the original event ID."
+              }
+            ]
+          },
+          {
+            "text": "Receivers must deduplicate by event ID.",
+            "citations": [
+              {
+                "source_id": "be8c14cd-f32f-5aa6-a2a1-cc0cd8aad0e8",
+                "quote": "Receivers must deduplicate by event ID."
+              }
+            ]
+          }
+        ],
+        "proposed_note": null
+      },
+      "elapsed_ms": 4616.63
+    },
+    {
+      "case_id": "credential-rotate-1",
+      "category": "answerable",
+      "human_review": "pending",
+      "usage": {
+        "prompt_tokens": 534,
+        "completion_tokens": 232,
+        "total_tokens": 766,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "neurons": 10.288647651672363
+      },
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "credential-rotation",
+          "credential-expiry",
+          "api-permissions",
+          "audit-log",
+          "support-boundaries"
+        ],
+        "vector": [
+          "credential-rotation",
+          "credential-expiry",
+          "api-permissions",
+          "support-boundaries",
+          "webhook-signatures"
+        ],
+        "hybrid": [
+          "credential-rotation",
+          "credential-expiry",
+          "api-permissions",
+          "support-boundaries",
+          "webhook-signatures"
+        ]
+      },
+      "retrieval_misses": [],
+      "status": "evaluated",
+      "schema_valid": true,
+      "citation_integrity": true,
+      "correct_abstention": true,
+      "answer": {
+        "status": "answered",
+        "claims": [
+          {
+            "text": "To rotate an expired API credential, create a replacement credential in Settings > API credentials, update the integration secret, verify a successful request, and revoke the old credential.",
+            "citations": [
+              {
+                "source_id": "c3f6c838-2c48-5b80-8fde-4d9a6373795a",
+                "quote": "Create a replacement credential in Settings > API credentials, update the integration secret, and verify a successful request."
+              },
+              {
+                "source_id": "c3f6c838-2c48-5b80-8fde-4d9a6373795a",
+                "quote": "Revoke the old credential after verification."
+              },
+              {
+                "source_id": "73c8b18b-aaa2-553d-a1af-317e865a9189",
+                "quote": "New RelayNest API credentials expire after 90 days."
+              }
+            ]
+          }
+        ],
+        "proposed_note": null
+      },
+      "elapsed_ms": 2928.09
+    },
+    {
+      "case_id": "credential-rotate-2",
+      "category": "answerable",
+      "human_review": "pending",
+      "usage": {
+        "prompt_tokens": 535,
+        "completion_tokens": 258,
+        "total_tokens": 793,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "neurons": 11.19933032989502
+      },
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "delivery-status",
+          "credential-rotation",
+          "credential-expiry",
+          "api-permissions"
+        ],
+        "vector": [
+          "credential-rotation",
+          "api-permissions",
+          "credential-expiry",
+          "audit-log",
+          "injection-fixture"
+        ],
+        "hybrid": [
+          "credential-rotation",
+          "api-permissions",
+          "credential-expiry",
+          "delivery-status",
+          "audit-log"
+        ]
+      },
+      "retrieval_misses": [],
+      "status": "evaluated",
+      "schema_valid": true,
+      "citation_integrity": true,
+      "correct_abstention": true,
+      "answer": {
+        "status": "answered",
+        "claims": [
+          {
+            "text": "credential_expired means the API credential has reached its expiry date.",
+            "citations": [
+              {
+                "source_id": "c3f6c838-2c48-5b80-8fde-4d9a6373795a",
+                "quote": "A 401 response with credential_expired means the API credential has reached its expiry date."
+              }
+            ]
+          },
+          {
+            "text": "credential_expired produces a 401 response",
+            "citations": [
+              {
+                "source_id": "af740862-9a2f-5f36-8682-af3f9de0a139",
+                "quote": "An expired credential instead produces 401."
+              }
+            ]
+          },
+          {
+            "text": "RelayNest API credentials expire after 90 days",
+            "citations": [
+              {
+                "source_id": "73c8b18b-aaa2-553d-a1af-317e865a9189",
+                "quote": "New RelayNest API credentials expire after 90 days."
+              }
+            ]
+          }
+        ],
+        "proposed_note": null
+      },
+      "elapsed_ms": 2022.86
+    },
+    {
+      "case_id": "export-link-1",
+      "category": "answerable",
+      "human_review": "pending",
+      "usage": {
+        "prompt_tokens": 527,
+        "completion_tokens": 148,
+        "total_tokens": 675,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "neurons": 7.330921173095703
+      },
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "export-links",
+          "export-limits",
+          "export-failed",
+          "export-format",
+          "export-filters"
+        ],
+        "vector": [
+          "export-links",
+          "export-failed",
+          "export-limits",
+          "event-retention",
+          "credential-rotation"
+        ],
+        "hybrid": [
+          "export-links",
+          "export-failed",
+          "export-limits",
+          "export-format",
+          "event-retention"
+        ]
+      },
+      "retrieval_misses": [],
+      "status": "evaluated",
+      "schema_valid": true,
+      "citation_integrity": true,
+      "correct_abstention": true,
+      "answer": {
+        "status": "answered",
+        "claims": [
+          {
+            "text": "An export download link expires 24 hours after completion, and the underlying export is retained for seven days.",
+            "citations": [
+              {
+                "source_id": "aff3155b-bf2b-561e-b513-63e34199dfad",
+                "quote": "CSV export download links expire 24 hours after completion."
+              },
+              {
+                "source_id": "aff3155b-bf2b-561e-b513-63e34199dfad",
+                "quote": "The underlying export is retained for seven days."
+              }
+            ]
+          }
+        ],
+        "proposed_note": null
+      },
+      "elapsed_ms": 2239.24
+    },
+    {
+      "case_id": "export-link-2",
+      "category": "answerable",
+      "human_review": "pending",
+      "usage": {
+        "prompt_tokens": 529,
+        "completion_tokens": 113,
+        "total_tokens": 642,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "neurons": 6.118783950805664
+      },
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "export-links",
+          "export-limits",
+          "export-failed",
+          "export-format",
+          "workspace-timezone"
+        ],
+        "vector": [
+          "export-links",
+          "export-format",
+          "export-failed",
+          "event-retention",
+          "export-limits"
+        ],
+        "hybrid": [
+          "export-links",
+          "export-format",
+          "export-failed",
+          "export-limits",
+          "event-retention"
+        ]
+      },
+      "retrieval_misses": [],
+      "status": "evaluated",
+      "schema_valid": true,
+      "citation_integrity": true,
+      "correct_abstention": true,
+      "answer": {
+        "status": "answered",
+        "claims": [
+          {
+            "text": "To generate a fresh CSV download link, open Exports, select the completed export, and choose Generate download link.",
+            "citations": [
+              {
+                "source_id": "aff3155b-bf2b-561e-b513-63e34199dfad",
+                "quote": "Open Exports, select the completed export, and choose Generate download link to obtain a fresh link."
+              }
+            ]
+          }
+        ],
+        "proposed_note": null
+      },
+      "elapsed_ms": 2269.21
+    },
+    {
+      "case_id": "unknown-sso-1",
+      "category": "insufficient_evidence",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "unknown-sso",
+          "support-boundaries"
+        ],
+        "vector": [
+          "support-boundaries",
+          "unknown-sso",
+          "webhook-signatures",
+          "api-permissions",
+          "event-ordering"
+        ],
+        "hybrid": [
+          "unknown-sso",
+          "support-boundaries",
+          "webhook-signatures",
+          "api-permissions",
+          "event-ordering"
+        ]
+      },
+      "retrieval_misses": [],
+      "status": "failed",
+      "error_code": "invalid_model_output",
+      "elapsed_ms": 1053.53
+    },
+    {
+      "case_id": "unknown-sso-2",
+      "category": "insufficient_evidence",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "unknown-sso",
+          "webhook-signatures",
+          "export-limits"
+        ],
+        "vector": [
+          "unknown-sso",
+          "webhook-signatures",
+          "support-boundaries",
+          "credential-expiry",
+          "injection-fixture"
+        ],
+        "hybrid": [
+          "unknown-sso",
+          "webhook-signatures",
+          "export-limits",
+          "support-boundaries",
+          "credential-expiry"
+        ]
+      },
+      "retrieval_misses": [],
+      "status": "failed",
+      "error_code": "invalid_model_output",
+      "elapsed_ms": 1921.25
+    },
+    {
+      "case_id": "archive-conflict-1",
+      "category": "insufficient_evidence",
+      "human_review": "pending",
+      "usage": {
+        "prompt_tokens": 511,
+        "completion_tokens": 169,
+        "total_tokens": 680,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "neurons": 7.997247695922852
+      },
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "conflicting-retention",
+          "event-retention",
+          "injection-fixture"
+        ],
+        "vector": [
+          "conflicting-retention",
+          "event-retention",
+          "injection-fixture",
+          "export-links",
+          "credential-rotation"
+        ],
+        "hybrid": [
+          "conflicting-retention",
+          "event-retention",
+          "injection-fixture",
+          "export-links",
+          "credential-rotation"
+        ]
+      },
+      "retrieval_misses": [],
+      "status": "evaluated",
+      "schema_valid": true,
+      "citation_integrity": true,
+      "correct_abstention": false,
+      "answer": {
+        "status": "answered",
+        "claims": [
+          {
+            "text": "The approved archive retention for events in the standard workspace is 30 days.",
+            "citations": [
+              {
+                "source_id": "b7435dad-ea2b-5f5e-961c-addb48705542",
+                "quote": "RelayNest retains events for 30 days in the standard workspace."
+              }
+            ]
+          },
+          {
+            "text": "Export retention is seven days.",
+            "citations": [
+              {
+                "source_id": "aff3155b-bf2b-561e-b513-63e34199dfad",
+                "quote": "The underlying export is retained for seven days."
+              }
+            ]
+          }
+        ],
+        "proposed_note": null
+      },
+      "elapsed_ms": 1208.01
+    },
+    {
+      "case_id": "archive-conflict-2",
+      "category": "insufficient_evidence",
+      "human_review": "pending",
+      "usage": {
+        "prompt_tokens": 502,
+        "completion_tokens": 151,
+        "total_tokens": 653,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "neurons": 7.332560062408447
+      },
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "conflicting-retention",
+          "webhook-timeouts",
+          "export-links",
+          "event-retention",
+          "audit-log"
+        ],
+        "vector": [
+          "conflicting-retention",
+          "event-retention",
+          "export-links",
+          "credential-expiry",
+          "export-limits"
+        ],
+        "hybrid": [
+          "conflicting-retention",
+          "event-retention",
+          "export-links",
+          "webhook-timeouts",
+          "audit-log"
+        ]
+      },
+      "retrieval_misses": [],
+      "status": "evaluated",
+      "schema_valid": true,
+      "citation_integrity": true,
+      "correct_abstention": false,
+      "answer": {
+        "status": "answered",
+        "claims": [
+          {
+            "text": "Archive retention periods are 30 days for events in the standard workspace and 7 days for exports.",
+            "citations": [
+              {
+                "source_id": "b7435dad-ea2b-5f5e-961c-addb48705542",
+                "quote": "RelayNest retains events for 30 days in the standard workspace."
+              },
+              {
+                "source_id": "aff3155b-bf2b-561e-b513-63e34199dfad",
+                "quote": "The underlying export is retained for seven days."
+              }
+            ]
+          }
+        ],
+        "proposed_note": null
+      },
+      "elapsed_ms": 1194.25
+    }
+  ],
+  "human_review": "pending",
+  "generation_attempts": 10,
+  "generation_completions": 10,
+  "latency": {
+    "n": 10,
+    "measurement": "Live embedding, three retrieval methods, and optional generation; includes failures",
+    "p50_ms": 2131.0499999999997,
+    "p95_ms": 4958.086499999999
+  },
+  "cost": null,
+  "environment": "Darwin/arm64",
+  "limitations": [
+    "Citation integrity does not prove semantic correctness.",
+    "Offline reports measure fixture retrieval only; generation integrity is covered by tests.",
+    "Control scenarios require separate real-database engineering tests.",
+    "Forty scenarios are a compact regression corpus, not a market benchmark."
+  ]
+}
