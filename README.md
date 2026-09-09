@@ -1,12 +1,16 @@
 # EvidenceDesk
 
-**Inspect the answer. Read the source. Approve the exact action.**
+**Find the answer. Verify the source.**
 
 EvidenceDesk is a support copilot for the fictional SaaS product RelayNest. It retrieves authorized product documentation, returns structured claims with original excerpts, and proposes an internal ticket note. Only an explicit human decision can save that note.
 
-![EvidenceDesk workspace with sources, an approved note, and audit timeline](docs/screenshots/workspace.png)
+[Live demo](https://evidencedesk-web.vercel.app) · [Evaluation record](https://evidencedesk-web.vercel.app/evaluations) · [API health](https://evidencedesk-api.vercel.app/health)
 
-This is a personal portfolio demonstration using original synthetic data. The local database-backed fixture flow is verified. **Live evaluation has not run; human answer review is pending.** Cloud/database and GitHub release status is recorded in [implementation status](docs/implementation.md).
+![Ticket-first sample cases](docs/screenshots/landing-1440.png)
+
+![Investigation, saved note, and audit timeline in the local fixture demo](docs/screenshots/workspace.png)
+
+This personal portfolio/reference project makes AI-assisted support decisions inspectable. The hosted production path uses real retrieval and Workers AI; explicit approval persists the exact reviewed note. **Human answer review remains pending.** The recorded ten-case live evaluation includes validation and abstention failures. Current resources and limitations are in [implementation status](docs/implementation.md).
 
 ## Try it locally
 
@@ -25,7 +29,7 @@ npm run api
 npm run dev
 ```
 
-Open http://localhost:3000. Start a sandbox session, choose a ticket, Analyze, inspect the supporting source, and approve or reject. Refreshing preserves the pending decision or saved note. Sessions expire after 24 hours. The simulated-mode label stays visible; arbitrary fixture questions are rejected. The SSO sample demonstrates insufficient evidence. Two analyses per minute, ten daily attempts per session, and forty per environment are the conservative defaults.
+Open http://localhost:3000. Choose a home-page scenario to open its isolated ticket directly, then select Analyze ticket, inspect evidence, and use Approve and add note or Reject proposal. Refreshing preserves the pending decision or saved note. Sessions expire after 24 hours. The simulated-mode label stays visible; arbitrary fixture questions are rejected. The SSO sample demonstrates insufficient evidence. Two analyses per minute, ten daily attempts per session, and forty per environment are the conservative defaults.
 
 The local environment helper writes ignored mode-0600 files and never prints generated credentials. It preserves existing files. Docker exposes PostgreSQL only on loopback port 54329. The local runtime helper separates the restricted API login from the migration owner. Hosted runtime must likewise use the restricted role described in [deployment](docs/deployment.md). The integration tests run API operations as that restricted role.
 
@@ -75,7 +79,7 @@ The [fixed dataset](apps/api/evals/cases.json) contains 40 grouped scenarios: 24
 
 Use a separate database named `evidencedesk_eval*`, set DATABASE_URL and MIGRATION_DATABASE_URL to it, then migrate and seed. Run `npm run eval:offline`. Never use a public production database for evaluations.
 
-For live checks, configure server-side Cloudflare credentials in development, run `uv run --project apps/api python -m evidencedesk.cli provider-smoke`, then `npm run db:ingest-live` and `npm run eval:smoke`. This starts with ten development cases and respects durable quotas. Larger runs are explicit and may require multiple days under default budgets. No live report or successful benchmark is prefilled. See the [method, denominators, and review rubric](docs/evaluation.md).
+For live checks, configure server-side Cloudflare credentials in development, run `uv run --project apps/api python -m evidencedesk.cli provider-smoke`, then `npm run db:ingest-live` and `npm run eval:smoke`. This starts with ten development cases and respects durable quotas. Larger runs are explicit and may require multiple days under default budgets. The checked-in live report is a genuine historical support-v1 run: ten generation attempts/completions, eight schema/citation-valid outputs, two validation failures, and two expected-abstention disagreements. Retrieval n=6 has Recall@5 1.0 for all methods; hybrid MRR is 1.0. These are not semantic-quality scores or support-v2 evaluation results. The revised live contract passed hosted activation checks; its full quality reevaluation awaits the daily evaluation budget. See the [method, denominators, and review rubric](docs/evaluation.md).
 
 ## What this project demonstrates
 
@@ -85,14 +89,15 @@ For live checks, configure server-side Cloudflare credentials in development, ru
 | Bounded RAG and provider integration | [workflow](apps/api/evidencedesk/workflow.py), [retrieval](apps/api/evidencedesk/retrieval.py), [Cloudflare adapter](apps/api/evidencedesk/providers.py) |
 | Authorization and idempotency | [approval transaction](apps/api/evidencedesk/actions.py), [SQL invariants](apps/api/migrations/003_approvals.sql), [race tests](apps/api/tests/test_actions.py) |
 | Evaluation discipline | [evaluation runner](apps/api/evidencedesk/evaluation.py), [dataset checks](apps/api/tests/test_evaluations.py) |
+| Cloud deployment and CI/CD | [GitHub Actions](.github/workflows/ci.yml), [Vercel/Supabase runbook](docs/deployment.md) |
 | Full-stack behavior | [BFF](apps/web/app/api/[...path]/route.ts), [browser tests](tests/browser/workspace.spec.ts) |
 
 ## Deployment and limitations
 
 Use two Vercel Hobby projects, Supabase Free PostgreSQL/pgvector, and Cloudflare Workers AI Free. No paid services, email, CRM writes, registration, training, or GPUs. [Deployment instructions](docs/deployment.md) explain environment pairing, least-privilege runtime credentials, pooler settings, provider smoke, and exact remaining setup. [Verified versions](docs/versions.md) record runtime differences and compatibility findings.
 
-Citation integrity is not semantic correctness. Prompt injection cannot grant tools, but a plausible inaccurate answer remains possible and requires review. Expired or changed tickets need regeneration. Interrupted analysis does not resume at an arbitrary graph node. Live failures never become simulated successes. A missing database leaves the static walkthrough available without faking a mutation. Free services have quotas and Supabase inactivity pauses. Cleanup is a bounded explicit command: `npm run db:cleanup`.
+Citation integrity is not semantic correctness. Prompt injection cannot grant tools, but a plausible inaccurate answer remains possible and requires review. Expired or changed tickets need regeneration. Interrupted analysis does not resume at an arbitrary graph node. Live failures never become simulated successes. A missing database leaves the case descriptions and evaluation record available and reports session creation as unavailable. The dev Preview is paired with its own API and awaits a separate free database; it never shares production state. Free services have quotas and Supabase inactivity pauses. Cleanup is a bounded explicit command: `npm run db:cleanup`.
 
-A [demo script](docs/demo-script.md) covers answer/source inspection, abstention, rejection, approval retries, and evaluation limitations. Screenshots are from the running local app; no recording is claimed. Potential future work includes stronger semantic review and real identity integration, beyond this deliberately small scope.
+A [demo script](docs/demo-script.md) covers answer/source inspection, abstention, rejection, approval retries, and evaluation limitations. Screenshots are from the running local fixture app, verified at 375, 768, and 1440 px; no recording is claimed. [Mobile investigation](docs/screenshots/workspace-375.png) · [Claim-associated evidence](docs/screenshots/evidence-1440.png). Potential future work includes stronger semantic review and real identity integration, beyond this deliberately small scope.
 
 Original code and synthetic data: MIT. See [third-party notices](THIRD_PARTY_NOTICES.md).

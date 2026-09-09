@@ -1,26 +1,31 @@
-# Separate release review
+# Final engineering review
 
-Performed after the six implementation slices, on the sole `fix/release-review` branch. This is an assistant self-review, not an independent human approval.
+This is a separate assistant self-review after live activation and the ticket-first redesign, not an independent human endorsement or an answer-quality review.
 
-## Findings fixed
+## Material findings addressed
 
-- Provider read timeouts did not bound an entire streaming response. HTTPX now runs inside an asyncio total deadline, with bounded response bytes and bounded overall analysis persistence. Tests cancel a slow response and reject an oversized response.
-- Live ingestion refused changed live chunks. Explicit live ingestion now invalidates their old embedding space, re-embeds only changed chunks, and fails retrieval until a compatible corpus exists. A real-PostgreSQL test verifies 24 initial embeddings, zero on an identical rerun, and one after a document change.
-- Source reads could show current text after a document changed. Run-scoped source reads now return the immutable retrieved snapshot and enforce run ownership.
-- Offline generation selection consulted expected labels. That invalid measurement path was removed. Offline reports measure retrieval only, leaving generation integrity to tests and live quality to explicit live runs. No resulting fixture score is advertised as semantic correctness.
-- Application logging now emits sanitized request-ID/status/duration records and correlates analysis traces. It does not log prompts, credentials, or provider payloads.
-- Session expiry is rechecked inside the approval transaction. Database-role tests now execute API operations through the restricted runtime login, with separate migration privileges.
-- A patch-pinned Python version failed on Vercel's bundled uv. The hosted build now selects supported Python 3.13; exact CI Python uses the official setup-python distribution.
-- Live production ingestion has an explicit environment guard and requires the exact provider smoke receipt.
+- Live JSON-schema responses could contradict their own status and claims. The application failed closed. The support-v2 contract uses JSON-object mode, explicit shapes/schema in the prompt, and the actual ticket question when optional input is blank. Strict schema and citation validators remain unchanged. Real hosted answer and abstention checks passed; the earlier evaluation failures are preserved.
+- The old workspace labeled configured live mode as “Live AI” before a successful run. The new label requires a completed live run and a recorded generation attempt. Configuration alone says “Ready for live analysis”; errors say “Unavailable”; retrieval-only abstention is labeled separately. A dedicated browser test checks the configuration-only state.
+- Evidence inspection disabled its opening button while loading, so native dialog close did not reliably restore focus. The source opener is now retained and focused on close; Escape/focus return and mobile source access are tested.
+- Public-schema migration metadata could inherit Supabase automatic API grants. Applied migrations 004/005 revoke metadata/schema access and default grants for the application migration role. Data API remains disabled and the runtime has no schema creation authority. Provider-managed administrator settings remain untouched.
+- Live reports were conditionally loaded from a working-directory path. The evaluation page now statically imports reviewed public reports and clearly separates historical live measurements from fixture measurements and current-contract activation checks.
 
-## Transaction and trust-boundary review
+## Trust and transaction boundaries
 
-Approval locks the existing scoped proposal, verifies its immutable content, rechecks session validity, checks pending state/expiry, locks the ticket, checks its expected version, inserts a unique note, increments ticket version and appends the final audit record in one transaction. Repeated applied approvals return the existing note. Reject-versus-approve races produce one final outcome. Competing proposals for one ticket make the later one stale. No provider call occurs in an open database transaction.
+Reviewed sessions, BFF forwarding, FastAPI routes, retrieval SQL, graph execution, persistence, approval transactions, migration grants, provider limits, evaluation separation, and client mutation triggers.
 
-The BFF admits fixed routes and validates same-origin writes and body sizes. Python validates the separate service credential and opaque session hash itself. Source reads use either active tenant-scoped documents or an owned run's stored excerpts. Model output cannot select tools, tenant, SQL, shell, URLs or the applied note content. All React content is rendered as text. Citation checks do not prove semantics; human review is still necessary.
+The browser holds an opaque HttpOnly/SameSite cookie; production cookies are Secure. The BFF checks exact Origin on writes, route allowlists, JSON content/body size, configured upstream origin, no redirects, and a bounded deadline. Service credentials remain server-only. Python independently verifies the service secret and hashed session token. Tenant identity is assigned by the server; ticket/run/proposal/source queries enforce ownership. SQL uses parameters and composite ownership foreign keys. React renders untrusted strings as text.
 
-## Evidence and limits
+Provider calls run outside database transactions. Retrieval filters tenant, active versions, and compatible embedding provenance before ranking. Run-scoped source reads use stored excerpts, so document edits do not silently change evidence. Schema and exact-quote checks validate integrity, not semantic truth. The model has no SQL, shell, identity, approval, or arbitrary tool authority.
 
-Final command outcomes are recorded in implementation.md. Real PostgreSQL tests cover concurrency, rejection, stale/expired/foreign proposals, privileged-field edits, source snapshots, forged sessions, quotas and fresh-process recovery. Browser tests cover the full fixture flow, security boundaries and three viewport sizes. Offline/live reports are distinct. npm audit, pip-audit, a tracked/history scan and Gitleaks are run before publication.
+Approval locks the scoped proposal, verifies its content hash and session validity, checks final state/expiry, locks the ticket, checks expected version, inserts a unique note, increments version, and appends the audit event in one transaction. Repeated approval returns the existing note. Concurrent approve/reject and competing proposals are exercised only in isolated database tests. Production checks use disposable sessions without destructive concurrency operations.
 
-GitHub Actions cannot yet execute because GitHub CLI authentication/push is blocked. Supabase/Cloudflare sign-in is verified, but database credentials and the Workers AI token remain pending. Hosted database mutation, live provider smoke, live quality, production branch integration and public GitHub release are not verified. No reviewer endorsements, performance improvements, coverage percentages or production reliability claims are made.
+Daily/minute counters are reserved before inference, including eligible retries. Response bytes, tokenizer inputs, candidate/context counts, graph steps, deadlines, and generation attempts remain bounded. Provider and quota errors do not switch to fixtures. Session-specific requests are no-store; no model call occurs on home-page load or session bootstrap. The UI only invokes analysis from the explicit Analyze ticket action.
+
+## Verification and remaining limits
+
+Local checks use native PostgreSQL 17.11/pgvector 0.8.6; CI uses its pinned real PostgreSQL container; hosted verification uses Supabase PostgreSQL 17.6/pgvector 0.8.2. The current suite has 43 Python/API/PostgreSQL tests and 13 browser tests. The full browser run passed in a separate disposable native database after repeated runs reached the existing local session-creation cap; no live quota counter was reset or bypassed. Browser coverage includes source focus return, responsive 375/768/1440 layouts, direct scenarios with zero automatic AI calls, approval/rejection, persistence, expired sessions, quota/provider errors, and no uncaught browser/hydration errors.
+
+Release gates also include lint/types/build, generated-contract drift, npm/pip audits, ignored/tracked-secret checks, publication-tree/history scans, browser-asset scans, actual deployment SHA checks, and the live BFF/browser flow. Final run/deployment IDs accompany the release delivery record.
+
+No unresolved critical implementation finding was identified in this review. Human semantic review remains pending; the historical live report contains real failures. Complete support-v2 evaluation awaits the daily evaluation budget. Hosted dev awaits the user-created isolated database and never uses production state. No uptime, enterprise certification, comprehensive security certification, or autonomous-agent claim is made.

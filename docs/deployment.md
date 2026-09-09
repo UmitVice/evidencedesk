@@ -1,45 +1,59 @@
-# Free deployment runbook
+# Deployment runbook
 
-## Resume prerequisites
+## Existing resources
 
-GitHub authentication and both project Git connections are now verified. The existing public repository has source history and passing CI at 7f01e15. Both Vercel Git links map master to Production. See the current resource checklist in implementation.md; the older deployment snapshot below remains historical.
+Reuse public GitHub `UmitVice/evidencedesk`, Vercel Hobby projects `evidencedesk-web` (root `apps/web`) and `evidencedesk-api` (root `apps/api`). Both have Git integration, master as Production, and Ohio `cle1` functions. Keep dev previews protected and paired only with the dev API.
 
-Do not construct secret files manually. Run `python3 scripts/enter-cloud-credentials.py` in a real terminal to supply an existing database password and Workers AI token using no-echo input. Empty input preserves existing values. The helper preserves local database settings and stores the database password in the ignored private directory until the actual project metadata is verified. It does not activate Live AI or point development at production.
+Production Supabase is the user-confirmed “UmitVice's Project,” reference `xjizbcmayuojydvwykfu`, organization `vgtbutgaevguceusemkc`, East US (Ohio). Keep its existing name, organization, and region. Do not recreate, reset, move, or purchase IPv4. PostgreSQL 17.6 / pgvector 0.8.2 were verified directly.
 
-The EvidenceDesk organization is currently empty. A separate Ohio project exists, but its intended ownership must be confirmed before reuse. Do not create a duplicate production database or mutate an unconfirmed project. The existing Workers AI token is Active and scoped to Read/Edit on the intended account; its value still needs secure entry.
+Production: https://evidencedesk-web.vercel.app and https://evidencedesk-api.vercel.app. Development: https://evidencedesk-web-git-dev-umitvices-projects.vercel.app and https://evidencedesk-api-git-dev-umitvices-projects.vercel.app. Dev is intentionally database-unavailable until its separate free project is created; never point it at production.
 
-## Historical deployment snapshot
+## Credentials and database
 
-Vercel CLI account `umitvice`, team `umitvices-projects`, billing plan `hobby` verified. Created `evidencedesk-api` (FastAPI, root `apps/api`) and `evidencedesk-web` (Next.js, root `apps/web`, Node 24.x). Public `UmitVice/evidencedesk` was created through the authenticated browser with no starter commit. GitHub CLI authentication and pushes remain blocked. Supabase and Cloudflare browser sign-in is verified; database credential submission and a scoped Workers AI token grant remain pending. No production database or live model execution is verified. API preview health was verified at https://evidencedesk-pw8wuatus-umitvices-projects.vercel.app/health with supported Vercel protection bypass. The initial web deployment is available at https://evidencedesk-web.vercel.app. Vercel promoted the first web deployment to Production despite the CLI preview target; this was a static/unconfigured deployment, not a database-backed release. Final verified Production targets: API https://evidencedesk-api.vercel.app (`dpl_HYYyCMCpRYYcKfu3FgEatpuqJRmp`), web https://evidencedesk-web.vercel.app (`dpl_4ncCVQZTE2RrYqeuTrKpN4U1gUWo`). Health and all pages return 200; session creation returns the expected database-unavailable 503, also verified in the browser. This is a published static walkthrough, not a working hosted AI sandbox. Distinct production/preview service credentials are configured; production web API_ORIGIN points only to the production API. Supabase organization EvidenceDesk is Free and initially has zero projects; the prepared evidencedesk-master form uses Paris with Data API and automatic exposure disabled. Creating databases awaits user credential submission.
+Existing production credentials are already entered and authenticated. Do not ask for them again without an actual authentication failure. The no-echo helper preserves existing values and local development settings:
 
-## Database
+```sh
+python3 scripts/enter-cloud-credentials.py
+# Only for the separate, newly created development database:
+python3 scripts/enter-cloud-credentials.py --database-environment development --database-only
+```
 
-Use Supabase Free only. Inspect free slots first: two project slots permit dev and master databases; one slot means local development and hosted production, with the remote development API intentionally unavailable. Do not delete existing projects or change billing.
+Never put credential values in command arguments, chat, logs, screenshots, source archives, or browser variables. Keep local files ignored and mode 0600. Database URI encoding is required for generated passwords.
 
-Create a project-specific database with a strong generated password through the secure dashboard flow. Copy the migration connection and transaction-pooler connection into secret storage, not chat or shell arguments. Run version queries (`SHOW server_version`; `SELECT extversion FROM pg_extension WHERE extname='vector'`) and record actual hosted values in versions.md. Run migrations once, then seed fixtures or explicit validated live ingestion using the separate migration connection. Never run migrations or seed from a web request, import or startup.
+Use the production session pooler `aws-0-us-east-2.pooler.supabase.com:5432` for local maintenance and transaction pooler port 6543 for serverless runtime. Runtime login is `evidencedesk_app`, a member of migration-created `evidencedesk_runtime`. It has no superuser/create-role/create-database/RLS-bypass authority, no corpus writes, and no proposal-content updates. Deploy only its runtime connection, never the administrator connection.
 
-Create a dedicated LOGIN role with a securely set password, grant membership in the migration-created `evidencedesk_runtime` group, and use that login in DATABASE_URL. Ensure the runtime role cannot create roles, databases, or schemas. Keep `evidence` outside exposed Data API schemas. Use the owner only for MIGRATION_DATABASE_URL in a trusted local maintenance environment; do not put migration credentials in Vercel runtime variables.
+The connector enforces `sslmode=verify-full` for Supabase hosts using the bundled official public CA. Prepared statements are disabled. TLS enforcement is enabled, Data API is disabled, and the application uses private schema `evidence`. Migrations 004/005 remove application metadata exposure and automatic API grants for new migration-owner objects. Provider-managed administrator defaults are not modified.
 
-Run `python -m evidencedesk.cli provider-smoke` in development to record a real provider contract receipt. Production live ingestion requires `python -m evidencedesk.cli ingest-live --allow-production --smoke-receipt reports/provider-smoke.json`. The command verifies the exact model/embedding manifest receipt, reuses unchanged embeddings, reserves budget before external calls, and persists each completed corpus update transactionally. Use production-specific database connections; never point production at the evaluation database. Production activation remains blocked pending provider smoke and database credentials.
+Run only pending checksum-verified migrations from trusted local maintenance configuration. Never migrate or seed during imports, startup, or web requests. Do not alter an applied migration, truncate production, or run integration tests against it.
 
-## Vercel environment pairing
+Production live ingestion requires a real provider receipt and explicit authorization flag:
 
-Set master as each project's Production Branch after connecting the GitHub repository. dev is Preview; task-branch previews, if enabled, may only use development resources. Do not create another permanent environment. Keep production and preview service credentials distinct.
+```sh
+uv run --project apps/api python -m evidencedesk.cli ingest-live --allow-production --smoke-receipt reports/provider-smoke.json
+```
 
-API server-only variables: DATABASE_URL (runtime transaction pooler), SERVICE_KEY (random 32+ characters), ENVIRONMENT (`production` or `development`), AI_MODE (`simulated` or `live`), AI_ENABLED, CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_API_TOKEN. Default fixture mode is explicit; there is no failure fallback from live to fixtures. No database yields a clear 503.
+All 24 production chunks have verified BGE cls embeddings. Repeat ingestion changes zero unchanged chunks. Model, dimension, pooling, preprocessing, corpus version, document version, and content hashes prevent fixture/live mixing.
 
-Web server-only variables: API_ORIGIN (matching environment's API origin, no path), SERVICE_KEY (same as matching API), APP_ORIGIN (exact frontend origin), and, only if needed, VERCEL_AUTOMATION_BYPASS_SECRET for the matching protected preview API. Never expose these through NEXT_PUBLIC variables. For dynamically named previews, omit APP_ORIGIN so the server uses VERCEL_URL; stable dev aliases require their exact origin. Vercel documents protection bypass at https://vercel.com/docs/deployment-protection/methods-to-bypass-deployment-protection/protection-bypass-automation.
+## Environment scopes
 
-Use `vercel link --project evidencedesk-api`, then `vercel deploy --target preview` from the repository root. Link the same root to evidencedesk-web and deploy again. Root-directory settings preserve the shared npm lockfile and app-local Python pyproject/uv.lock. Inspect actual build logs. Configure Git integration only to this repository. Do not deploy production until the release checks and critical review pass. Do not disable preview protection globally.
+API server-only: DATABASE_URL, SERVICE_KEY, ENVIRONMENT, AI_MODE, AI_ENABLED, CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_API_TOKEN. Production uses `production` / `live`; the missing dev database is a clear error, not a fallback. Administrative MIGRATION_DATABASE_URL is never deployed.
 
-Both apps build without cloud secrets. Ignore `.env*`, `.local`, virtual environments and caches on upload. The deployed Python app requires its tokenizer asset but not CLI corpora/evaluation data; verify bundle exclusions in the actual build. No migration credentials belong in a function bundle.
+Web server-only: API_ORIGIN, matching SERVICE_KEY, APP_ORIGIN. Production origins use the public aliases above. The dev branch uses its exact stable web alias for Origin checks. Task previews use their own VERCEL_URL. Protected preview API requests also use the existing VERCEL_AUTOMATION_BYPASS_SECRET, server-only. Never disable deployment protection globally or introduce NEXT_PUBLIC secrets.
 
-## Cloudflare
+After changing scoped values, redeploy. A previous READY result does not prove new environment settings are active. Verify actual Git SHA, aliases, function region, BFF session creation, real retrieval/generation, citations, note decisions, and persistence. Keep production and preview service credentials distinct.
 
-Use the existing Free Workers AI account and a narrowly scoped Workers AI API token, stored server-only. No Worker deployment or paid AI Gateway is needed. Verify the candidate model with a real 10-case capped smoke before claiming live support. BGE small uses cls pooling consistently for documents and queries. Live embeddings are 384-dimensional and input is capped at 512 actual tokenizer tokens. The generation model candidate and exact JSON REST contract are in providers.py; account availability remains unverified.
+The Python deployment includes tokenizer and public CA assets; excludes private configuration, virtual environments, test corpora, and migration tooling. The web build needs only reviewed public report data, not cloud credentials. Both apps build without production secrets.
 
-The account's shared free allowance is 10,000 Neurons/day, independent of app request counters. Stop on provider quota errors. Never add billing or claim token usage is an exact neuron balance. Use AI_ENABLED=false as the kill switch. Periodically run the bounded cleanup command; do not send quota-avoidance keepalive traffic.
+## Workers AI and quotas
 
-## Release
+Use the existing free Cloudflare account and scoped Workers AI Read/Edit token. No Worker, paid AI Gateway, second provider, local LLM, or GPU is required. Models: `@cf/baai/bge-small-en-v1.5` (384 dimensions, cls, actual tokenizer cap 512) and `@cf/meta/llama-3.1-8b-instruct-fast`.
 
-Run README checks, inspect staged files and history for secrets, push each validated branch and verify CI. Fast-forward master from validated dev, publish tag v0.1.0 only after release gates, deploy paired production revisions, and verify actual URLs and database behavior. Return to clean dev. If authentication prevents remote operations, preserve local commits and report GitHub CI/release as blocked.
+The support-v2 generation contract uses JSON-object mode and the schema in the system prompt. Always retain strict Pydantic validation, exact quote/source authorization, immutable proposals, bounded deadlines, and no live-to-fixture fallback. Real request failures remain visible.
+
+The account's shared free allowance is 10,000 Neurons/day. Application limits are two analyses/minute, ten daily attempts/session, forty/environment by default. Maintenance and retries reserve budget before calls. Stop on quota errors; do not reset counters or change identities to extend live evaluation. AI_ENABLED=false is the kill switch. Cleanup is a bounded explicit maintenance command, not keepalive traffic.
+
+## Development handoff and release
+
+Free capacity was available for a separate Ohio `evidencedesk-dev` project in organization `dzjfzmicvypgsxjmldlw`. The browser form has Data API and automatic exposure off. Its new password must be submitted by the user, then securely entered through the development-only helper above. Finish its own migrations, restricted login, corpus, Preview variables, redeployment, and functional verification after that handoff. Never reuse the production password/DSN in Preview.
+
+For each change: one branch from validated dev, local checks, secret scan, push, successful remote CI, integrate dev, delete the branch. Verify dev CI/deployment, fast-forward master, verify master CI and both production deployments, and run bounded disposable-session functional checks. Publish the verified release tag only afterward; finish on clean dev with only dev/master branches. Do not move existing tags or delete provider deployment history.

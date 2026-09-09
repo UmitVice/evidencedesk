@@ -1,11 +1,11 @@
 # Five-minute demo
 
-1. Open the workspace and read the active mode label. Start an isolated session.
-2. Select the webhook ticket and Analyze. Inspect the cited source in the drawer.
-3. Refresh while the note is pending. Confirm the exact note and fingerprint persist.
-4. Reject the note. Show that the ticket version and saved-note list did not change.
-5. Analyze again, approve the new note, and refresh. Show the saved note and audit timeline. The concurrency test demonstrates repeated approval returning the same note ID.
-6. After the minute quota window permits, choose the SSO sample question. Show insufficient evidence and no proposed action.
-7. Open Evaluations. Explain deterministic retrieval fixtures, the separate database safety tests, and pending live/human quality review.
+1. Open the home page and choose **Investigate a sample ticket** or one of the three cases. Its ticket opens directly; no model runs yet.
+2. Select **Analyze ticket**. Read the result's actual mode and each claim. Open **Inspect evidence** to compare the claim, exact quote, full source passage, version, and status. Escape returns focus to the source button.
+3. Review the exact **Proposed internal note**. Refresh while pending to demonstrate persistence. The answer is not a saved note.
+4. Choose **Reject proposal**. The ticket version and saved-note list remain unchanged; the audit records rejection.
+5. Analyze again within the quota, then **Approve and add note**. Refresh to show the exact persisted note and audit event. The BFF/integration checks separately verify repeated approval creates no duplicate.
+6. In simulated mode choose the supplied SSO question. In live mode ask a question outside RelayNest documentation; missing evidence should abstain without a proposal, and invalid model output must fail safely. Never promise perfect abstention.
+7. Open Evaluations. Distinguish the historical support-v1 live run, support-v2 activation checks, deterministic fixture retrieval, separate database safety tests, and pending human quality review.
 
-Screenshots in docs/screenshots were captured from the running local application. No video recording is claimed. Never substitute a static walkthrough for a successful database write.
+Screenshots are from the running local fixture application, labeled as such. They are not fabricated live results or a video recording. Hosted dev requires its separate database setup; production uses the confirmed Ohio database.
