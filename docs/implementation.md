@@ -18,6 +18,6 @@ External blockers: GitHub CLI authorization requested; Supabase and Cloudflare b
 
 Checks: frontend lint/typecheck/build, Ruff, Pyright, 1 pytest, npm audit, real PostgreSQL extension/version queries.
 
-Milestone 2: 24 original documents, two tenants, idempotent fixture ingestion, opaque expiring sessions, bounded session creation and source ownership. Six real-database/API tests passed.
+Milestone 2: 24 original documents, two tenants, idempotent fixture ingestion, opaque expiring sessions, bounded session creation and source ownership. The first typecheck found Psycopg typing issues; the merge was premature. Corrected immediately on the sole active branch. Ruff/Pyright now pass; all 6 tests passed against real PostgreSQL.
 
 Next: retrieval, Cloudflare adapter, bounded graph. Remote CI remains unverified until GitHub authorization.

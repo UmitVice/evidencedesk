@@ -16,7 +16,7 @@ def connection(*, migration: bool = False) -> Iterator[psycopg.Connection[dict[s
     if not url:
         raise DomainError("database_unavailable", "The sandbox database is not configured.", 503)
     try:
-        with psycopg.connect(
+        with psycopg.Connection[dict[str, Any]].connect(
             url,
             row_factory=dict_row,
             prepare_threshold=None,

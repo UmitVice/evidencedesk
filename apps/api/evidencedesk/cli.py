@@ -1,6 +1,7 @@
 import argparse
 import hashlib
 from pathlib import Path
+from typing import LiteralString, cast
 
 from evidencedesk.db import connection
 from evidencedesk.ingest import seed
@@ -23,7 +24,7 @@ def migrate() -> None:
                 if row["hash"] != digest:
                     raise ValueError("Applied migration checksum changed")
                 continue
-            conn.execute(text)
+            conn.execute(cast(LiteralString, text))
             conn.execute(
                 "INSERT INTO public.evidencedesk_migrations VALUES(%s,%s)", (path.name, digest)
             )
