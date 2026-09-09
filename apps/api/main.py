@@ -12,6 +12,14 @@ from evidencedesk.config import settings
 from evidencedesk.db import connection
 from evidencedesk.errors import DomainError, missing
 from evidencedesk.models import AnalyzeRequest, DecisionRequest
+from evidencedesk.responses import (
+    DecisionResponse,
+    RunResponse,
+    SessionResponse,
+    SourceResponse,
+    TicketResponse,
+    TicketsResponse,
+)
 from evidencedesk.sessions import create_session, get_ticket, require_service, session
 from evidencedesk.workflow import analyze, read_run
 
@@ -96,12 +104,12 @@ def health() -> dict[str, str]:
     return {"status": "ok", "service": "evidencedesk-api", "mode": settings().ai_mode}
 
 
-@app.post("/sessions", dependencies=[Depends(require_service)])
+@app.post("/sessions", dependencies=[Depends(require_service)], response_model=SessionResponse)
 def start_session() -> dict[str, Any]:
     return create_session()
 
 
-@app.get("/tickets")
+@app.get("/tickets", response_model=TicketsResponse)
 def tickets(owner: Owner) -> dict[str, Any]:
     with connection() as conn:
         rows = conn.execute(
@@ -112,12 +120,12 @@ def tickets(owner: Owner) -> dict[str, Any]:
     return {"tickets": rows, "mode": settings().ai_mode}
 
 
-@app.get("/tickets/{ticket_id}")
+@app.get("/tickets/{ticket_id}", response_model=TicketResponse)
 def ticket(ticket_id: UUID, owner: Owner) -> dict[str, Any]:
     return {**get_ticket(owner, str(ticket_id)), **ticket_history(owner, str(ticket_id))}
 
 
-@app.get("/sources/{source_id}")
+@app.get("/sources/{source_id}", response_model=SourceResponse)
 def source(source_id: UUID, owner: Owner) -> dict[str, Any]:
     with connection() as conn:
         row = conn.execute(
@@ -131,16 +139,16 @@ def source(source_id: UUID, owner: Owner) -> dict[str, Any]:
     return row
 
 
-@app.post("/tickets/{ticket_id}/analyze")
+@app.post("/tickets/{ticket_id}/analyze", response_model=RunResponse)
 def analyze_ticket(ticket_id: UUID, body: AnalyzeRequest, owner: Owner) -> dict[str, Any]:
     return analyze(owner, str(ticket_id), body.question)
 
 
-@app.get("/runs/{run_id}")
+@app.get("/runs/{run_id}", response_model=RunResponse)
 def run(run_id: UUID, owner: Owner) -> dict[str, Any]:
     return read_run(owner, str(run_id))
 
 
-@app.post("/proposals/{proposal_id}/decision")
+@app.post("/proposals/{proposal_id}/decision", response_model=DecisionResponse)
 def decide(proposal_id: UUID, body: DecisionRequest, owner: Owner) -> dict[str, Any]:
     return apply_approved_note(owner, str(proposal_id), body.decision)

@@ -58,13 +58,13 @@ class FixtureProvider:
         source = next((row for row in evidence if row["source_id"] == target), None)
         if not source or question == "Can RelayNest configure SSO?":
             return Answer(status="insufficient_evidence", claims=[]).model_dump_json(), None
-        quote = source["body"].split(". ")[0] + "."
+        quote = ". ".join(source["body"].split(". ")[:3]).rstrip(".") + "."
         answer = Answer(
             status="answered",
             claims=[
                 Claim(text=quote, citations=[Citation(source_id=str(source["id"]), quote=quote)])
             ],
-            proposed_note="Reviewed the product guidance with the customer: " + quote,
+            proposed_note="Suggested guidance for review: " + quote,
         )
         return answer.model_dump_json(), None
 

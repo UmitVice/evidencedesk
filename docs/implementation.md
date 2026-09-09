@@ -9,10 +9,10 @@ Specification read in full on 2026-09-09. Empty designated repository inspected;
 - [x] 3. Retrieval, providers and bounded analysis graph
 - [x] 4. Immutable transactional approvals and race tests
 - [x] 5. Evaluations, durable quotas and reports
-- [ ] 6. UI, browser tests and available free deployment
+- [x] 6. UI, browser tests and available free deployment
 - [ ] 7. Critical review, final checks, screenshots and validated release
 
-Current branch: feat/evaluations. Last verified commit: be99981; current slice checks passed before commit.
+Current branch: feat/workspace-release. Last verified commit: 2455de7; current slice checks passed before commit.
 
 External blockers: GitHub CLI authorization requested; Supabase and Cloudflare browser sessions require sign-in. Vercel CLI is authenticated as umitvice. No cloud secrets were found in the task environment. Docker is absent; installing native PostgreSQL/pgvector for equivalent real-database local verification. Compose remains the documented portable path.
 
@@ -26,4 +26,6 @@ Milestone 4: 19 tests passed with real PostgreSQL. Eight concurrent approvals re
 
 Milestone 5: 23 tests passed, including atomic quotas and embedding-not-called after exhaustion. Offline report executed against an isolated evaluation database; 40 selected scenarios with 30 language evaluations and 10 explicit engineering-test references. Frontend lint/typecheck/build passed.
 
-Next: workspace UI, BFF, browser tests, deployment. Remote CI remains unverified until GitHub authorization.
+Milestone 6: all three pages, generated OpenAPI/TypeScript contract, secure BFF and screenshots implemented. Frontend lint/typecheck/build, 23 API/database tests and 6 browser tests passed. Two Vercel Hobby projects created; preview deployment verification pending. GitHub repository exists but push authentication is blocked.
+
+Next: separate critical review, final evidence, available deployment, release gates. Remote CI remains unverified until GitHub authorization.
