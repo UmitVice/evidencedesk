@@ -1,4 +1,8 @@
+import json
+import subprocess
+import sys
 from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
 
 import psycopg
 import pytest
@@ -63,17 +67,31 @@ def test_stale_and_foreign_and_edited(client, owner):
 
 def test_immutable_database_guard(client, owner):
     action, _ = proposal(client, owner)
-    with pytest.raises(psycopg.errors.RaiseException), connection() as conn:
+    with pytest.raises(psycopg.errors.RaiseException), connection(migration=True) as conn:
         conn.execute("UPDATE evidence.proposals SET content='edited' WHERE id=%s", (action["id"],))
 
 
 def test_pending_survives_application_restart(client, owner):
     action, ticket = proposal(client, owner)
-    with TestClient(app) as restarted:
-        read = restarted.get(f"/tickets/{ticket}", headers=dict(client.headers)).json()
-        run = restarted.get(f"/runs/{read['runs'][0]['id']}", headers=dict(client.headers)).json()
-        assert run["proposal"]["id"] == action["id"]
-        assert run["proposal"]["status"] == "pending"
+    script = """
+import json, sys
+from fastapi.testclient import TestClient
+from main import app
+payload = json.load(sys.stdin)
+with TestClient(app) as client:
+    detail = client.get('/tickets/' + payload['ticket'], headers=payload['headers']).json()
+    run = client.get('/runs/' + detail['runs'][0]['id'], headers=payload['headers']).json()
+    print(json.dumps({'id': run['proposal']['id'], 'status': run['proposal']['status']}))
+"""
+    fresh = subprocess.run(
+        [sys.executable, "-c", script],
+        input=json.dumps({"ticket": ticket, "headers": dict(client.headers)}),
+        text=True,
+        capture_output=True,
+        cwd=Path(__file__).resolve().parents[1],
+        check=True,
+    )
+    assert json.loads(fresh.stdout) == {"id": action["id"], "status": "pending"}
 
 
 def test_expired_proposal(client, owner):
@@ -97,3 +115,53 @@ def test_expired_proposal(client, owner):
         ).fetchone()
     result = client.post(f"/proposals/{row['id']}/decision", json={"decision": "approve"})
     assert result.json()["error"]["code"] == "proposal_expired"
+
+
+def test_approve_reject_race_has_one_final_state(client, owner):
+    action, ticket = proposal(client, owner)
+
+    def decide(decision):
+        with TestClient(app) as other:
+            return other.post(
+                f"/proposals/{action['id']}/decision",
+                headers=dict(client.headers),
+                json={"decision": decision},
+            )
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        responses = list(pool.map(decide, ["approve", "reject"]))
+    assert sorted(r.status_code for r in responses) == [200, 409]
+    history = client.get(f"/tickets/{ticket}").json()
+    final = history["audit"][-1]["event"]
+    assert len(history["notes"]) == (1 if final == "applied" else 0)
+    assert len(history["audit"]) == 2
+
+
+def test_competing_proposals_make_second_stale(client, owner):
+    first, ticket = proposal(client, owner)
+    second, _ = proposal(client, owner)
+    assert (
+        client.post(f"/proposals/{first['id']}/decision", json={"decision": "approve"}).status_code
+        == 200
+    )
+    result = client.post(f"/proposals/{second['id']}/decision", json={"decision": "approve"})
+    assert result.json()["error"]["code"] == "proposal_stale"
+    assert len(client.get(f"/tickets/{ticket}").json()["notes"]) == 1
+
+
+def test_runtime_role_cannot_edit_proposals_or_corpus(client, owner):
+    action, _ = proposal(client, owner)
+    for statement in [
+        "UPDATE evidence.documents SET title='tampered'",
+        "UPDATE evidence.proposals SET content='tampered'",
+    ]:
+        with pytest.raises(psycopg.errors.InsufficientPrivilege), connection() as conn:
+            conn.execute("SET LOCAL ROLE evidencedesk_runtime")
+            from psycopg import sql
+
+            conn.execute(sql.SQL(statement))
+    with connection() as conn:
+        conn.execute("SET LOCAL ROLE evidencedesk_runtime")
+        assert conn.execute(
+            "SELECT id FROM evidence.proposals WHERE id=%s", (action["id"],)
+        ).fetchone()

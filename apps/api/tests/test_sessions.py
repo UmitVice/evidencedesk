@@ -46,3 +46,12 @@ def test_ingestion_is_idempotent(db):
 
 def test_body_limit(client):
     assert client.post("/sessions", content="x" * 4097).status_code == 413
+
+
+def test_runtime_database_and_public_privileges(db):
+    with connection() as conn:
+        assert not conn.execute(
+            "SELECT has_schema_privilege('public','evidence','USAGE') ok"
+        ).fetchone()["ok"]
+        conn.execute("SET LOCAL ROLE evidencedesk_runtime")
+        assert conn.execute("SELECT count(*) n FROM evidence.documents").fetchone()["n"] == 24

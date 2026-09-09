@@ -104,7 +104,9 @@ export default function Workspace() {
     setTicket(await api<TicketResponse>(`tickets/${ticket.id}`));
   }
   async function inspect(id: string) {
-    const data = await api<SourceResponse>(`sources/${id}`);
+    const data = await api<SourceResponse>(
+      run ? `runs/${run.id}/sources/${id}` : `sources/${id}`,
+    );
     setSource(data);
     dialog.current?.showModal();
   }

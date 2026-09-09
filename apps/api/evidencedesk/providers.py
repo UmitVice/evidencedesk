@@ -1,3 +1,4 @@
+import asyncio
 import json
 import math
 from typing import Any, Protocol
@@ -72,7 +73,7 @@ class FixtureProvider:
 class CloudflareProvider:
     manifest = LIVE_MANIFEST
 
-    def __init__(self, transport: httpx.BaseTransport | None = None):
+    def __init__(self, transport: httpx.MockTransport | None = None):
         self.transport = transport
 
     def call(self, model: str, payload: dict[str, Any]) -> dict[str, Any]:
@@ -87,32 +88,51 @@ class CloudflareProvider:
                 "provider_unavailable", "Live AI account configuration is invalid.", 503
             )
         try:
-            with httpx.Client(
-                timeout=httpx.Timeout(12, connect=3), transport=self.transport
-            ) as client:
-                response = client.post(
-                    f"https://api.cloudflare.com/client/v4/accounts/{account}/ai/run/{model}",
-                    headers={
-                        "Authorization": "Bearer " + config.cloudflare_api_token.get_secret_value()
-                    },
-                    json=payload,
-                )
-            if response.status_code == 429:
+            status, data = asyncio.run(self._request(model, payload))
+            if status == 429:
                 raise DomainError("provider_quota", "Live AI quota is exhausted.", 429)
-            if response.status_code >= 500:
+            if status >= 500:
                 raise DomainError("provider_transient", "Live AI is temporarily unavailable.", 503)
-            if response.status_code != 200:
+            if status != 200:
                 raise DomainError("provider_unavailable", "Live AI request was refused.", 503)
-            data = response.json()
-            if not data.get("success") or not isinstance(data.get("result"), dict):
+            if (
+                not isinstance(data, dict)
+                or not data.get("success")
+                or not isinstance(data.get("result"), dict)
+            ):
                 raise ValueError("Invalid provider envelope")
             return data["result"]
-        except httpx.TimeoutException as exc:
+        except (TimeoutError, httpx.TimeoutException) as exc:
             raise DomainError("provider_timeout", "Live AI timed out.", 504) from exc
         except (ValueError, httpx.HTTPError) as exc:
             raise DomainError(
                 "provider_invalid", "Live AI returned an unusable response.", 502
             ) from exc
+
+    async def _request(self, model: str, payload: dict[str, Any]) -> tuple[int, Any]:
+        config = settings()
+        async with (
+            asyncio.timeout(12),
+            httpx.AsyncClient(
+                timeout=httpx.Timeout(12, connect=3), transport=self.transport
+            ) as client,
+        ):
+            async with client.stream(
+                "POST",
+                f"https://api.cloudflare.com/client/v4/accounts/{config.cloudflare_account_id}/ai/run/{model}",
+                headers={
+                    "Authorization": "Bearer " + config.cloudflare_api_token.get_secret_value()
+                },
+                json=payload,
+            ) as response:
+                if response.status_code != 200:
+                    return response.status_code, {}
+                body = bytearray()
+                async for chunk in response.aiter_bytes():
+                    body.extend(chunk)
+                    if len(body) > 524288:
+                        raise ValueError("Provider response exceeds size limit")
+                return response.status_code, json.loads(body)
 
     def embed(self, texts: list[str]) -> list[list[float]]:
         if not 1 <= len(texts) <= 16:

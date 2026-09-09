@@ -10,12 +10,18 @@ from evidencedesk.quotas import reserve
 from evidencedesk.tokenization import check_embedding_input
 
 
-def ingest_live(max_batches: int = 2) -> int:
+def ingest_live(
+    max_batches: int = 2, *, allow_production: bool = False, smoke_receipt: Path | None = None
+) -> int:
     if settings().environment == "production":
-        raise DomainError(
-            "development_only", "Live ingestion must be validated in development first."
-        )
-    seed()
+        if not allow_production or smoke_receipt is None:
+            raise DomainError(
+                "production_guard", "Production ingestion needs an explicit flag and smoke receipt."
+            )
+        from evidencedesk.smoke import require_smoke
+
+        require_smoke(smoke_receipt)
+    seed(for_live=True)
     with connection(migration=True) as conn:
         pending = conn.execute(
             "SELECT id,heading,body,content_hash FROM evidence.chunks "

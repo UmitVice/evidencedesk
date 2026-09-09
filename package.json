@@ -24,7 +24,8 @@
     "eval:offline": "uv run --project apps/api python -m evidencedesk.evaluation --mode offline --split all --limit 40",
     "eval:smoke": "uv run --project apps/api python -m evidencedesk.evaluation --mode live --split development --limit 10",
     "db:cleanup": "uv run --project apps/api python -m evidencedesk.cli cleanup",
-    "db:ingest-live": "uv run --project apps/api python -m evidencedesk.cli ingest-live"
+    "db:ingest-live": "uv run --project apps/api python -m evidencedesk.cli ingest-live",
+    "db:runtime": "uv run --project apps/api python scripts/local-runtime-role.py"
   },
   "devDependencies": {
     "@playwright/test": "1.63.0",

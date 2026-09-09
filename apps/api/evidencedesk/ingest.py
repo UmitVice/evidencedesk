@@ -72,7 +72,7 @@ def chunks(body: str) -> list[tuple[str, str]]:
     return result
 
 
-def seed() -> int:
+def seed(*, for_live: bool = False) -> int:
     count = 0
     with connection(migration=True) as conn:
         conn.execute("SELECT pg_advisory_xact_lock(1002)")
@@ -106,7 +106,7 @@ def seed() -> int:
                 content_hash = digest(heading + "\n" + text)
                 if existing and existing["content_hash"] == content_hash:
                     continue
-                if existing and existing["embedding_manifest"] != FIXTURE_MANIFEST:
+                if existing and existing["embedding_manifest"] != FIXTURE_MANIFEST and not for_live:
                     raise ValueError("Live corpus changed: use explicit live ingestion")
                 conn.execute(
                     "INSERT INTO evidence.chunks(id,document_id,tenant,heading,body,"
@@ -114,7 +114,7 @@ def seed() -> int:
                     "VALUES(%s,%s,%s,%s,%s,%s,%s::vector,%s::jsonb) "
                     "ON CONFLICT(id) DO UPDATE SET heading=EXCLUDED.heading,"
                     "body=EXCLUDED.body,content_hash=EXCLUDED.content_hash,"
-                    "embedding=EXCLUDED.embedding",
+                    "embedding=EXCLUDED.embedding,embedding_manifest=EXCLUDED.embedding_manifest",
                     (
                         chunk_id,
                         doc_id,

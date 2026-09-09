@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 const cookieName = "evidencedesk_session";
 const uuid = "[0-9a-f-]{36}";
 const routes = new Map<string, RegExp[]>([
@@ -11,6 +12,7 @@ const routes = new Map<string, RegExp[]>([
       /^tickets$/,
       new RegExp(`^tickets/${uuid}$`),
       new RegExp(`^runs/${uuid}$`),
+      new RegExp(`^runs/${uuid}/sources/${uuid}$`),
       new RegExp(`^sources/${uuid}$`),
     ],
   ],

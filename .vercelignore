@@ -7,3 +7,9 @@
 **/.pytest_cache/
 test-results/
 playwright-report/
+apps/api/data/
+apps/api/evals/
+apps/api/tests/
+apps/api/migrations/
+docs/
+tests/

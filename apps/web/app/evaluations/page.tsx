@@ -1,5 +1,6 @@
-import report from "../../../../reports/latest-offline.json";
+import { currentReport } from "../../lib/evaluation-report";
 export default function Evaluations() {
+  const report = currentReport();
   return (
     <>
       <section className="hero">
@@ -10,11 +11,16 @@ export default function Evaluations() {
           What we haven’t.
         </h1>
         <p className="muted">
-          A compact regression corpus, not a market benchmark. Retrieval
-          measurements below use deterministic test vectors. They do not measure
-          live embedding or answer quality.
+          A compact regression corpus, not a market benchmark.{" "}
+          {report.mode === "live"
+            ? "These measurements use the configured live provider. Human answer review remains pending."
+            : "These measurements use deterministic test vectors and do not measure live embedding or answer quality."}
         </p>
-        <span className="badge">Live evaluation not run</span>
+        <span className="badge">
+          {report.mode === "live"
+            ? "Live evaluation available — human review pending"
+            : "Live evaluation not run"}
+        </span>
       </section>
       <section className="card">
         <p className="eyebrow">{report.label}</p>
@@ -87,7 +93,7 @@ export default function Evaluations() {
             .filter(
               (x) =>
                 x.status === "failed" ||
-                ("correct_abstention" in x && !x.correct_abstention),
+                ("correct_abstention" in x && x.correct_abstention === false),
             )
             .slice(0, 3)
             .map((x) => (

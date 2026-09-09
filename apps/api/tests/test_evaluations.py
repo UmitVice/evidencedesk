@@ -60,3 +60,38 @@ def test_quota_blocks_before_embedding(client, owner, monkeypatch):
         assert client.post(f"/tickets/{ticket}/analyze", json={}).status_code == 200
     assert client.post(f"/tickets/{ticket}/analyze", json={}).status_code == 429
     assert len(called) == 2
+
+
+@pytest.mark.integration
+def test_live_ingestion_only_reembeds_changed_chunks(db, monkeypatch, tmp_path):
+    import shutil
+
+    import evidencedesk.ingest as ingest
+    from evidencedesk.live_ingest import ingest_live
+    from evidencedesk.providers import CloudflareProvider
+
+    calls = []
+    for path in ingest.DATA.glob("*.md"):
+        shutil.copy(path, tmp_path / path.name)
+    monkeypatch.setattr(ingest, "DATA", tmp_path)
+
+    def embed(self, texts):
+        calls.append(len(texts))
+        return [ingest.fixture_vector(text) for text in texts]
+
+    monkeypatch.setattr(CloudflareProvider, "embed", embed)
+    try:
+        assert ingest_live() == 24
+        assert ingest_live() == 0
+        path = tmp_path / "01-webhook-retries.md"
+        path.write_text(path.read_text() + "\n\nA changed documented recovery detail.\n")
+        assert ingest_live() == 1
+        assert calls == [16, 8, 1]
+    finally:
+        from psycopg.types.json import Jsonb
+
+        with connection(migration=True) as conn:
+            conn.execute(
+                "UPDATE evidence.chunks SET embedding_manifest=%s",
+                (Jsonb(ingest.FIXTURE_MANIFEST),),
+            )

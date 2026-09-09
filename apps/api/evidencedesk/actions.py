@@ -48,6 +48,12 @@ def apply_approved_note(
         ).fetchone()
         if not proposal:
             raise missing()
+        active_session = conn.execute(
+            "SELECT id FROM evidence.sessions WHERE id=%s AND tenant=%s AND expires_at>now()",
+            (owner["id"], owner["tenant"]),
+        ).fetchone()
+        if not active_session:
+            raise DomainError("session_expired", "Start a new sandbox session.", 401)
         if digest(proposal["content"]) != proposal["content_hash"]:
             raise DomainError(
                 "proposal_edited", "Proposal integrity failed. Regenerate the analysis.", 409

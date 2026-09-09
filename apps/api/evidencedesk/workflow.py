@@ -10,7 +10,7 @@ from evidencedesk.config import settings
 from evidencedesk.db import connection
 from evidencedesk.errors import DomainError, missing
 from evidencedesk.models import Answer
-from evidencedesk.providers import PROMPT_VERSION, Provider, provider
+from evidencedesk.providers import GENERATION_MODEL, PROMPT_VERSION, Provider, provider
 from evidencedesk.quotas import reserve
 from evidencedesk.retrieval import search_knowledge
 from evidencedesk.sessions import get_ticket
@@ -60,7 +60,12 @@ def read_run(owner: dict[str, Any], run_id: str) -> dict[str, Any]:
 
 
 def analyze(
-    owner: dict[str, Any], ticket_id: str, question: str, adapter: Provider | None = None
+    owner: dict[str, Any],
+    ticket_id: str,
+    question: str,
+    adapter: Provider | None = None,
+    *,
+    request_id: str | None = None,
 ) -> dict[str, Any]:
     config, started = settings(), time.monotonic()
     if not config.ai_enabled:
@@ -82,7 +87,14 @@ def analyze(
         ).fetchone()
         assert row
         run_id = row["id"]
-    trace: dict[str, Any] = {"prompt_version": PROMPT_VERSION, "attempts": 0, "usage": None}
+    trace: dict[str, Any] = {
+        "prompt_version": PROMPT_VERSION,
+        "request_id": request_id,
+        "attempts": 0,
+        "usage": None,
+        "embedding_manifest": adapter.manifest,
+        "generation_model": GENERATION_MODEL if config.ai_mode == "live" else "fixture-v1",
+    }
 
     def load(_: State) -> State:
         return {"ticket": ticket}
@@ -122,6 +134,8 @@ def analyze(
 
     def persist(state: State) -> State:
         assert "result" in state and "evidence" in state
+        if time.monotonic() - started > 40:
+            raise DomainError("request_timeout", "Analysis deadline reached.", 504)
         trace["elapsed_ms"] = round((time.monotonic() - started) * 1000)
         with connection() as conn:
             conn.execute(

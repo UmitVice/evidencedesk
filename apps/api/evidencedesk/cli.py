@@ -33,7 +33,11 @@ def migrate() -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="EvidenceDesk maintenance (never runs on startup)")
-    parser.add_argument("command", choices=["migrate", "seed", "ingest-live", "cleanup"])
+    parser.add_argument(
+        "command", choices=["migrate", "seed", "ingest-live", "provider-smoke", "cleanup"]
+    )
+    parser.add_argument("--allow-production", action="store_true")
+    parser.add_argument("--smoke-receipt", type=Path)
     args = parser.parse_args()
     if args.command == "migrate":
         migrate()
@@ -42,7 +46,15 @@ def main() -> None:
     elif args.command == "ingest-live":
         from evidencedesk.live_ingest import ingest_live
 
-        print("Live chunks embedded:", ingest_live())
+        print(
+            "Live chunks embedded:",
+            ingest_live(allow_production=args.allow_production, smoke_receipt=args.smoke_receipt),
+        )
+    elif args.command == "provider-smoke":
+        from evidencedesk.smoke import provider_smoke
+
+        provider_smoke()
+        print("Provider smoke receipt saved; human review pending.")
     else:
         with connection(migration=True) as conn:
             rows = conn.execute(

@@ -79,7 +79,12 @@ def run_evaluation(mode: str, split: str, limit: int) -> dict[str, Any]:
             vector = adapter.embed([case["question"]])[0]
             found = {
                 method: search_knowledge(
-                    "harbor", case["question"], vector, adapter.manifest, method, 5
+                    "harbor",
+                    case["question"],
+                    vector,
+                    adapter.manifest,
+                    method,
+                    config.candidate_limit,
                 )
                 for method in modes
             }
@@ -87,21 +92,21 @@ def run_evaluation(mode: str, split: str, limit: int) -> dict[str, Any]:
                 labels.append(case["relevant_documents"])
                 for method in modes:
                     rankings[method].append([row["source_id"] for row in found[method]])
+            if mode == "offline":
+                outcome.update(
+                    status="retrieval_fixture_only",
+                    schema_valid=None,
+                    citation_integrity=None,
+                    correct_abstention=None,
+                )
+                outcomes.append(outcome)
+                continue
             evidence = found["hybrid"][:4]
             if not evidence:
                 answer = Answer(status="insufficient_evidence", claims=[])
             else:
-                question = (
-                    case["question"]
-                    if mode == "live"
-                    else (
-                        ""
-                        if case["expected_status"] == "answered"
-                        else "Can RelayNest configure SSO?"
-                    )
-                )
                 raw, usage = adapter.generate(
-                    {"sample": case["sample"], "body": case["question"]}, question, evidence
+                    {"sample": case["sample"], "body": case["question"]}, case["question"], evidence
                 )
                 answer = validate_response(raw, evidence)
                 outcome["usage"] = usage
@@ -155,7 +160,8 @@ def run_evaluation(mode: str, split: str, limit: int) -> dict[str, Any]:
         "environment": platform.system() + "/" + platform.machine(),
         "limitations": [
             "Citation integrity does not prove semantic correctness.",
-            "Fixture answers are selected samples, not general language understanding.",
+            "Offline reports measure fixture retrieval only; "
+            "generation integrity is covered by tests.",
             "Control scenarios require separate real-database engineering tests.",
             "Forty scenarios are a compact regression corpus, not a market benchmark.",
         ],

@@ -1,3 +1,4 @@
+import json
 import logging
 import time
 from typing import Annotated, Any
@@ -26,6 +27,10 @@ from evidencedesk.workflow import analyze, read_run
 app = FastAPI(title="EvidenceDesk API", version="0.1.0")
 Owner = Annotated[dict[str, Any], Depends(session)]
 logger = logging.getLogger("evidencedesk")
+if not logger.handlers:
+    logger.addHandler(logging.StreamHandler())
+logger.setLevel(logging.INFO)
+logger.propagate = False
 
 
 @app.middleware("http")
@@ -63,10 +68,14 @@ async def boundary(request: Request, call_next):
     response.headers["X-Request-ID"] = request.state.request_id
     response.headers["Cache-Control"] = "no-store"
     logger.info(
-        "request_id=%s status=%s elapsed_ms=%s",
-        request.state.request_id,
-        response.status_code,
-        round((time.monotonic() - start) * 1000),
+        json.dumps(
+            {
+                "event": "http_request",
+                "request_id": request.state.request_id,
+                "status": response.status_code,
+                "elapsed_ms": round((time.monotonic() - start) * 1000),
+            }
+        )
     )
     return response
 
@@ -140,8 +149,10 @@ def source(source_id: UUID, owner: Owner) -> dict[str, Any]:
 
 
 @app.post("/tickets/{ticket_id}/analyze", response_model=RunResponse)
-def analyze_ticket(ticket_id: UUID, body: AnalyzeRequest, owner: Owner) -> dict[str, Any]:
-    return analyze(owner, str(ticket_id), body.question)
+def analyze_ticket(
+    ticket_id: UUID, body: AnalyzeRequest, owner: Owner, request: Request
+) -> dict[str, Any]:
+    return analyze(owner, str(ticket_id), body.question, request_id=request.state.request_id)
 
 
 @app.get("/runs/{run_id}", response_model=RunResponse)
@@ -152,3 +163,12 @@ def run(run_id: UUID, owner: Owner) -> dict[str, Any]:
 @app.post("/proposals/{proposal_id}/decision", response_model=DecisionResponse)
 def decide(proposal_id: UUID, body: DecisionRequest, owner: Owner) -> dict[str, Any]:
     return apply_approved_note(owner, str(proposal_id), body.decision)
+
+
+@app.get("/runs/{run_id}/sources/{source_id}", response_model=SourceResponse)
+def run_source(run_id: UUID, source_id: UUID, owner: Owner) -> dict[str, Any]:
+    stored = read_run(owner, str(run_id))
+    for excerpt in stored["evidence"]:
+        if str(excerpt["id"]) == str(source_id):
+            return excerpt
+    raise missing()

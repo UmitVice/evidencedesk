@@ -10,7 +10,7 @@ Create a separate `evidencedesk_eval*` database, migrate and seed it, then run:
 uv run --project apps/api python -m evidencedesk.evaluation --mode offline --split all --limit 40
 ```
 
-The offline report evaluates retrieval and fixture-output integrity for 30 language scenarios. Ten action/provider/malformed scenarios retain explicit engineering-test references; they are not silently counted as model passes. Fixture generation maps samples to deterministic responses and is not a general question-answering model.
+The offline report measures retrieval for 30 language scenarios. It does not select fixture answers using expected labels or publish offline answer-quality metrics. Ten action/provider/malformed scenarios retain explicit engineering-test references; they are not silently counted as model passes. The separate test suite exercises deterministic fixture generation and citation integrity; it is not a general question-answering model.
 
 For live evaluation, configure Cloudflare, run `python -m evidencedesk.cli ingest-live`, then first run `python -m evidencedesk.evaluation --mode live --split development --limit 10`. Only after inspection run a larger explicit capped suite. The same durable account/environment budget is used for maintenance and evaluation calls. The default ten-attempt daily evaluation budget can require multiple days; never work around account quotas. A partial report records the point where the run stopped.
 
