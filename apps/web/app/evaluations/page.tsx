@@ -1,123 +1,253 @@
-import { currentReport } from "../../lib/evaluation-report";
+import type { Metadata } from "next";
+import {
+  liveReport,
+  offlineReport,
+  type Report,
+} from "../../lib/evaluation-report";
+
+export const metadata: Metadata = {
+  title: "Evaluation record",
+  description:
+    "Inspect live and fixture retrieval measurements, generation failures, provenance, and pending human review.",
+};
+function RetrievalTable({ report }: { report: Report }) {
+  return (
+    <div
+      className="table-scroll"
+      tabIndex={0}
+      role="region"
+      aria-label={`${report.mode} retrieval measurements`}
+    >
+      <table>
+        <caption
+          className="small muted"
+          style={{ textAlign: "left", paddingBottom: 12 }}
+        >
+          Document-level retrieval · {report.methods.hybrid.n} labeled
+          answerable cases
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">Method</th>
+            <th scope="col">Cases</th>
+            <th scope="col">Recall@5</th>
+            <th scope="col">MRR</th>
+          </tr>
+        </thead>
+        <tbody>
+          {Object.entries(report.methods).map(([name, m]) => (
+            <tr key={name}>
+              <th scope="row">{name}</th>
+              <td>{m.n}</td>
+              <td>{m.recall_at_5?.toFixed(3) ?? "—"}</td>
+              <td>{m.mrr?.toFixed(3) ?? "—"}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+function Provenance({ report }: { report: Report }) {
+  return (
+    <dl className="report-meta">
+      <div>
+        <dt>Generation model</dt>
+        <dd>
+          <code>{report.generation_model}</code>
+        </dd>
+      </div>
+      <div>
+        <dt>Embedding model</dt>
+        <dd>
+          <code>{report.embedding_manifest.model}</code> ·{" "}
+          {report.embedding_manifest.dimension} dimensions
+        </dd>
+      </div>
+      <div>
+        <dt>Tested revision</dt>
+        <dd>
+          <a
+            href={`https://github.com/UmitVice/evidencedesk/commit/${report.commit_sha}`}
+          >
+            <code>{report.commit_sha.slice(0, 12)}</code>
+          </a>
+        </dd>
+      </div>
+      <div>
+        <dt>Run date / prompt</dt>
+        <dd>
+          {new Date(report.timestamp).toISOString().slice(0, 10)} ·{" "}
+          {report.prompt_version}
+        </dd>
+      </div>
+      <div>
+        <dt>Corpus version / hash</dt>
+        <dd>
+          {report.embedding_manifest.corpus_version} ·{" "}
+          <code>{report.corpus_hash.slice(0, 16)}</code>
+        </dd>
+      </div>
+      <div>
+        <dt>Dataset hash</dt>
+        <dd>
+          <code>{report.dataset_hash.slice(0, 16)}</code>
+        </dd>
+      </div>
+    </dl>
+  );
+}
 export default function Evaluations() {
-  const report = currentReport();
+  const valid = liveReport.outcomes.filter(
+    (x) => x.schema_valid && x.citation_integrity,
+  ).length;
+  const failures = liveReport.outcomes.filter(
+    (x) =>
+      x.status === "failed" ||
+      x.correct_abstention === false ||
+      (x.retrieval_misses?.length ?? 0) > 0,
+  );
   return (
     <>
-      <section className="hero">
-        <p className="eyebrow">An inspectable engineering record</p>
-        <h1>
-          What we checked.
-          <br />
-          What we haven’t.
-        </h1>
+      <section className="report-header">
+        <p className="eyebrow">Evaluation record</p>
+        <h1>Evidence about the evidence.</h1>
         <p className="muted">
-          A compact regression corpus, not a market benchmark.{" "}
-          {report.mode === "live"
-            ? "These measurements use the configured live provider. Human answer review remains pending."
-            : "These measurements use deterministic test vectors and do not measure live embedding or answer quality."}
+          Recorded retrieval and generation checks, with failures left visible.
+          This is a compact regression corpus, not a market benchmark or a live
+          service-health check.
         </p>
-        <span className="badge">
-          {report.mode === "live"
-            ? "Live evaluation available — human review pending"
-            : "Live evaluation not run"}
-        </span>
+        <span className="badge">Human review pending</span>
       </section>
-      <section className="card">
-        <p className="eyebrow">{report.label}</p>
-        <h2>Retrieval comparison</h2>
-        <p>
-          Document-level Recall@5 and mean reciprocal rank over{" "}
-          {report.methods.hybrid.n} answerable labeled cases. Duplicate chunks
-          from the same document count once.
-        </p>
-        <div className="table-scroll">
-          <table>
-            <thead>
-              <tr>
-                <th>Method</th>
-                <th>Cases</th>
-                <th>Recall@5</th>
-                <th>MRR</th>
-              </tr>
-            </thead>
-            <tbody>
-              {Object.entries(report.methods).map(([name, m]) => (
-                <tr key={name}>
-                  <td>{name}</td>
-                  <td>{m.n}</td>
-                  <td>{m.recall_at_5?.toFixed(3) ?? "—"}</td>
-                  <td>{m.mrr?.toFixed(3) ?? "—"}</td>
-                </tr>
+      <div className="report-stack">
+        <section className="card" aria-labelledby="live-report-title">
+          <div className="report-heading">
+            <h2 id="live-report-title">Live model evaluation</h2>
+            <span className="badge verified">
+              Real Cloudflare calls · Recorded run
+            </span>
+          </div>
+          <p>
+            {liveReport.processed_count} of {liveReport.selected_count} selected
+            development cases processed. {liveReport.generation_attempts}{" "}
+            generation attempts; {liveReport.generation_completions} completed
+            provider responses. {valid} passed structured-output and
+            citation-integrity checks.
+          </p>
+          <Provenance report={liveReport} />
+          <section className="report-section">
+            <h3>Live retrieval comparison</h3>
+            <p>
+              All methods used the same real BGE query embeddings and eligible
+              corpus. Duplicate chunks from one document count once. Unlabeled
+              questions do not contribute to retrieval scores.
+            </p>
+            <RetrievalTable report={liveReport} />
+          </section>
+          <section className="report-section">
+            <h3>Generated-answer failures</h3>
+            <ul className="report-failures">
+              {failures.map((x) => (
+                <li key={x.case_id}>
+                  <code>{x.case_id}</code> —{" "}
+                  {x.error_code
+                    ? `Rejected: ${x.error_code}. No validated answer.`
+                    : x.correct_abstention === false
+                      ? "Answer status disagreed with the expected abstention."
+                      : `${x.retrieval_misses?.join(", ")} missed the labeled document.`}
+                </li>
               ))}
-            </tbody>
-          </table>
-        </div>
-        <p className="muted">
-          No method is required to win. A valid citation and verbatim quote do
-          not establish that the associated claim is correct.
-        </p>
-      </section>
-      <section className="grid">
-        <article className="card">
-          <h2>40 fixed scenarios</h2>
-          <p>
-            24 development cases. 16 holdout cases. Paraphrases stay in the same
-            split.
+            </ul>
+            <p>
+              Valid source IDs and exact quotes do not establish semantic
+              correctness. No human quality score has been assigned.
+            </p>
+          </section>
+          <section className="report-section">
+            <h3>Timing and scope</h3>
+            <p>
+              {liveReport.latency
+                ? `Latency n=${liveReport.latency.n}: p50 ${(liveReport.latency.p50_ms / 1000).toFixed(2)} s; p95 ${liveReport.latency.p95_ms === null ? "not estimated" : (liveReport.latency.p95_ms / 1000).toFixed(2) + " s"}. Includes embedding, three retrieval methods, optional generation, and failed cases. These samples describe this run only.`
+                : "No measured latency is available."}
+            </p>
+            <p>
+              Exact cost is not reported. The full dataset has 40 cases: 24
+              development and 16 holdout. Ten action/provider/malformed cases
+              refer to separate engineering tests.
+            </p>
+          </section>
+          {liveReport.prompt_version === "support-v1" && (
+            <div className="notice">
+              <strong>Historical prompt; follow-up evaluation pending.</strong>{" "}
+              This report tested support-v1. The live activation fix uses
+              support-v2 and passed hosted answer, abstention, and approval
+              checks. Its full quality evaluation remains pending because the
+              default daily evaluation-session budget was reached. Earlier
+              failures have not been relabeled as successes.
+            </div>
+          )}
+          <a
+            className="text-link"
+            href="https://github.com/UmitVice/evidencedesk/blob/dev/reports/latest-live.json"
+          >
+            Read the full live report ↗
+          </a>
+        </section>
+        <section className="card" aria-labelledby="fixture-report-title">
+          <div className="report-heading">
+            <h2 id="fixture-report-title">
+              Fixture / offline engineering evaluation
+            </h2>
+            <span className="badge">No live model called</span>
+          </div>
+          <p className="muted">
+            Deterministic test vectors measure the fixture retrieval path. These
+            numbers are separate from live embedding and generated-answer
+            quality.
           </p>
-          <p>
-            Answerable: 12 · Insufficient: 6 · Obsolete: 4 · Isolation: 4 ·
-            Injection: 4 · Malformed: 3 · Provider failure: 2 · Approval: 5.
-          </p>
-        </article>
-        <article className="card">
-          <h2>Human review pending</h2>
-          <p>
-            Review each answer for correctness, completeness, supported
-            recommendations, and appropriate abstention. No paid judge or
-            keyword score stands in for that review.
-          </p>
-        </article>
-        <article className="card">
-          <h2>Known limitations</h2>
-          <p>
-            Fixture answers only cover supplied samples. Action and failure
-            cases are verified separately by engineering tests. No live latency,
-            cost, or semantic-quality claim is available.
-          </p>
-        </article>
-      </section>
-      <section className="card">
-        <h2>Failure and follow-up examples</h2>
-        <ul>
-          {report.outcomes
-            .filter(
-              (x) =>
-                x.status === "failed" ||
-                (x.retrieval_misses?.length ?? 0) > 0 ||
-                ("correct_abstention" in x && x.correct_abstention === false),
-            )
-            .slice(0, 3)
-            .map((x) => (
-              <li key={x.case_id}>
-                {x.case_id}:{" "}
-                {x.retrieval_misses?.length
-                  ? `${x.retrieval_misses.join(", ")} missed the labeled document in the top five.`
-                  : "Inspect the reported failure and labeled expectation."}
-              </li>
-            ))}
-        </ul>
-        <p className="muted">
-          Full sanitized report, reproduction commands, and test references are
-          in the repository.
-        </p>
-        <a href="https://github.com/UmitVice/evidencedesk/tree/dev/reports">
-          Read the reports ↗
-        </a>
-        <p className="muted">
-          Report commit: <code>{report.commit_sha.slice(0, 12)}</code> · Human
-          review: {report.human_review}
-        </p>
-      </section>
+          <RetrievalTable report={offlineReport} />
+          <details>
+            <summary>Fixture provenance and report</summary>
+            <Provenance report={offlineReport} />
+            <p className="small muted">
+              {offlineReport.processed_count} cases processed; control cases
+              retain engineering-test references. No live generation or latency
+              is measured.
+            </p>
+            <a
+              className="text-link"
+              href="https://github.com/UmitVice/evidencedesk/blob/dev/reports/latest-offline.json"
+            >
+              Read the fixture report ↗
+            </a>
+          </details>
+        </section>
+        <section className="card">
+          <h2>What remains to be reviewed</h2>
+          <ul className="report-limits">
+            <li>
+              A human must assess correctness, completeness, supported
+              recommendations, and appropriate abstention. Review status remains
+              pending.
+            </li>
+            <li>
+              The cosine cutoff is a starting heuristic, not a calibrated
+              factuality guarantee. Retrieval can surface passages that do not
+              answer the question.
+            </li>
+            <li>
+              Approval, isolation, stale proposals, quotas, and provider
+              failures are covered by separate PostgreSQL/API tests. Fixture
+              tests are never counted as live model passes.
+            </li>
+            <li>
+              Free-tier limits can make analysis temporarily unavailable. The
+              application never substitutes a successful simulated answer for
+              failed live inference.
+            </li>
+          </ul>
+        </section>
+      </div>
     </>
   );
 }

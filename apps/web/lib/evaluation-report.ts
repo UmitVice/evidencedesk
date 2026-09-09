@@ -1,26 +1,40 @@
-import { existsSync, readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import live from "../../../reports/latest-live.json";
 import offline from "../../../reports/latest-offline.json";
 
-type Report = {
+export type Report = {
   mode: string;
   label: string;
+  timestamp: string;
   commit_sha: string;
+  prompt_version: string;
+  corpus_hash: string;
+  dataset_hash: string;
   human_review: string;
+  selected_count: number;
+  processed_count: number;
+  generation_model: string;
+  generation_attempts?: number;
+  generation_completions?: number;
+  embedding_manifest: {
+    model: string;
+    dimension: number;
+    corpus_version: string;
+  };
   methods: Record<
     string,
     { n: number; recall_at_5: number | null; mrr: number | null }
   >;
+  latency?: { n: number; p50_ms: number; p95_ms: number | null } | null;
   outcomes: Array<{
     case_id: string;
     status: string;
+    error_code?: string;
     correct_abstention?: boolean | null;
+    schema_valid?: boolean | null;
+    citation_integrity?: boolean | null;
     retrieval_misses?: string[];
   }>;
+  limitations: string[];
 };
-export function currentReport(): Report {
-  const live = resolve(process.cwd(), "../../reports/latest-live.json");
-  return existsSync(live)
-    ? (JSON.parse(readFileSync(live, "utf8")) as Report)
-    : (offline as Report);
-}
+export const liveReport = live as Report;
+export const offlineReport = offline as Report;
