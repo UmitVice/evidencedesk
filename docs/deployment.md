@@ -2,7 +2,7 @@
 
 ## Verified and pending
 
-Vercel CLI account `umitvice`, team `umitvices-projects`, billing plan `hobby` verified. Created `evidencedesk-api` (FastAPI, root `apps/api`) and `evidencedesk-web` (Next.js, root `apps/web`, Node 24.x). Public `UmitVice/evidencedesk` was created through the authenticated browser with no starter commit. GitHub CLI authentication and pushes remain blocked. Supabase and Cloudflare require browser sign-in. No production database or live model execution is verified.
+Vercel CLI account `umitvice`, team `umitvices-projects`, billing plan `hobby` verified. Created `evidencedesk-api` (FastAPI, root `apps/api`) and `evidencedesk-web` (Next.js, root `apps/web`, Node 24.x). Public `UmitVice/evidencedesk` was created through the authenticated browser with no starter commit. GitHub CLI authentication and pushes remain blocked. Supabase and Cloudflare require browser sign-in. No production database or live model execution is verified. API preview health was verified at https://evidencedesk-pw8wuatus-umitvices-projects.vercel.app/health with supported Vercel protection bypass. The initial web deployment is available at https://evidencedesk-web.vercel.app. Vercel promoted the first web deployment to Production despite the CLI preview target; this was a static/unconfigured deployment, not a database-backed release. Subsequent final deployment receipts must identify the actual target.
 
 ## Database
 
@@ -12,7 +12,7 @@ Create a project-specific database with a strong generated password through the 
 
 Create a dedicated LOGIN role with a securely set password, grant membership in the migration-created `evidencedesk_runtime` group, and use that login in DATABASE_URL. Ensure the runtime role cannot create roles, databases, or schemas. Keep `evidence` outside exposed Data API schemas. Use the owner only for MIGRATION_DATABASE_URL in a trusted local maintenance environment; do not put migration credentials in Vercel runtime variables.
 
-Live ingestion is intentionally gated to development/evaluation until provider smoke is verified. After validation, transfer the original documents and exact validated embedding manifest to a production database using the reviewed migration/ingestion procedure; do not silently point production at the evaluation database. Production live activation remains blocked pending that verification.
+Run `python -m evidencedesk.cli provider-smoke` in development to record a real provider contract receipt. Production live ingestion requires `python -m evidencedesk.cli ingest-live --allow-production --smoke-receipt reports/provider-smoke.json`. The command verifies the exact model/embedding manifest receipt, reuses unchanged embeddings, reserves budget before external calls, and persists each completed corpus update transactionally. Use production-specific database connections; never point production at the evaluation database. Production activation remains blocked pending provider smoke and database credentials.
 
 ## Vercel environment pairing
 
@@ -22,7 +22,7 @@ API server-only variables: DATABASE_URL (runtime transaction pooler), SERVICE_KE
 
 Web server-only variables: API_ORIGIN (matching environment's API origin, no path), SERVICE_KEY (same as matching API), APP_ORIGIN (exact frontend origin), and, only if needed, VERCEL_AUTOMATION_BYPASS_SECRET for the matching protected preview API. Never expose these through NEXT_PUBLIC variables. For dynamically named previews, omit APP_ORIGIN so the server uses VERCEL_URL; stable dev aliases require their exact origin. Vercel documents protection bypass at https://vercel.com/docs/deployment-protection/methods-to-bypass-deployment-protection/protection-bypass-automation.
 
-Use `vercel link --project evidencedesk-api`, then `vercel deploy` from the repository root. Link the same root to evidencedesk-web and deploy again. Root-directory settings preserve the shared npm lockfile and app-local Python pyproject/uv.lock. Inspect actual build logs. Configure Git integration only to this repository. Do not deploy production until the release checks and critical review pass. Do not disable preview protection globally.
+Use `vercel link --project evidencedesk-api`, then `vercel deploy --target preview` from the repository root. Link the same root to evidencedesk-web and deploy again. Root-directory settings preserve the shared npm lockfile and app-local Python pyproject/uv.lock. Inspect actual build logs. Configure Git integration only to this repository. Do not deploy production until the release checks and critical review pass. Do not disable preview protection globally.
 
 Both apps build without cloud secrets. Ignore `.env*`, `.local`, virtual environments and caches on upload. The deployed Python app requires its tokenizer asset but not CLI corpora/evaluation data; verify bundle exclusions in the actual build. No migration credentials belong in a function bundle.
 

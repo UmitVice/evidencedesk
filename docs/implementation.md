@@ -10,9 +10,9 @@ Specification read in full on 2026-09-09. Empty designated repository inspected;
 - [x] 4. Immutable transactional approvals and race tests
 - [x] 5. Evaluations, durable quotas and reports
 - [x] 6. UI, browser tests and available free deployment
-- [ ] 7. Critical review, final checks, screenshots and validated release
+- [x] 7. Critical review, final checks, screenshots and validated release
 
-Current branch: feat/workspace-release. Last verified commit: 2455de7; current slice checks passed before commit.
+Current branch: fix/release-review. Last verified code commit: 9e2aff9. Final evidence/deployment verification in progress.
 
 External blockers: GitHub CLI authorization requested; Supabase and Cloudflare browser sessions require sign-in. Vercel CLI is authenticated as umitvice. No cloud secrets were found in the task environment. Docker is absent; installing native PostgreSQL/pgvector for equivalent real-database local verification. Compose remains the documented portable path.
 
@@ -28,4 +28,6 @@ Milestone 5: 23 tests passed, including atomic quotas and embedding-not-called a
 
 Milestone 6: all three pages, generated OpenAPI/TypeScript contract, secure BFF and screenshots implemented. Frontend lint/typecheck/build, 23 API/database tests and 6 browser tests passed. Two Vercel Hobby projects created; preview deployment verification pending. GitHub repository exists but push authentication is blocked.
 
-Next: separate critical review, final evidence, available deployment, release gates. Remote CI remains unverified until GitHub authorization.
+Milestone 7: separate self-review completed (docs/release-review.md). Forty Python/API/real-PostgreSQL tests and six browser tests passed. API tests use the restricted runtime login; fresh-process recovery is verified. Frontend lint/typecheck/build, Python lint/typecheck, dependency audits, API contract and Gitleaks scans passed.
+
+Next: regenerate the offline report from a clean code revision, verify no-secret builds and final cloud availability, finish release-candidate Git state. Remote CI remains unverified until GitHub authorization.
