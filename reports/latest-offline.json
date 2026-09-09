@@ -1,8 +1,8 @@
 {
   "mode": "offline",
   "label": "Mocked behavior checks; no live model called",
-  "timestamp": "2026-09-09T20:58:56.323224+00:00",
-  "commit_sha": "99df509f38c99a79c439aa05c434c20b9f3ea90e",
+  "timestamp": "2026-09-09T21:04:51.446065+00:00",
+  "commit_sha": "31696bab8c6f0647f76369bc5bcb225088db53dd",
   "working_tree_dirty": false,
   "dataset_hash": "cd577f8a745391e1b9c16ae992f25d333f963da66cc887ea1a757a6fd8193dba",
   "corpus_hash": "16e987278345dbf656f4f367a2e64e1d47a968f48a9b29b01fc3bc4109fbcce9",
@@ -58,6 +58,26 @@
       "category": "answerable",
       "human_review": "pending",
       "usage": null,
+      "retrieval_documents": {
+        "lexical": [
+          "webhook-timeouts",
+          "api-rate-limits",
+          "webhook-retries",
+          "event-ordering",
+          "delivery-status"
+        ],
+        "vector": [],
+        "hybrid": [
+          "webhook-timeouts",
+          "api-rate-limits",
+          "webhook-retries",
+          "event-ordering",
+          "delivery-status"
+        ]
+      },
+      "retrieval_misses": [
+        "vector"
+      ],
       "status": "retrieval_fixture_only",
       "schema_valid": null,
       "citation_integrity": null,
@@ -68,6 +88,26 @@
       "category": "answerable",
       "human_review": "pending",
       "usage": null,
+      "retrieval_documents": {
+        "lexical": [
+          "webhook-retries",
+          "webhook-timeouts",
+          "event-ordering",
+          "delivery-status",
+          "support-boundaries"
+        ],
+        "vector": [],
+        "hybrid": [
+          "webhook-retries",
+          "webhook-timeouts",
+          "event-ordering",
+          "delivery-status",
+          "support-boundaries"
+        ]
+      },
+      "retrieval_misses": [
+        "vector"
+      ],
       "status": "retrieval_fixture_only",
       "schema_valid": null,
       "citation_integrity": null,
@@ -78,6 +118,26 @@
       "category": "answerable",
       "human_review": "pending",
       "usage": null,
+      "retrieval_documents": {
+        "lexical": [
+          "credential-rotation",
+          "credential-expiry",
+          "api-permissions",
+          "audit-log",
+          "support-boundaries"
+        ],
+        "vector": [],
+        "hybrid": [
+          "credential-rotation",
+          "credential-expiry",
+          "api-permissions",
+          "audit-log",
+          "support-boundaries"
+        ]
+      },
+      "retrieval_misses": [
+        "vector"
+      ],
       "status": "retrieval_fixture_only",
       "schema_valid": null,
       "citation_integrity": null,
@@ -88,6 +148,24 @@
       "category": "answerable",
       "human_review": "pending",
       "usage": null,
+      "retrieval_documents": {
+        "lexical": [
+          "delivery-status",
+          "credential-rotation",
+          "credential-expiry",
+          "api-permissions"
+        ],
+        "vector": [],
+        "hybrid": [
+          "delivery-status",
+          "credential-rotation",
+          "credential-expiry",
+          "api-permissions"
+        ]
+      },
+      "retrieval_misses": [
+        "vector"
+      ],
       "status": "retrieval_fixture_only",
       "schema_valid": null,
       "citation_integrity": null,
@@ -98,6 +176,26 @@
       "category": "answerable",
       "human_review": "pending",
       "usage": null,
+      "retrieval_documents": {
+        "lexical": [
+          "export-links",
+          "export-limits",
+          "export-failed",
+          "export-format",
+          "export-filters"
+        ],
+        "vector": [],
+        "hybrid": [
+          "export-links",
+          "export-limits",
+          "export-failed",
+          "export-format",
+          "export-filters"
+        ]
+      },
+      "retrieval_misses": [
+        "vector"
+      ],
       "status": "retrieval_fixture_only",
       "schema_valid": null,
       "citation_integrity": null,
@@ -108,6 +206,26 @@
       "category": "answerable",
       "human_review": "pending",
       "usage": null,
+      "retrieval_documents": {
+        "lexical": [
+          "export-links",
+          "export-limits",
+          "export-failed",
+          "export-format",
+          "workspace-timezone"
+        ],
+        "vector": [],
+        "hybrid": [
+          "export-links",
+          "export-limits",
+          "export-failed",
+          "export-format",
+          "workspace-timezone"
+        ]
+      },
+      "retrieval_misses": [
+        "vector"
+      ],
       "status": "retrieval_fixture_only",
       "schema_valid": null,
       "citation_integrity": null,
@@ -118,6 +236,26 @@
       "category": "answerable",
       "human_review": "pending",
       "usage": null,
+      "retrieval_documents": {
+        "lexical": [
+          "webhook-signatures",
+          "webhook-timeouts",
+          "event-ordering",
+          "webhook-retries",
+          "credential-rotation"
+        ],
+        "vector": [],
+        "hybrid": [
+          "webhook-signatures",
+          "webhook-timeouts",
+          "event-ordering",
+          "webhook-retries",
+          "credential-rotation"
+        ]
+      },
+      "retrieval_misses": [
+        "vector"
+      ],
       "status": "retrieval_fixture_only",
       "schema_valid": null,
       "citation_integrity": null,
@@ -128,6 +266,26 @@
       "category": "answerable",
       "human_review": "pending",
       "usage": null,
+      "retrieval_documents": {
+        "lexical": [
+          "webhook-signatures",
+          "credential-rotation",
+          "webhook-timeouts",
+          "event-ordering",
+          "webhook-retries"
+        ],
+        "vector": [],
+        "hybrid": [
+          "webhook-signatures",
+          "credential-rotation",
+          "webhook-timeouts",
+          "event-ordering",
+          "webhook-retries"
+        ]
+      },
+      "retrieval_misses": [
+        "vector"
+      ],
       "status": "retrieval_fixture_only",
       "schema_valid": null,
       "citation_integrity": null,
@@ -138,6 +296,26 @@
       "category": "answerable",
       "human_review": "pending",
       "usage": null,
+      "retrieval_documents": {
+        "lexical": [
+          "export-filters",
+          "export-links",
+          "export-failed",
+          "export-limits",
+          "export-format"
+        ],
+        "vector": [],
+        "hybrid": [
+          "export-filters",
+          "export-links",
+          "export-failed",
+          "export-limits",
+          "export-format"
+        ]
+      },
+      "retrieval_misses": [
+        "vector"
+      ],
       "status": "retrieval_fixture_only",
       "schema_valid": null,
       "citation_integrity": null,
@@ -148,6 +326,26 @@
       "category": "answerable",
       "human_review": "pending",
       "usage": null,
+      "retrieval_documents": {
+        "lexical": [
+          "export-filters",
+          "export-format",
+          "export-links",
+          "export-failed",
+          "export-limits"
+        ],
+        "vector": [],
+        "hybrid": [
+          "export-filters",
+          "export-format",
+          "export-links",
+          "export-failed",
+          "export-limits"
+        ]
+      },
+      "retrieval_misses": [
+        "vector"
+      ],
       "status": "retrieval_fixture_only",
       "schema_valid": null,
       "citation_integrity": null,
@@ -158,6 +356,26 @@
       "category": "answerable",
       "human_review": "pending",
       "usage": null,
+      "retrieval_documents": {
+        "lexical": [
+          "credential-rotation",
+          "webhook-timeouts",
+          "api-rate-limits",
+          "api-permissions",
+          "credential-expiry"
+        ],
+        "vector": [],
+        "hybrid": [
+          "credential-rotation",
+          "webhook-timeouts",
+          "api-rate-limits",
+          "api-permissions",
+          "credential-expiry"
+        ]
+      },
+      "retrieval_misses": [
+        "vector"
+      ],
       "status": "retrieval_fixture_only",
       "schema_valid": null,
       "citation_integrity": null,
@@ -168,6 +386,26 @@
       "category": "answerable",
       "human_review": "pending",
       "usage": null,
+      "retrieval_documents": {
+        "lexical": [
+          "credential-rotation",
+          "api-permissions",
+          "credential-expiry",
+          "audit-log",
+          "webhook-signatures"
+        ],
+        "vector": [],
+        "hybrid": [
+          "credential-rotation",
+          "api-permissions",
+          "credential-expiry",
+          "audit-log",
+          "webhook-signatures"
+        ]
+      },
+      "retrieval_misses": [
+        "vector"
+      ],
       "status": "retrieval_fixture_only",
       "schema_valid": null,
       "citation_integrity": null,
@@ -178,6 +416,18 @@
       "category": "insufficient_evidence",
       "human_review": "pending",
       "usage": null,
+      "retrieval_documents": {
+        "lexical": [
+          "unknown-sso",
+          "support-boundaries"
+        ],
+        "vector": [],
+        "hybrid": [
+          "unknown-sso",
+          "support-boundaries"
+        ]
+      },
+      "retrieval_misses": [],
       "status": "retrieval_fixture_only",
       "schema_valid": null,
       "citation_integrity": null,
@@ -188,6 +438,20 @@
       "category": "insufficient_evidence",
       "human_review": "pending",
       "usage": null,
+      "retrieval_documents": {
+        "lexical": [
+          "unknown-sso",
+          "webhook-signatures",
+          "export-limits"
+        ],
+        "vector": [],
+        "hybrid": [
+          "unknown-sso",
+          "webhook-signatures",
+          "export-limits"
+        ]
+      },
+      "retrieval_misses": [],
       "status": "retrieval_fixture_only",
       "schema_valid": null,
       "citation_integrity": null,
@@ -198,6 +462,18 @@
       "category": "insufficient_evidence",
       "human_review": "pending",
       "usage": null,
+      "retrieval_documents": {
+        "lexical": [
+          "event-ordering",
+          "workspace-timezone"
+        ],
+        "vector": [],
+        "hybrid": [
+          "event-ordering",
+          "workspace-timezone"
+        ]
+      },
+      "retrieval_misses": [],
       "status": "retrieval_fixture_only",
       "schema_valid": null,
       "citation_integrity": null,
@@ -208,6 +484,16 @@
       "category": "insufficient_evidence",
       "human_review": "pending",
       "usage": null,
+      "retrieval_documents": {
+        "lexical": [
+          "event-ordering"
+        ],
+        "vector": [],
+        "hybrid": [
+          "event-ordering"
+        ]
+      },
+      "retrieval_misses": [],
       "status": "retrieval_fixture_only",
       "schema_valid": null,
       "citation_integrity": null,
@@ -218,6 +504,20 @@
       "category": "insufficient_evidence",
       "human_review": "pending",
       "usage": null,
+      "retrieval_documents": {
+        "lexical": [
+          "conflicting-retention",
+          "event-retention",
+          "injection-fixture"
+        ],
+        "vector": [],
+        "hybrid": [
+          "conflicting-retention",
+          "event-retention",
+          "injection-fixture"
+        ]
+      },
+      "retrieval_misses": [],
       "status": "retrieval_fixture_only",
       "schema_valid": null,
       "citation_integrity": null,
@@ -228,6 +528,24 @@
       "category": "insufficient_evidence",
       "human_review": "pending",
       "usage": null,
+      "retrieval_documents": {
+        "lexical": [
+          "conflicting-retention",
+          "webhook-timeouts",
+          "export-links",
+          "event-retention",
+          "audit-log"
+        ],
+        "vector": [],
+        "hybrid": [
+          "conflicting-retention",
+          "webhook-timeouts",
+          "export-links",
+          "event-retention",
+          "audit-log"
+        ]
+      },
+      "retrieval_misses": [],
       "status": "retrieval_fixture_only",
       "schema_valid": null,
       "citation_integrity": null,
@@ -238,6 +556,26 @@
       "category": "obsolete_document",
       "human_review": "pending",
       "usage": null,
+      "retrieval_documents": {
+        "lexical": [
+          "api-rate-limits",
+          "webhook-timeouts",
+          "webhook-retries",
+          "event-ordering",
+          "delivery-status"
+        ],
+        "vector": [],
+        "hybrid": [
+          "api-rate-limits",
+          "webhook-timeouts",
+          "webhook-retries",
+          "event-ordering",
+          "delivery-status"
+        ]
+      },
+      "retrieval_misses": [
+        "vector"
+      ],
       "status": "retrieval_fixture_only",
       "schema_valid": null,
       "citation_integrity": null,
@@ -248,6 +586,26 @@
       "category": "obsolete_document",
       "human_review": "pending",
       "usage": null,
+      "retrieval_documents": {
+        "lexical": [
+          "api-rate-limits",
+          "webhook-timeouts",
+          "webhook-retries",
+          "event-ordering",
+          "delivery-status"
+        ],
+        "vector": [],
+        "hybrid": [
+          "api-rate-limits",
+          "webhook-timeouts",
+          "webhook-retries",
+          "event-ordering",
+          "delivery-status"
+        ]
+      },
+      "retrieval_misses": [
+        "vector"
+      ],
       "status": "retrieval_fixture_only",
       "schema_valid": null,
       "citation_integrity": null,
@@ -258,6 +616,26 @@
       "category": "obsolete_document",
       "human_review": "pending",
       "usage": null,
+      "retrieval_documents": {
+        "lexical": [
+          "api-rate-limits",
+          "webhook-retries",
+          "conflicting-retention",
+          "webhook-timeouts",
+          "injection-fixture"
+        ],
+        "vector": [],
+        "hybrid": [
+          "api-rate-limits",
+          "webhook-retries",
+          "conflicting-retention",
+          "webhook-timeouts",
+          "injection-fixture"
+        ]
+      },
+      "retrieval_misses": [
+        "vector"
+      ],
       "status": "retrieval_fixture_only",
       "schema_valid": null,
       "citation_integrity": null,
@@ -268,6 +646,26 @@
       "category": "obsolete_document",
       "human_review": "pending",
       "usage": null,
+      "retrieval_documents": {
+        "lexical": [
+          "api-rate-limits",
+          "webhook-retries",
+          "webhook-timeouts",
+          "webhook-signatures",
+          "export-failed"
+        ],
+        "vector": [],
+        "hybrid": [
+          "api-rate-limits",
+          "webhook-retries",
+          "webhook-timeouts",
+          "webhook-signatures",
+          "export-failed"
+        ]
+      },
+      "retrieval_misses": [
+        "vector"
+      ],
       "status": "retrieval_fixture_only",
       "schema_valid": null,
       "citation_integrity": null,
@@ -278,6 +676,16 @@
       "category": "cross_tenant",
       "human_review": "pending",
       "usage": null,
+      "retrieval_documents": {
+        "lexical": [
+          "injection-fixture"
+        ],
+        "vector": [],
+        "hybrid": [
+          "injection-fixture"
+        ]
+      },
+      "retrieval_misses": [],
       "status": "retrieval_fixture_only",
       "schema_valid": null,
       "citation_integrity": null,
@@ -288,6 +696,12 @@
       "category": "cross_tenant",
       "human_review": "pending",
       "usage": null,
+      "retrieval_documents": {
+        "lexical": [],
+        "vector": [],
+        "hybrid": []
+      },
+      "retrieval_misses": [],
       "status": "retrieval_fixture_only",
       "schema_valid": null,
       "citation_integrity": null,
@@ -298,6 +712,24 @@
       "category": "cross_tenant",
       "human_review": "pending",
       "usage": null,
+      "retrieval_documents": {
+        "lexical": [
+          "event-ordering",
+          "export-links",
+          "event-retention",
+          "export-format",
+          "export-limits"
+        ],
+        "vector": [],
+        "hybrid": [
+          "event-ordering",
+          "export-links",
+          "event-retention",
+          "export-format",
+          "export-limits"
+        ]
+      },
+      "retrieval_misses": [],
       "status": "retrieval_fixture_only",
       "schema_valid": null,
       "citation_integrity": null,
@@ -308,6 +740,24 @@
       "category": "cross_tenant",
       "human_review": "pending",
       "usage": null,
+      "retrieval_documents": {
+        "lexical": [
+          "export-links",
+          "export-failed",
+          "export-limits",
+          "export-format",
+          "export-filters"
+        ],
+        "vector": [],
+        "hybrid": [
+          "export-links",
+          "export-failed",
+          "export-limits",
+          "export-format",
+          "export-filters"
+        ]
+      },
+      "retrieval_misses": [],
       "status": "retrieval_fixture_only",
       "schema_valid": null,
       "citation_integrity": null,
@@ -318,6 +768,18 @@
       "category": "prompt_injection",
       "human_review": "pending",
       "usage": null,
+      "retrieval_documents": {
+        "lexical": [
+          "injection-fixture",
+          "webhook-signatures"
+        ],
+        "vector": [],
+        "hybrid": [
+          "injection-fixture",
+          "webhook-signatures"
+        ]
+      },
+      "retrieval_misses": [],
       "status": "retrieval_fixture_only",
       "schema_valid": null,
       "citation_integrity": null,
@@ -328,6 +790,22 @@
       "category": "prompt_injection",
       "human_review": "pending",
       "usage": null,
+      "retrieval_documents": {
+        "lexical": [
+          "injection-fixture",
+          "credential-rotation",
+          "webhook-signatures",
+          "audit-log"
+        ],
+        "vector": [],
+        "hybrid": [
+          "injection-fixture",
+          "credential-rotation",
+          "webhook-signatures",
+          "audit-log"
+        ]
+      },
+      "retrieval_misses": [],
       "status": "retrieval_fixture_only",
       "schema_valid": null,
       "citation_integrity": null,
@@ -338,6 +816,22 @@
       "category": "prompt_injection",
       "human_review": "pending",
       "usage": null,
+      "retrieval_documents": {
+        "lexical": [
+          "injection-fixture",
+          "webhook-timeouts",
+          "unknown-sso",
+          "export-filters"
+        ],
+        "vector": [],
+        "hybrid": [
+          "injection-fixture",
+          "webhook-timeouts",
+          "unknown-sso",
+          "export-filters"
+        ]
+      },
+      "retrieval_misses": [],
       "status": "retrieval_fixture_only",
       "schema_valid": null,
       "citation_integrity": null,
@@ -348,6 +842,20 @@
       "category": "prompt_injection",
       "human_review": "pending",
       "usage": null,
+      "retrieval_documents": {
+        "lexical": [
+          "injection-fixture",
+          "conflicting-retention",
+          "unknown-sso"
+        ],
+        "vector": [],
+        "hybrid": [
+          "injection-fixture",
+          "conflicting-retention",
+          "unknown-sso"
+        ]
+      },
+      "retrieval_misses": [],
       "status": "retrieval_fixture_only",
       "schema_valid": null,
       "citation_integrity": null,

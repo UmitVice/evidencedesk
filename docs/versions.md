@@ -19,7 +19,7 @@ Verified 2026-09-09 using official npm registry `/PACKAGE/latest` and PyPI `/pyp
 | LangGraph core | 1.2.11 |
 | Tokenizers / Uvicorn | 0.23.2 / 0.52.4 |
 | Ruff / Pyright / pytest / pip-audit | 0.16.6 / 1.1.413 / 9.1.1 / 2.10.1 |
-| Local PostgreSQL / pgvector | Homebrew published 17.11 / 0.8.6; actual server query pending |
+| Local PostgreSQL / pgvector | Homebrew 17.11 / 0.8.6; confirmed by actual server queries |
 | Hosted PostgreSQL / pgvector | Not provisioned; actual versions unverified |
 
 Sources: [npm](https://registry.npmjs.org/next/latest), [PyPI](https://pypi.org/project/fastapi/), [Node release index](https://nodejs.org/dist/index.json), [Python release](https://www.python.org/downloads/release/python-31315/), [Next support](https://nextjs.org/support-policy), [pgvector](https://github.com/pgvector/pgvector), [container tag](https://hub.docker.com/v2/repositories/pgvector/pgvector/tags/pg17).
@@ -30,7 +30,7 @@ Sources: [npm](https://registry.npmjs.org/next/latest), [PyPI](https://pypi.org/
 
 [Supabase Free](https://supabase.com/pricing): two active project slots, 500 MB each, inactivity pause possible. Check actual account capacity before provisioning. [Transaction pooler](https://supabase.com/docs/guides/database/connecting-to-postgres): disable prepared statements; separate migration connection.
 
-[Workers AI pricing](https://developers.cloudflare.com/workers-ai/platform/pricing/): 10,000 shared account Neurons daily on Free, not 10,000 requests. No billing changes authorized. [Generation candidate](https://developers.cloudflare.com/workers-ai/models/llama-3.1-8b-instruct-fast/) and [JSON mode](https://developers.cloudflare.com/workers-ai/features/json-mode/) inspected. Live smoke and account eligibility remain blocked by authentication. [BGE small](https://developers.cloudflare.com/workers-ai/models/bge-small-en-v1.5/): 384 dimensions and 512 tokens; explicit pooling and tokenizer validation required before live ingestion.
+[Workers AI pricing](https://developers.cloudflare.com/workers-ai/platform/pricing/): 10,000 shared account Neurons daily on Free, not 10,000 requests. No billing changes authorized. [Generation candidate](https://developers.cloudflare.com/workers-ai/models/llama-3.1-8b-instruct-fast/) and [JSON mode](https://developers.cloudflare.com/workers-ai/features/json-mode/) inspected. Live smoke and account eligibility remain unverified until the scoped API token is provided. [BGE small](https://developers.cloudflare.com/workers-ai/models/bge-small-en-v1.5/): 384 dimensions and 512 tokens; explicit pooling and tokenizer validation required before live ingestion.
 
 ESLint 10.10.0 failed Next React plugin rule loading (`getFilename` removed). 9.39.5 passes the same rules; its registry deprecation is a documented tooling limitation. Node 24.21.0 downloaded with official SHA-256 verification. Local database queries confirm PostgreSQL 17.11 (Homebrew), vector 0.8.6.
 
