@@ -257,3 +257,17 @@ def test_provider_body_limit(monkeypatch):
     with pytest.raises(DomainError, match="provider_invalid"):
         adapter.embed(["hello"])
     settings.cache_clear()
+
+
+@pytest.mark.integration
+def test_exact_cosine_retrieves_the_matching_document(db):
+    with connection() as conn:
+        row = conn.execute(
+            "SELECT c.* FROM evidence.chunks c JOIN evidence.documents d "
+            "ON d.id=c.document_id WHERE c.tenant='harbor' AND d.status='active' "
+            "ORDER BY c.id LIMIT 1"
+        ).fetchone()
+    vector = fixture_vector(row["heading"] + " " + row["body"])
+    results = search_knowledge("harbor", row["heading"], vector, FIXTURE_MANIFEST, "vector")
+    assert results[0]["id"] == row["id"]
+    assert results[0]["distance"] < 0.00001

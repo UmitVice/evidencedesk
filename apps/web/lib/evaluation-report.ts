@@ -15,6 +15,7 @@ type Report = {
     case_id: string;
     status: string;
     correct_abstention?: boolean | null;
+    retrieval_misses?: string[];
   }>;
 };
 export function currentReport(): Report {

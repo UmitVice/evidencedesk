@@ -88,6 +88,17 @@ def run_evaluation(mode: str, split: str, limit: int) -> dict[str, Any]:
                 )
                 for method in modes
             }
+            outcome["retrieval_documents"] = {
+                method: list(dict.fromkeys(row["source_id"] for row in found[method]))[:5]
+                for method in modes
+            }
+            outcome["retrieval_misses"] = [
+                method
+                for method in modes
+                if case["relevant_documents"]
+                and not set(outcome["retrieval_documents"][method])
+                & set(case["relevant_documents"])
+            ]
             if case["relevant_documents"]:
                 labels.append(case["relevant_documents"])
                 for method in modes:

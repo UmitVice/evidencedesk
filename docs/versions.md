@@ -37,3 +37,5 @@ ESLint 10.10.0 failed Next React plugin rule loading (`getFilename` removed). 9.
 Vercel build verification: its uv 0.10.11 could not resolve a 3.13.14 patch pin. Using `.python-version` = `3.13` succeeded. CI installs exact 3.13.15 using pinned actions/setup-python; that version is present in the official actions/python-versions manifest. Prettier 3.9.6 was verified from npm and pins formatting for generated contracts.
 
 Security tooling: Gitleaks 8.30.1 installed from the verified Homebrew bottle; pinned gitleaks-action revision and GITLEAKS_VERSION in CI. Personal-account repositories do not require an action license key. Comments and extra artifact upload are disabled.
+
+Hatchling 1.32.0 build backend verified on PyPI and pinned. Database timeouts use transaction-local SET, avoiding persistent session settings on the transaction pooler; see https://supabase.com/docs/guides/database/postgres/timeouts. Hosted pooler connectivity still requires live verification.

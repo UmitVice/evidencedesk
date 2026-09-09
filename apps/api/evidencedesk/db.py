@@ -21,8 +21,9 @@ def connection(*, migration: bool = False) -> Iterator[psycopg.Connection[dict[s
             row_factory=dict_row,
             prepare_threshold=None,
             connect_timeout=5,
-            options="-c statement_timeout=5000 -c lock_timeout=3000",
         ) as conn:
+            conn.execute("SET LOCAL statement_timeout = '5s'")
+            conn.execute("SET LOCAL lock_timeout = '3s'")
             yield conn
     except psycopg.OperationalError as exc:
         raise DomainError(

@@ -36,7 +36,14 @@ test("source inspection, pending reload, approval and persisted note", async ({
   );
   expect(cookie?.httpOnly).toBe(true);
   expect(cookie?.sameSite).toBe("Lax");
-  await page.setViewportSize({ width: 1440, height: 1000 });
+  for (const width of [375, 768, 1440]) {
+    await page.setViewportSize({ width, height: 1000 });
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= window.innerWidth,
+      ),
+    ).toBe(true);
+  }
   await page.screenshot({
     path: "docs/screenshots/workspace.png",
     fullPage: true,

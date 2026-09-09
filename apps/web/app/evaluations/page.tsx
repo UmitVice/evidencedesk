@@ -93,6 +93,7 @@ export default function Evaluations() {
             .filter(
               (x) =>
                 x.status === "failed" ||
+                (x.retrieval_misses?.length ?? 0) > 0 ||
                 ("correct_abstention" in x && x.correct_abstention === false),
             )
             .slice(0, 3)
