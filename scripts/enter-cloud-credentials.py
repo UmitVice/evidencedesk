@@ -1,4 +1,5 @@
 """Collect missing cloud credentials in a real terminal without echoing values."""
+import argparse
 import getpass
 import json
 import os
@@ -32,6 +33,11 @@ def secure_write(path: Path, text: str) -> None:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--database-environment", choices=["production", "development"],
+                        default="production")
+    parser.add_argument("--database-only", action="store_true")
+    args = parser.parse_args()
     if not sys.stdin.isatty() or not sys.stdout.isatty():
         raise ValueError("Run this command directly in an interactive terminal")
     warnings.simplefilter("error", getpass.GetPassWarning)
@@ -39,15 +45,22 @@ def main() -> None:
         raise ValueError("Refusing a symbolic-link private directory")
     PRIVATE.mkdir(parents=True, exist_ok=True, mode=0o700)
     PRIVATE.chmod(0o700)
-    password = getpass.getpass("Supabase database password (Enter to preserve/skip): ")
-    token = getpass.getpass("Cloudflare Workers AI token (Enter to preserve/skip): ")
+    password = getpass.getpass(
+        f"Supabase {args.database_environment} password (Enter to preserve/skip): "
+    )
+    token = "" if args.database_only else getpass.getpass(
+        "Cloudflare Workers AI token (Enter to preserve/skip): "
+    )
     if password and (len(password) < 12 or any(ord(c) < 32 for c in password)):
         raise ValueError("Database password must contain at least 12 printable characters")
     if token and not re.fullmatch(r"[A-Za-z0-9_-]{30,200}", token):
         raise ValueError("Cloudflare token format is invalid")
     if password:
         # Connection metadata is verified separately before constructing any DSN.
-        secure_write(PRIVATE / "database-credential.json", json.dumps({"password": password}))
+        name = "database-credential.json" if args.database_environment == "production" else (
+            "development-database-credential.json"
+        )
+        secure_write(PRIVATE / name, json.dumps({"password": password}))
         print("Database password stored securely; connection metadata still requires verification.")
     if token:
         env = ROOT / ".env"

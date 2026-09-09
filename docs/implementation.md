@@ -1,5 +1,21 @@
 # Implementation status
 
+## Current state — live activation in progress
+
+The user confirmed the existing Ohio project as production and supplied credentials through the no-echo helper. Earlier blockers below are superseded.
+
+- GitHub: authenticated UmitVice; existing repository reused. dev 8c0179e passed remote CI with 42 API/PostgreSQL tests and 6 browser tests: https://github.com/UmitVice/evidencedesk/actions/runs/34412031768.
+- Production database: xjizbcmayuojydvwykfu in organization vgtbutgaevguceusemkc, generic name preserved, East US (Ohio). Actual PostgreSQL 17.6 and pgvector 0.8.2 verified. Four migrations applied without resets. Data API disabled and TLS enforcement enabled.
+- Runtime: separate evidencedesk_app login verified through transaction pooler port 6543 with full hostname/certificate verification. It cannot create schemas/roles/databases, bypass RLS, or update proposal content. Administrative credentials remain only in ignored local maintenance configuration. Anonymous schema access is denied.
+- Corpus: 24 real BGE embeddings ingested; identical repeat changes zero. Known webhook query finds webhook-retries first in real vector and hybrid search. Fixture and real manifests remain distinct.
+- Workers AI: stored token verified active. Real embedding and structured generation smoke passed at code revision 8c0179e; see reports/provider-smoke.json. Human review is pending.
+- Vercel: existing API and web projects connected to GitHub/master Production. Production API runtime credentials configured; new deployment and hosted functional verification pending. Function region is being aligned to Ohio (cle1).
+- Development: local PostgreSQL remains isolated. Separate free evidencedesk-dev form prepared in the empty EvidenceDesk organization, Ohio, Data API/automatic exposure off. Creating this new database requires user submission of its new password; production credentials already work and require no re-entry.
+- Remaining work: baseline hosted verification, ten-case live evaluation, redesigned ticket-first UI, final CI/dev/production deployment and release. Do not claim current hosted live functionality until tested.
+
+## Historical notes — superseded snapshots
+
+
 Specification read in full on 2026-09-09. Empty designated repository inspected; existing Git identity retained. No unrelated files or remotes.
 
 ## Resumed resource verification (2026-09-10)

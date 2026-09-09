@@ -1,0 +1,26 @@
+{
+  "status": "verified",
+  "mode": "live",
+  "timestamp": "2026-09-09T22:47:55.476458+00:00",
+  "generation_model": "@cf/meta/llama-3.1-8b-instruct-fast",
+  "embedding_manifest": {
+    "model": "@cf/baai/bge-small-en-v1.5",
+    "dimension": 384,
+    "pooling": "cls",
+    "preprocessing": "english-no-prefix-v1",
+    "corpus_version": "1"
+  },
+  "dimensions": 384,
+  "usage": {
+    "prompt_tokens": 263,
+    "completion_tokens": 122,
+    "total_tokens": 385,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "neurons": 5.337056636810303
+  },
+  "human_review": "pending",
+  "commit_sha": "8c0179ea6f88bbaa5bb4222f1dd220c334a8a10e",
+  "verification": "Real Workers AI embedding and generation; schema and citation validation passed"
+}

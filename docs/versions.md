@@ -39,3 +39,5 @@ Vercel build verification: its uv 0.10.11 could not resolve a 3.13.14 patch pin.
 Security tooling: Gitleaks 8.30.1 installed from the verified Homebrew bottle; pinned gitleaks-action revision and GITLEAKS_VERSION in CI. Personal-account repositories do not require an action license key. Comments and extra artifact upload are disabled.
 
 Hatchling 1.32.0 build backend verified on PyPI and pinned. Database timeouts use transaction-local SET, avoiding persistent session settings on the transaction pooler; see https://supabase.com/docs/guides/database/postgres/timeouts. Hosted pooler connectivity still requires live verification.
+
+Hosted verification (2026-09-10): PostgreSQL 17.6, pgvector 0.8.2. Supabase published CA downloaded from https://supabase-downloads.s3-ap-southeast-1.amazonaws.com/prod/ssl/prod-ca-2021.crt and bundled as a public trust certificate. SHA-256 certificate fingerprint: 807025AD50D4ED219D2C9C7D299C004F824EB00CF7F65AFEF607D07B72E6CAFA. Both pooler modes use verify-full; passwords are URI-encoded. Vercel cle1 is us-east-2, matching Ohio: https://vercel.com/docs/regions.
