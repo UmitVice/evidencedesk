@@ -5,6 +5,7 @@ from typing import Any, TypedDict
 from langgraph.graph import END, START, StateGraph
 from pydantic import ValidationError
 
+from evidencedesk.actions import propose_internal_note
 from evidencedesk.config import settings
 from evidencedesk.db import connection
 from evidencedesk.errors import DomainError, missing
@@ -46,6 +47,13 @@ def read_run(owner: dict[str, Any], run_id: str) -> dict[str, Any]:
             "SELECT * FROM evidence.runs WHERE id=%s AND session_id=%s AND tenant=%s",
             (run_id, owner["id"], owner["tenant"]),
         ).fetchone()
+        if row:
+            row["proposal"] = conn.execute(
+                "SELECT id,content,content_hash,status,expires_at,expected_version "
+                "FROM evidence.proposals "
+                "WHERE run_id=%s AND session_id=%s AND tenant=%s",
+                (run_id, owner["id"], owner["tenant"]),
+            ).fetchone()
     if not row:
         raise missing()
     return row
@@ -126,6 +134,10 @@ def analyze(
                     run_id,
                 ),
             )
+            if state["result"].get("proposed_note"):
+                propose_internal_note(
+                    conn, owner, str(run_id), ticket, state["result"]["proposed_note"]
+                )
         return {}
 
     graph = StateGraph(State)

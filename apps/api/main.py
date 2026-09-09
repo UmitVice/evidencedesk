@@ -7,10 +7,11 @@ from fastapi import Depends, FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
+from evidencedesk.actions import apply_approved_note, ticket_history
 from evidencedesk.config import settings
 from evidencedesk.db import connection
 from evidencedesk.errors import DomainError, missing
-from evidencedesk.models import AnalyzeRequest
+from evidencedesk.models import AnalyzeRequest, DecisionRequest
 from evidencedesk.sessions import create_session, get_ticket, require_service, session
 from evidencedesk.workflow import analyze, read_run
 
@@ -113,7 +114,7 @@ def tickets(owner: Owner) -> dict[str, Any]:
 
 @app.get("/tickets/{ticket_id}")
 def ticket(ticket_id: UUID, owner: Owner) -> dict[str, Any]:
-    return get_ticket(owner, str(ticket_id))
+    return {**get_ticket(owner, str(ticket_id)), **ticket_history(owner, str(ticket_id))}
 
 
 @app.get("/sources/{source_id}")
@@ -138,3 +139,8 @@ def analyze_ticket(ticket_id: UUID, body: AnalyzeRequest, owner: Owner) -> dict[
 @app.get("/runs/{run_id}")
 def run(run_id: UUID, owner: Owner) -> dict[str, Any]:
     return read_run(owner, str(run_id))
+
+
+@app.post("/proposals/{proposal_id}/decision")
+def decide(proposal_id: UUID, body: DecisionRequest, owner: Owner) -> dict[str, Any]:
+    return apply_approved_note(owner, str(proposal_id), body.decision)
