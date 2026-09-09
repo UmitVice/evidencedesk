@@ -99,8 +99,10 @@ export default function Evaluations() {
             .slice(0, 3)
             .map((x) => (
               <li key={x.case_id}>
-                {x.case_id}: inspect the fixture response and labeled
-                expectation.
+                {x.case_id}:{" "}
+                {x.retrieval_misses?.length
+                  ? `${x.retrieval_misses.join(", ")} missed the labeled document in the top five.`
+                  : "Inspect the reported failure and labeled expectation."}
               </li>
             ))}
         </ul>

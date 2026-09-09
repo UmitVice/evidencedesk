@@ -2,7 +2,7 @@
 
 Human review: pending.
 
-Commit: `be99981ec080480ff6c3ddc7ac36be252c4229b6`
+Commit: `99df509f38c99a79c439aa05c434c20b9f3ea90e`
 
 | Retrieval | n | Recall@5 | MRR |
 | --- | --- | --- | --- |
@@ -11,6 +11,6 @@ Commit: `be99981ec080480ff6c3ddc7ac36be252c4229b6`
 | hybrid | 16 | 1.0 | 0.703125 |
 
 Citation integrity does not prove semantic correctness.
-Fixture answers are selected samples, not general language understanding.
+Offline reports measure fixture retrieval only; generation integrity is covered by tests.
 Control scenarios require separate real-database engineering tests.
 Forty scenarios are a compact regression corpus, not a market benchmark.

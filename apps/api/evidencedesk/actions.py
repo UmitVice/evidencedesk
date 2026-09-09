@@ -49,7 +49,8 @@ def apply_approved_note(
         if not proposal:
             raise missing()
         active_session = conn.execute(
-            "SELECT id FROM evidence.sessions WHERE id=%s AND tenant=%s AND expires_at>clock_timestamp()",
+            "SELECT id FROM evidence.sessions WHERE id=%s AND tenant=%s "
+            "AND expires_at>clock_timestamp()",
             (owner["id"], owner["tenant"]),
         ).fetchone()
         if not active_session:

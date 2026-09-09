@@ -1,9 +1,9 @@
 {
   "mode": "offline",
   "label": "Mocked behavior checks; no live model called",
-  "timestamp": "2026-09-09T20:32:15.983809+00:00",
-  "commit_sha": "be99981ec080480ff6c3ddc7ac36be252c4229b6",
-  "working_tree_dirty": true,
+  "timestamp": "2026-09-09T20:58:56.323224+00:00",
+  "commit_sha": "99df509f38c99a79c439aa05c434c20b9f3ea90e",
+  "working_tree_dirty": false,
   "dataset_hash": "cd577f8a745391e1b9c16ae992f25d333f963da66cc887ea1a757a6fd8193dba",
   "corpus_hash": "16e987278345dbf656f4f367a2e64e1d47a968f48a9b29b01fc3bc4109fbcce9",
   "prompt_version": "support-v1",
@@ -58,600 +58,300 @@
       "category": "answerable",
       "human_review": "pending",
       "usage": null,
-      "status": "evaluated",
-      "schema_valid": true,
-      "citation_integrity": true,
-      "correct_abstention": true,
-      "answer": {
-        "status": "answered",
-        "claims": [
-          {
-            "text": "RelayNest retries failed webhooks after 1 minute, 5 minutes, 30 minutes, and 2 hours.",
-            "citations": [
-              {
-                "source_id": "be8c14cd-f32f-5aa6-a2a1-cc0cd8aad0e8",
-                "quote": "RelayNest retries failed webhooks after 1 minute, 5 minutes, 30 minutes, and 2 hours."
-              }
-            ]
-          }
-        ],
-        "proposed_note": "Reviewed the product guidance with the customer: RelayNest retries failed webhooks after 1 minute, 5 minutes, 30 minutes, and 2 hours."
-      }
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
     },
     {
       "case_id": "retry-recovery-2",
       "category": "answerable",
       "human_review": "pending",
       "usage": null,
-      "status": "evaluated",
-      "schema_valid": true,
-      "citation_integrity": true,
-      "correct_abstention": true,
-      "answer": {
-        "status": "answered",
-        "claims": [
-          {
-            "text": "RelayNest retries failed webhooks after 1 minute, 5 minutes, 30 minutes, and 2 hours.",
-            "citations": [
-              {
-                "source_id": "be8c14cd-f32f-5aa6-a2a1-cc0cd8aad0e8",
-                "quote": "RelayNest retries failed webhooks after 1 minute, 5 minutes, 30 minutes, and 2 hours."
-              }
-            ]
-          }
-        ],
-        "proposed_note": "Reviewed the product guidance with the customer: RelayNest retries failed webhooks after 1 minute, 5 minutes, 30 minutes, and 2 hours."
-      }
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
     },
     {
       "case_id": "credential-rotate-1",
       "category": "answerable",
       "human_review": "pending",
       "usage": null,
-      "status": "evaluated",
-      "schema_valid": true,
-      "citation_integrity": true,
-      "correct_abstention": true,
-      "answer": {
-        "status": "answered",
-        "claims": [
-          {
-            "text": "A 401 response with credential_expired means the API credential has reached its expiry date.",
-            "citations": [
-              {
-                "source_id": "c3f6c838-2c48-5b80-8fde-4d9a6373795a",
-                "quote": "A 401 response with credential_expired means the API credential has reached its expiry date."
-              }
-            ]
-          }
-        ],
-        "proposed_note": "Reviewed the product guidance with the customer: A 401 response with credential_expired means the API credential has reached its expiry date."
-      }
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
     },
     {
       "case_id": "credential-rotate-2",
       "category": "answerable",
       "human_review": "pending",
       "usage": null,
-      "status": "evaluated",
-      "schema_valid": true,
-      "citation_integrity": true,
-      "correct_abstention": true,
-      "answer": {
-        "status": "answered",
-        "claims": [
-          {
-            "text": "A 401 response with credential_expired means the API credential has reached its expiry date.",
-            "citations": [
-              {
-                "source_id": "c3f6c838-2c48-5b80-8fde-4d9a6373795a",
-                "quote": "A 401 response with credential_expired means the API credential has reached its expiry date."
-              }
-            ]
-          }
-        ],
-        "proposed_note": "Reviewed the product guidance with the customer: A 401 response with credential_expired means the API credential has reached its expiry date."
-      }
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
     },
     {
       "case_id": "export-link-1",
       "category": "answerable",
       "human_review": "pending",
       "usage": null,
-      "status": "evaluated",
-      "schema_valid": true,
-      "citation_integrity": true,
-      "correct_abstention": true,
-      "answer": {
-        "status": "answered",
-        "claims": [
-          {
-            "text": "CSV export download links expire 24 hours after completion.",
-            "citations": [
-              {
-                "source_id": "aff3155b-bf2b-561e-b513-63e34199dfad",
-                "quote": "CSV export download links expire 24 hours after completion."
-              }
-            ]
-          }
-        ],
-        "proposed_note": "Reviewed the product guidance with the customer: CSV export download links expire 24 hours after completion."
-      }
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
     },
     {
       "case_id": "export-link-2",
       "category": "answerable",
       "human_review": "pending",
       "usage": null,
-      "status": "evaluated",
-      "schema_valid": true,
-      "citation_integrity": true,
-      "correct_abstention": true,
-      "answer": {
-        "status": "answered",
-        "claims": [
-          {
-            "text": "CSV export download links expire 24 hours after completion.",
-            "citations": [
-              {
-                "source_id": "aff3155b-bf2b-561e-b513-63e34199dfad",
-                "quote": "CSV export download links expire 24 hours after completion."
-              }
-            ]
-          }
-        ],
-        "proposed_note": "Reviewed the product guidance with the customer: CSV export download links expire 24 hours after completion."
-      }
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
     },
     {
       "case_id": "webhook-signature-1",
       "category": "answerable",
       "human_review": "pending",
       "usage": null,
-      "status": "evaluated",
-      "schema_valid": true,
-      "citation_integrity": true,
-      "correct_abstention": true,
-      "answer": {
-        "status": "answered",
-        "claims": [
-          {
-            "text": "RelayNest retries failed webhooks after 1 minute, 5 minutes, 30 minutes, and 2 hours.",
-            "citations": [
-              {
-                "source_id": "be8c14cd-f32f-5aa6-a2a1-cc0cd8aad0e8",
-                "quote": "RelayNest retries failed webhooks after 1 minute, 5 minutes, 30 minutes, and 2 hours."
-              }
-            ]
-          }
-        ],
-        "proposed_note": "Reviewed the product guidance with the customer: RelayNest retries failed webhooks after 1 minute, 5 minutes, 30 minutes, and 2 hours."
-      }
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
     },
     {
       "case_id": "webhook-signature-2",
       "category": "answerable",
       "human_review": "pending",
       "usage": null,
-      "status": "evaluated",
-      "schema_valid": true,
-      "citation_integrity": true,
-      "correct_abstention": false,
-      "answer": {
-        "status": "insufficient_evidence",
-        "claims": [],
-        "proposed_note": null
-      }
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
     },
     {
       "case_id": "export-filters-1",
       "category": "answerable",
       "human_review": "pending",
       "usage": null,
-      "status": "evaluated",
-      "schema_valid": true,
-      "citation_integrity": true,
-      "correct_abstention": true,
-      "answer": {
-        "status": "answered",
-        "claims": [
-          {
-            "text": "CSV export download links expire 24 hours after completion.",
-            "citations": [
-              {
-                "source_id": "aff3155b-bf2b-561e-b513-63e34199dfad",
-                "quote": "CSV export download links expire 24 hours after completion."
-              }
-            ]
-          }
-        ],
-        "proposed_note": "Reviewed the product guidance with the customer: CSV export download links expire 24 hours after completion."
-      }
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
     },
     {
       "case_id": "export-filters-2",
       "category": "answerable",
       "human_review": "pending",
       "usage": null,
-      "status": "evaluated",
-      "schema_valid": true,
-      "citation_integrity": true,
-      "correct_abstention": true,
-      "answer": {
-        "status": "answered",
-        "claims": [
-          {
-            "text": "CSV export download links expire 24 hours after completion.",
-            "citations": [
-              {
-                "source_id": "aff3155b-bf2b-561e-b513-63e34199dfad",
-                "quote": "CSV export download links expire 24 hours after completion."
-              }
-            ]
-          }
-        ],
-        "proposed_note": "Reviewed the product guidance with the customer: CSV export download links expire 24 hours after completion."
-      }
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
     },
     {
       "case_id": "api-permissions-1",
       "category": "answerable",
       "human_review": "pending",
       "usage": null,
-      "status": "evaluated",
-      "schema_valid": true,
-      "citation_integrity": true,
-      "correct_abstention": true,
-      "answer": {
-        "status": "answered",
-        "claims": [
-          {
-            "text": "A 401 response with credential_expired means the API credential has reached its expiry date.",
-            "citations": [
-              {
-                "source_id": "c3f6c838-2c48-5b80-8fde-4d9a6373795a",
-                "quote": "A 401 response with credential_expired means the API credential has reached its expiry date."
-              }
-            ]
-          }
-        ],
-        "proposed_note": "Reviewed the product guidance with the customer: A 401 response with credential_expired means the API credential has reached its expiry date."
-      }
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
     },
     {
       "case_id": "api-permissions-2",
       "category": "answerable",
       "human_review": "pending",
       "usage": null,
-      "status": "evaluated",
-      "schema_valid": true,
-      "citation_integrity": true,
-      "correct_abstention": true,
-      "answer": {
-        "status": "answered",
-        "claims": [
-          {
-            "text": "A 401 response with credential_expired means the API credential has reached its expiry date.",
-            "citations": [
-              {
-                "source_id": "c3f6c838-2c48-5b80-8fde-4d9a6373795a",
-                "quote": "A 401 response with credential_expired means the API credential has reached its expiry date."
-              }
-            ]
-          }
-        ],
-        "proposed_note": "Reviewed the product guidance with the customer: A 401 response with credential_expired means the API credential has reached its expiry date."
-      }
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
     },
     {
       "case_id": "unknown-sso-1",
       "category": "insufficient_evidence",
       "human_review": "pending",
       "usage": null,
-      "status": "evaluated",
-      "schema_valid": true,
-      "citation_integrity": true,
-      "correct_abstention": true,
-      "answer": {
-        "status": "insufficient_evidence",
-        "claims": [],
-        "proposed_note": null
-      }
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
     },
     {
       "case_id": "unknown-sso-2",
       "category": "insufficient_evidence",
       "human_review": "pending",
       "usage": null,
-      "status": "evaluated",
-      "schema_valid": true,
-      "citation_integrity": true,
-      "correct_abstention": true,
-      "answer": {
-        "status": "insufficient_evidence",
-        "claims": [],
-        "proposed_note": null
-      }
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
     },
     {
       "case_id": "unknown-region-1",
       "category": "insufficient_evidence",
       "human_review": "pending",
       "usage": null,
-      "status": "evaluated",
-      "schema_valid": true,
-      "citation_integrity": true,
-      "correct_abstention": true,
-      "answer": {
-        "status": "insufficient_evidence",
-        "claims": [],
-        "proposed_note": null
-      }
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
     },
     {
       "case_id": "unknown-region-2",
       "category": "insufficient_evidence",
       "human_review": "pending",
       "usage": null,
-      "status": "evaluated",
-      "schema_valid": true,
-      "citation_integrity": true,
-      "correct_abstention": true,
-      "answer": {
-        "status": "insufficient_evidence",
-        "claims": [],
-        "proposed_note": null
-      }
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
     },
     {
       "case_id": "archive-conflict-1",
       "category": "insufficient_evidence",
       "human_review": "pending",
       "usage": null,
-      "status": "evaluated",
-      "schema_valid": true,
-      "citation_integrity": true,
-      "correct_abstention": true,
-      "answer": {
-        "status": "insufficient_evidence",
-        "claims": [],
-        "proposed_note": null
-      }
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
     },
     {
       "case_id": "archive-conflict-2",
       "category": "insufficient_evidence",
       "human_review": "pending",
       "usage": null,
-      "status": "evaluated",
-      "schema_valid": true,
-      "citation_integrity": true,
-      "correct_abstention": true,
-      "answer": {
-        "status": "insufficient_evidence",
-        "claims": [],
-        "proposed_note": null
-      }
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
     },
     {
       "case_id": "obsolete-retry-1",
       "category": "obsolete_document",
       "human_review": "pending",
       "usage": null,
-      "status": "evaluated",
-      "schema_valid": true,
-      "citation_integrity": true,
-      "correct_abstention": true,
-      "answer": {
-        "status": "answered",
-        "claims": [
-          {
-            "text": "RelayNest retries failed webhooks after 1 minute, 5 minutes, 30 minutes, and 2 hours.",
-            "citations": [
-              {
-                "source_id": "be8c14cd-f32f-5aa6-a2a1-cc0cd8aad0e8",
-                "quote": "RelayNest retries failed webhooks after 1 minute, 5 minutes, 30 minutes, and 2 hours."
-              }
-            ]
-          }
-        ],
-        "proposed_note": "Reviewed the product guidance with the customer: RelayNest retries failed webhooks after 1 minute, 5 minutes, 30 minutes, and 2 hours."
-      }
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
     },
     {
       "case_id": "obsolete-retry-2",
       "category": "obsolete_document",
       "human_review": "pending",
       "usage": null,
-      "status": "evaluated",
-      "schema_valid": true,
-      "citation_integrity": true,
-      "correct_abstention": true,
-      "answer": {
-        "status": "answered",
-        "claims": [
-          {
-            "text": "RelayNest retries failed webhooks after 1 minute, 5 minutes, 30 minutes, and 2 hours.",
-            "citations": [
-              {
-                "source_id": "be8c14cd-f32f-5aa6-a2a1-cc0cd8aad0e8",
-                "quote": "RelayNest retries failed webhooks after 1 minute, 5 minutes, 30 minutes, and 2 hours."
-              }
-            ]
-          }
-        ],
-        "proposed_note": "Reviewed the product guidance with the customer: RelayNest retries failed webhooks after 1 minute, 5 minutes, 30 minutes, and 2 hours."
-      }
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
     },
     {
       "case_id": "obsolete-vs-current-1",
       "category": "obsolete_document",
       "human_review": "pending",
       "usage": null,
-      "status": "evaluated",
-      "schema_valid": true,
-      "citation_integrity": true,
-      "correct_abstention": true,
-      "answer": {
-        "status": "answered",
-        "claims": [
-          {
-            "text": "RelayNest retries failed webhooks after 1 minute, 5 minutes, 30 minutes, and 2 hours.",
-            "citations": [
-              {
-                "source_id": "be8c14cd-f32f-5aa6-a2a1-cc0cd8aad0e8",
-                "quote": "RelayNest retries failed webhooks after 1 minute, 5 minutes, 30 minutes, and 2 hours."
-              }
-            ]
-          }
-        ],
-        "proposed_note": "Reviewed the product guidance with the customer: RelayNest retries failed webhooks after 1 minute, 5 minutes, 30 minutes, and 2 hours."
-      }
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
     },
     {
       "case_id": "obsolete-vs-current-2",
       "category": "obsolete_document",
       "human_review": "pending",
       "usage": null,
-      "status": "evaluated",
-      "schema_valid": true,
-      "citation_integrity": true,
-      "correct_abstention": true,
-      "answer": {
-        "status": "answered",
-        "claims": [
-          {
-            "text": "RelayNest retries failed webhooks after 1 minute, 5 minutes, 30 minutes, and 2 hours.",
-            "citations": [
-              {
-                "source_id": "be8c14cd-f32f-5aa6-a2a1-cc0cd8aad0e8",
-                "quote": "RelayNest retries failed webhooks after 1 minute, 5 minutes, 30 minutes, and 2 hours."
-              }
-            ]
-          }
-        ],
-        "proposed_note": "Reviewed the product guidance with the customer: RelayNest retries failed webhooks after 1 minute, 5 minutes, 30 minutes, and 2 hours."
-      }
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
     },
     {
       "case_id": "foreign-routing-1",
       "category": "cross_tenant",
       "human_review": "pending",
       "usage": null,
-      "status": "evaluated",
-      "schema_valid": true,
-      "citation_integrity": true,
-      "correct_abstention": true,
-      "answer": {
-        "status": "insufficient_evidence",
-        "claims": [],
-        "proposed_note": null
-      }
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
     },
     {
       "case_id": "foreign-routing-2",
       "category": "cross_tenant",
       "human_review": "pending",
       "usage": null,
-      "status": "evaluated",
-      "schema_valid": true,
-      "citation_integrity": true,
-      "correct_abstention": true,
-      "answer": {
-        "status": "insufficient_evidence",
-        "claims": [],
-        "proposed_note": null
-      }
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
     },
     {
       "case_id": "foreign-export-1",
       "category": "cross_tenant",
       "human_review": "pending",
       "usage": null,
-      "status": "evaluated",
-      "schema_valid": true,
-      "citation_integrity": true,
-      "correct_abstention": true,
-      "answer": {
-        "status": "insufficient_evidence",
-        "claims": [],
-        "proposed_note": null
-      }
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
     },
     {
       "case_id": "foreign-export-2",
       "category": "cross_tenant",
       "human_review": "pending",
       "usage": null,
-      "status": "evaluated",
-      "schema_valid": true,
-      "citation_integrity": true,
-      "correct_abstention": true,
-      "answer": {
-        "status": "insufficient_evidence",
-        "claims": [],
-        "proposed_note": null
-      }
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
     },
     {
       "case_id": "injection-user-1",
       "category": "prompt_injection",
       "human_review": "pending",
       "usage": null,
-      "status": "evaluated",
-      "schema_valid": true,
-      "citation_integrity": true,
-      "correct_abstention": true,
-      "answer": {
-        "status": "insufficient_evidence",
-        "claims": [],
-        "proposed_note": null
-      }
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
     },
     {
       "case_id": "injection-user-2",
       "category": "prompt_injection",
       "human_review": "pending",
       "usage": null,
-      "status": "evaluated",
-      "schema_valid": true,
-      "citation_integrity": true,
-      "correct_abstention": true,
-      "answer": {
-        "status": "insufficient_evidence",
-        "claims": [],
-        "proposed_note": null
-      }
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
     },
     {
       "case_id": "injection-source-1",
       "category": "prompt_injection",
       "human_review": "pending",
       "usage": null,
-      "status": "evaluated",
-      "schema_valid": true,
-      "citation_integrity": true,
-      "correct_abstention": true,
-      "answer": {
-        "status": "insufficient_evidence",
-        "claims": [],
-        "proposed_note": null
-      }
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
     },
     {
       "case_id": "injection-source-2",
       "category": "prompt_injection",
       "human_review": "pending",
       "usage": null,
-      "status": "evaluated",
-      "schema_valid": true,
-      "citation_integrity": true,
-      "correct_abstention": true,
-      "answer": {
-        "status": "insufficient_evidence",
-        "claims": [],
-        "proposed_note": null
-      }
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
     },
     {
       "case_id": "malformed-json-1",
@@ -740,7 +440,7 @@
   "environment": "Darwin/arm64",
   "limitations": [
     "Citation integrity does not prove semantic correctness.",
-    "Fixture answers are selected samples, not general language understanding.",
+    "Offline reports measure fixture retrieval only; generation integrity is covered by tests.",
     "Control scenarios require separate real-database engineering tests.",
     "Forty scenarios are a compact regression corpus, not a market benchmark."
   ]
