@@ -43,7 +43,7 @@ def test_live_report_does_not_count_local_abstention_as_generation(monkeypatch):
     assert report["latency"]["p95_ms"] is None
 
 
-def test_evaluation_validation_details_exclude_raw_model_content(monkeypatch):
+def test_evaluation_validation_details_exclude_raw_model_content(monkeypatch, tmp_path):
     import evidencedesk.evaluation as evaluation
     from evidencedesk.config import Settings
     from evidencedesk.providers import FixtureProvider
@@ -68,6 +68,10 @@ def test_evaluation_validation_details_exclude_raw_model_content(monkeypatch):
     assert outcome["generation_completed"] is True
     assert "private input marker" not in json.dumps(report)
     assert "answer" not in outcome
+    evaluation.write_report(report, tmp_path)
+    markdown = (tmp_path / "latest-live.md").read_text()
+    assert "invalid_model_output" in markdown
+    assert "private input marker" not in markdown
 
 
 @pytest.mark.integration

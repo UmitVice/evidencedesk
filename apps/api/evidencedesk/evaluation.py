@@ -223,11 +223,44 @@ def write_report(report: dict[str, Any], output: Path) -> None:
         "",
         f"Commit: `{report['commit_sha']}`",
         "",
+        f"Mode/split: {report['mode']} / {report['split']}. "
+        f"Processed: {report['processed_count']}/{report['selected_count']} cases.",
+        f"Prompt: `{report['prompt_version']}`. Model: `{report['generation_model']}`.",
+        f"Embedding: `{report['embedding_manifest']['model']}` "
+        f"({report['embedding_manifest']['dimension']} dimensions).",
+        f"Dataset hash: `{report['dataset_hash']}`.",
+        f"Corpus hash: `{report['corpus_hash']}`.",
+        f"Generation attempts/completions: {report['generation_attempts']} / "
+        f"{report['generation_completions']}.",
+        "",
         "| Retrieval | n | Recall@5 | MRR |",
         "| --- | --- | --- | --- |",
     ]
     for method, metrics in report["methods"].items():
         lines.append(f"| {method} | {metrics['n']} | {metrics['recall_at_5']} | {metrics['mrr']} |")
+    if report.get("latency"):
+        timing = report["latency"]
+        lines += [
+            "", f"Latency n={timing['n']}: p50 {timing['p50_ms']} ms; "
+            f"p95 {timing['p95_ms']} ms. {timing['measurement']}.",
+        ]
+    lines += ["", "## Recorded failures and disagreements", ""]
+    failures = []
+    for outcome in report["outcomes"]:
+        if outcome["status"] == "failed":
+            failures.append(f"- `{outcome['case_id']}`: `{outcome['error_code']}`.")
+        elif outcome.get("correct_abstention") is False:
+            failures.append(
+                f"- `{outcome['case_id']}`: expected answer/abstention status disagreed."
+            )
+        if outcome.get("retrieval_misses"):
+            failures.append(
+                f"- `{outcome['case_id']}`: retrieval miss in "
+                + ", ".join(outcome["retrieval_misses"]) + "."
+            )
+    lines += failures or [
+        "No failures recorded in this run; human semantic review remains pending."
+    ]
     lines += ["", *report["limitations"]]
     (output / (name + ".md")).write_text("\n".join(lines) + "\n")
 
