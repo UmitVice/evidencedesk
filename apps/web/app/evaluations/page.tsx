@@ -111,14 +111,41 @@ export default function Evaluations() {
     <>
       <section className="report-header">
         <p className="eyebrow">Evaluation record</p>
-        <h1>Evidence about the evidence.</h1>
+        <h1>How reliable are the suggestions?</h1>
         <p className="muted">
-          Recorded retrieval and generation checks, with failures left visible.
-          This is a compact regression corpus, not a market benchmark or a live
-          service-health check.
+          These recorded tests check how EvidenceDesk finds documentation and
+          generates answers. Correct quotations do not prove correct answers;
+          human review of answer quality is still pending.
         </p>
         <span className="badge">Human review pending</span>
       </section>
+      <div
+        className="report-summary"
+        aria-label="Recorded evaluation at a glance"
+      >
+        <div className="card">
+          <span className="small">Format and source checks</span>
+          <strong>
+            {valid} / {liveReport.generation_completions}
+          </strong>
+          <p>
+            Generated responses passed these checks. This is not an accuracy
+            score.
+          </p>
+        </div>
+        <div className="card">
+          <span className="small">Cases needing attention</span>
+          <strong>{failures.length}</strong>
+          <p>
+            Failed checks or answers that disagreed with the expected result.
+          </p>
+        </div>
+        <div className="card">
+          <span className="small">Human quality review</span>
+          <strong>Pending</strong>
+          <p>No human answer-quality score has been assigned.</p>
+        </div>
+      </div>
       <div className="report-stack">
         <section className="card" aria-labelledby="live-report-title">
           <div className="report-heading">
@@ -134,15 +161,23 @@ export default function Evaluations() {
             {liveReport.generation_completions} completed provider responses.{" "}
             {valid} passed structured-output and citation-integrity checks.
           </p>
-          <Provenance report={liveReport} />
+          <details>
+            <summary>Models and test details</summary>
+            <Provenance report={liveReport} />
+          </details>
           <section className="report-section">
-            <h3>Live retrieval comparison</h3>
+            <h3>Finding the right documentation</h3>
             <p>
               All methods used the same real BGE query embeddings and eligible
               corpus. Duplicate chunks from one document count once. Unlabeled
               questions do not contribute to retrieval scores.
             </p>
             <RetrievalTable report={liveReport} />
+            <p>
+              Recall@5 measures whether the expected document appears in the
+              first five results. MRR measures how early it appears. Neither
+              measures answer correctness.
+            </p>
           </section>
           <section className="report-section">
             <h3>Generated-answer failures</h3>

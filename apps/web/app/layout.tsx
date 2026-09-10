@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Navigation } from "./navigation";
 import "./globals.css";
 export const metadata: Metadata = {
   title: {
-    default: "EvidenceDesk | Find the answer. Verify the source.",
+    default: "EvidenceDesk | AI help for support tickets",
     template: "%s | EvidenceDesk",
   },
   description:
-    "Investigate a support ticket, inspect the retrieved passages, and decide which internal note is saved.",
+    "Try AI-assisted support with fictional tickets. Check the original sources, then approve or reject a proposed internal note.",
 };
 export default function RootLayout({
   children,
@@ -25,16 +26,14 @@ export default function RootLayout({
             </span>
             EvidenceDesk
           </Link>
-          <nav aria-label="Main navigation">
-            <Link href="/workspace">Tickets</Link>
-            <Link href="/evaluations">Evaluations</Link>
-            <a href="https://github.com/UmitVice/evidencedesk">GitHub</a>
-          </nav>
+          <Navigation />
         </header>
         <main id="main-content">{children}</main>
         <footer>
-          <p>A support investigation desk for fictional RelayNest tickets.</p>
-          <span>Evidence first. Human decision.</span>
+          <p>Fictional tickets. AI suggestions. Your decision.</p>
+          <a href="https://github.com/UmitVice/evidencedesk">
+            View on GitHub <span aria-hidden="true">↗</span>
+          </a>
         </footer>
       </body>
     </html>

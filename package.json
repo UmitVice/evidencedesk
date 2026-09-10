@@ -28,6 +28,7 @@
     "db:runtime": "uv run --project apps/api python scripts/local-runtime-role.py"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
     "@playwright/test": "1.63.0",
     "prettier": "3.9.6"
   }

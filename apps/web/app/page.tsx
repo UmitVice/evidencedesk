@@ -6,19 +6,19 @@ const cases = [
     number: "01",
     title: "Webhook retry failure",
     category: "Delivery",
-    body: "The endpoint returned 503. Retries have stopped. Find the safe recovery path.",
+    body: "A delivery failed and retries have stopped. Find out how to recover it.",
   },
   {
     sample: "credential",
     number: "02",
     title: "Expired API credential",
     category: "Access",
-    body: "An integration returns credential_expired. Work through a safe credential rotation.",
+    body: "An integration can no longer connect. Check how to replace an expired credential.",
   },
   {
     sample: "export",
     number: "03",
-    title: "Export processing issue",
+    title: "Expired export link",
     category: "Exports",
     body: "An export download link has expired. Check how to make the file available again.",
   },
@@ -28,35 +28,41 @@ export default function Home() {
   return (
     <div className="home-desk">
       <section className="desk-intro">
-        <p className="eyebrow">EvidenceDesk / Support investigations</p>
-        <h1>
-          Find the answer.
-          <br />
-          Verify the source.
-        </h1>
-        <p className="intro-copy">
-          Investigate a support ticket, inspect the retrieved passages, and
-          decide which internal note is saved.
+        <p className="eyebrow">
+          AI support copilot <span className="badge">Fictional demo</span>
         </p>
-        <div className="actions">
-          <Link className="button" href="/workspace?sample=webhook">
-            Investigate a sample ticket <span aria-hidden="true">↗</span>
-          </Link>
-          <Link className="text-link" href="/evaluations">
-            See evaluation results
-          </Link>
-        </div>
-        <p className="small muted">
-          Synthetic tickets · Your own 24-hour session · No customer messages
+        <h1>Turn a support ticket into a reviewed note.</h1>
+        <p className="intro-copy">
+          EvidenceDesk finds relevant product documentation and uses AI to
+          suggest next steps. Check the sources, then decide what to save.
+        </p>
+        <p className="demo-assurance">
+          Nothing is saved as a note without your approval. No customer messages
+          are sent.
         </p>
       </section>
+      <ol className="journey" aria-label="How to try EvidenceDesk">
+        {[
+          "Select a sample ticket",
+          "Analyze the ticket",
+          "Inspect the sources",
+          "Approve or reject",
+        ].map((step, index) => (
+          <li key={step}>
+            <span aria-hidden="true">{index + 1}</span>
+            {step}
+          </li>
+        ))}
+      </ol>
       <section className="case-board" aria-labelledby="cases-title">
         <div className="board-heading">
           <div>
-            <p className="eyebrow">Choose a case</p>
-            <h2 id="cases-title">Three tickets. One careful decision.</h2>
+            <p className="eyebrow">Start here</p>
+            <h2 id="cases-title">Select a sample ticket</h2>
           </div>
-          <span className="badge">RelayNest / Harbor</span>
+          <span className="small muted">
+            For RelayNest, a fictional software product
+          </span>
         </div>
         {cases.map((item) => (
           <Link
@@ -69,26 +75,26 @@ export default function Home() {
             </span>
             <div>
               <span className="case-category">{item.category}</span>
+              {item.sample === "webhook" && (
+                <span className="recommended">Try this first</span>
+              )}
               <h3>{item.title}</h3>
               <p>{item.body}</p>
             </div>
             <span className="case-open">
-              Investigate <span aria-hidden="true">↗</span>
+              Open ticket <span aria-hidden="true">→</span>
             </span>
           </Link>
         ))}
       </section>
       <section className="desk-footnote" aria-label="How investigations work">
         <p>
-          <strong>Read. Check. Decide.</strong> Analysis proposes a note. Your
-          approval saves the exact text. Inspect every source before deciding.
+          Sources help you check a suggestion; they do not guarantee it is
+          correct.
         </p>
-        <a
-          className="text-link"
-          href="https://github.com/UmitVice/evidencedesk"
-        >
-          View source code <span aria-hidden="true">↗</span>
-        </a>
+        <Link className="text-link" href="/evaluations">
+          See evaluation results <span aria-hidden="true">→</span>
+        </Link>
       </section>
     </div>
   );
