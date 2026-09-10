@@ -10,6 +10,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from pydantic import ValidationError
+
 from evidencedesk.config import settings
 from evidencedesk.errors import DomainError
 from evidencedesk.live_ingest import corpus_hash
@@ -137,6 +139,13 @@ def run_evaluation(mode: str, split: str, limit: int) -> dict[str, Any]:
             )
         except DomainError as exc:
             outcome.update(status="failed", error_code=exc.code)
+            if isinstance(exc.__cause__, ValidationError):
+                outcome["validation_issues"] = [
+                    {"field": list(issue["loc"]), "type": issue["type"]}
+                    for issue in exc.__cause__.errors(
+                        include_url=False, include_context=False, include_input=False
+                    )
+                ]
             outcomes.append(outcome)
             if exc.code in ("quota_exhausted", "provider_quota", "provider_unavailable"):
                 break
@@ -163,6 +172,10 @@ def run_evaluation(mode: str, split: str, limit: int) -> dict[str, Any]:
         "prompt_version": PROMPT_VERSION,
         "embedding_manifest": adapter.manifest,
         "generation_model": GENERATION_MODEL if mode == "live" else "fixture-v1",
+        "budgets": {
+            "session_attempts_per_day": config.attempts_per_session_day,
+            "environment_attempts_per_day": config.attempts_per_environment_day,
+        },
         "retrieval": {
             "candidate_limit": config.candidate_limit,
             "rrf_k": 60,
