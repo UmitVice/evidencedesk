@@ -12,6 +12,7 @@ export type Report = {
   human_review: string;
   selected_count: number;
   processed_count: number;
+  split: string;
   generation_model: string;
   generation_attempts?: number;
   generation_completions?: number;

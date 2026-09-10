@@ -129,10 +129,10 @@ export default function Evaluations() {
           </div>
           <p>
             {liveReport.processed_count} of {liveReport.selected_count} selected
-            development cases processed. {liveReport.generation_attempts}{" "}
-            generation attempts; {liveReport.generation_completions} completed
-            provider responses. {valid} passed structured-output and
-            citation-integrity checks.
+            cases processed ({liveReport.split} split).{" "}
+            {liveReport.generation_attempts} generation attempts;{" "}
+            {liveReport.generation_completions} completed provider responses.{" "}
+            {valid} passed structured-output and citation-integrity checks.
           </p>
           <Provenance report={liveReport} />
           <section className="report-section">
@@ -176,16 +176,16 @@ export default function Evaluations() {
               refer to separate engineering tests.
             </p>
           </section>
-          {liveReport.prompt_version === "support-v1" && (
-            <div className="notice">
-              <strong>Historical prompt; follow-up evaluation pending.</strong>{" "}
-              This report tested support-v1. The live activation fix uses
-              support-v2 and passed hosted answer, abstention, and approval
-              checks. Its full quality evaluation remains pending because the
-              default daily evaluation-session budget was reached. Earlier
-              failures have not been relabeled as successes.
-            </div>
-          )}
+          <div className="notice">
+            <strong>Full run after a bounded smoke check.</strong> Historical
+            failures and the ten-case smoke remain available in the{" "}
+            <a href="https://github.com/UmitVice/evidencedesk/tree/dev/reports/history">
+              report history
+            </a>
+            . The full run used an explicit maintainer budget within the
+            unchanged 40-attempt environment cap. Public sandbox limits were
+            unchanged.
+          </div>
           <a
             className="text-link"
             href="https://github.com/UmitVice/evidencedesk/blob/dev/reports/latest-live.json"

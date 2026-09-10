@@ -48,7 +48,7 @@ The Python deployment includes tokenizer and public CA assets; excludes private 
 
 Use the existing free Cloudflare account and scoped Workers AI Read/Edit token. No Worker, paid AI Gateway, second provider, local LLM, or GPU is required. Models: `@cf/baai/bge-small-en-v1.5` (384 dimensions, cls, actual tokenizer cap 512) and `@cf/meta/llama-3.1-8b-instruct-fast`.
 
-The support-v2 generation contract uses JSON-object mode and the schema in the system prompt. Always retain strict Pydantic validation, exact quote/source authorization, immutable proposals, bounded deadlines, and no live-to-fixture fallback. Real request failures remain visible.
+The support-v3 generation contract uses JSON-object mode and the schema in the system prompt. Always retain strict Pydantic validation, exact quote/source authorization, immutable proposals, bounded deadlines, and no live-to-fixture fallback. Real request failures remain visible.
 
 The account's shared free allowance is 10,000 Neurons/day. Application limits are two analyses/minute, ten daily attempts/session, forty/environment by default. Maintenance and retries reserve budget before calls. Stop on quota errors; do not reset counters or change identities to extend live evaluation. AI_ENABLED=false is the kill switch. Cleanup is a bounded explicit maintenance command, not keepalive traffic.
 

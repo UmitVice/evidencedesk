@@ -6,6 +6,6 @@
 4. Choose **Reject proposal**. The ticket version and saved-note list remain unchanged; the audit records rejection.
 5. Analyze again within the quota, then **Approve and add note**. Refresh to show the exact persisted note and audit event. The BFF/integration checks separately verify repeated approval creates no duplicate.
 6. In simulated mode choose the supplied SSO question. In live mode ask a question outside RelayNest documentation; missing evidence should abstain without a proposal, and invalid model output must fail safely. Never promise perfect abstention.
-7. Open Evaluations. Distinguish the historical support-v1 live run, support-v2 activation checks, deterministic fixture retrieval, separate database safety tests, and pending human quality review.
+7. Open Evaluations. Distinguish the full support-v3 live run, preserved historical/smoke records, deterministic fixture retrieval, separate database safety tests, and pending human quality review.
 
-Screenshots are from the running local fixture application, labeled as such. They are not fabricated live results or a video recording. Hosted dev requires its separate database setup; production uses the confirmed Ohio database.
+Screenshots are from the running local fixture application, labeled as such. They are not fabricated live results or a video recording. Hosted dev and production use separate verified Ohio databases.
