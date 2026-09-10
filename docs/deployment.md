@@ -6,7 +6,7 @@ Reuse public GitHub `UmitVice/evidencedesk`, Vercel Hobby projects `evidencedesk
 
 Production Supabase is the user-confirmed “UmitVice's Project,” reference `xjizbcmayuojydvwykfu`, organization `vgtbutgaevguceusemkc`, East US (Ohio). Keep its existing name, organization, and region. Do not recreate, reset, move, or purchase IPv4. PostgreSQL 17.6 / pgvector 0.8.2 were verified directly.
 
-Production: https://evidencedesk-web.vercel.app and https://evidencedesk-api.vercel.app. Development: https://evidencedesk-web-git-dev-umitvices-projects.vercel.app and https://evidencedesk-api-git-dev-umitvices-projects.vercel.app. Dev is intentionally database-unavailable until its separate free project is created; never point it at production.
+Production: https://evidencedesk-web.vercel.app and https://evidencedesk-api.vercel.app. Development: https://evidencedesk-web-git-dev-umitvices-projects.vercel.app and https://evidencedesk-api-git-dev-umitvices-projects.vercel.app. Dev uses the isolated Free “DevEvidenceDesk” project (`vgeyikjybphzrrarcwaj`, organization `dzjfzmicvypgsxjmldlw`, Ohio), with its own restricted runtime login and all five migrations. Never point it at production.
 
 ## Credentials and database
 
@@ -36,7 +36,7 @@ All 24 production chunks have verified BGE cls embeddings. Repeat ingestion chan
 
 ## Environment scopes
 
-API server-only: DATABASE_URL, SERVICE_KEY, ENVIRONMENT, AI_MODE, AI_ENABLED, CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_API_TOKEN. Production uses `production` / `live`; the missing dev database is a clear error, not a fallback. Administrative MIGRATION_DATABASE_URL is never deployed.
+API server-only: DATABASE_URL, SERVICE_KEY, ENVIRONMENT, AI_MODE, AI_ENABLED, CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_API_TOKEN. Production uses `production` / `live`; dev uses `development` / `live` with branch-specific Preview values. Missing configuration remains a clear error, not a fallback. Administrative MIGRATION_DATABASE_URL is never deployed.
 
 Web server-only: API_ORIGIN, matching SERVICE_KEY, APP_ORIGIN. Production origins use the public aliases above. The dev branch uses its exact stable web alias for Origin checks. Task previews use their own VERCEL_URL. Protected preview API requests also use the existing VERCEL_AUTOMATION_BYPASS_SECRET, server-only. Never disable deployment protection globally or introduce NEXT_PUBLIC secrets.
 
@@ -52,8 +52,8 @@ The support-v2 generation contract uses JSON-object mode and the schema in the s
 
 The account's shared free allowance is 10,000 Neurons/day. Application limits are two analyses/minute, ten daily attempts/session, forty/environment by default. Maintenance and retries reserve budget before calls. Stop on quota errors; do not reset counters or change identities to extend live evaluation. AI_ENABLED=false is the kill switch. Cleanup is a bounded explicit maintenance command, not keepalive traffic.
 
-## Development handoff and release
+## Development and release
 
-Free capacity was available for a separate Ohio `evidencedesk-dev` project in organization `dzjfzmicvypgsxjmldlw`. The browser form has Data API and automatic exposure off. Its new password must be submitted by the user, then securely entered through the development-only helper above. Finish its own migrations, restricted login, corpus, Preview variables, redeployment, and functional verification after that handoff. Never reuse the production password/DSN in Preview.
+The user created the separate Ohio project named “DevEvidenceDesk” and completed the development-only credential helper. Authentication, five migrations, restricted transaction-pooler access, and 24 real BGE chunks are verified. A repeated ingestion changes zero chunks. Data API is disabled and TLS enforcement is enabled. API secrets are scoped to the dev branch; other task previews do not receive dev database access. Never reuse the production password/DSN in Preview.
 
 For each change: one branch from validated dev, local checks, secret scan, push, successful remote CI, integrate dev, delete the branch. Verify dev CI/deployment, fast-forward master, verify master CI and both production deployments, and run bounded disposable-session functional checks. Publish the verified release tag only afterward; finish on clean dev with only dev/master branches. Do not move existing tags or delete provider deployment history.
