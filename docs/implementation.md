@@ -2,7 +2,7 @@
 
 ## Current state
 
-EvidenceDesk is implemented as a three-route ticket investigation desk. The production baseline at `0031c480f764498c23b1d9f72c919efe11311c4e` was verified through the deployed browser and public BFF before redesign. The redesigned UI has direct scenario entry, claim-associated evidence inspection, exact-note approval, separate saved notes/audit events, and recorded live/fixture evaluation sections. Final deployment identifiers and release checks are recorded in the GitHub release and delivery report.
+EvidenceDesk is implemented as a three-route ticket investigation desk. The production baseline at `0031c480f764498c23b1d9f72c919efe11311c4e` was verified through the deployed browser and public BFF before redesign. The first-visit UI has brief demo orientation, direct sample entry, combined ticket/analysis controls, original-source inspection, explicit exact-note approval, and separate saved notes. Mobile follows analyze → inspect → decide → saved result; optional questions and technical details use native disclosures. See [UX verification and before/after screenshots](ux-improvements.md). Final deployment identifiers and release checks are recorded in the GitHub release and delivery report.
 
 - **GitHub:** existing public [UmitVice/evidencedesk](https://github.com/UmitVice/evidencedesk) reused; CLI identity UmitVice verified; master is the default/production branch. Permanent branches are dev and master; one temporary branch at a time.
 - **Production:** [web](https://evidencedesk-web.vercel.app) and [API health](https://evidencedesk-api.vercel.app/health). Both Vercel projects use Ohio `cle1`, GitHub integration, and paired server-only credentials. Public web → BFF → API → Supabase → real Workers AI → source validation → explicit decision → persisted note was verified.
@@ -15,7 +15,7 @@ EvidenceDesk is implemented as a three-route ticket investigation desk. The prod
 
 ## Verified evidence and limits
 
-Baseline master CI: [34416525370](https://github.com/UmitVice/evidencedesk/actions/runs/34416525370); baseline dev CI: [34416333589](https://github.com/UmitVice/evidencedesk/actions/runs/34416333589). Both ran 43 Python/API/PostgreSQL tests and six pre-redesign browser tests. The current suite has 44 Python/API/PostgreSQL tests and 13 browser tests. Native database tests and GitHub's PostgreSQL container are distinct; local Docker was not used.
+Baseline master CI: [34416525370](https://github.com/UmitVice/evidencedesk/actions/runs/34416525370); baseline dev CI: [34416333589](https://github.com/UmitVice/evidencedesk/actions/runs/34416333589). Both ran 43 Python/API/PostgreSQL tests and six pre-redesign browser tests. The current suite has 44 Python/API/PostgreSQL tests and 22 local browser tests, plus a separately invoked bounded hosted smoke. Native database tests and GitHub's PostgreSQL container are distinct; local Docker was not used.
 
 The production baseline BFF checks passed session/ticket creation, real generation, exact authorized quotations, approval of the exact note, repeated approval with one note, rejection without a note, foreign session/run/proposal rejection, tampered content rejection, stale proposals, and unsupported-question abstention. Browser checks independently confirmed live source inspection, approval, refresh persistence, and rejection. Baseline deployments: API `dpl_5413aMmkq1X3BAHZS7yPx8oQq2yT`, web `dpl_HADXaR6cs3HdnYPShg1eTnSYG9t6`.
 

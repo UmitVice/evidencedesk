@@ -1,6 +1,6 @@
 # EvidenceDesk
 
-**Find the answer. Verify the source.**
+**Turn a support ticket into a reviewed note.**
 
 EvidenceDesk is a support copilot for the fictional SaaS product RelayNest. It retrieves authorized product documentation, returns structured claims with original excerpts, and proposes an internal ticket note. Only an explicit human decision can save that note.
 
@@ -29,7 +29,7 @@ npm run api
 npm run dev
 ```
 
-Open http://localhost:3000. Choose a home-page scenario to open its isolated ticket directly, then select Analyze ticket, inspect evidence, and use Approve and add note or Reject proposal. Refreshing preserves the pending decision or saved note. Sessions expire after 24 hours. The simulated-mode label stays visible; arbitrary fixture questions are rejected. The SSO sample demonstrates insufficient evidence. Two analyses per minute, ten daily attempts per session, and forty per environment are the conservative defaults.
+Open http://localhost:3000. Choose a home-page scenario to open its isolated ticket directly, then select Analyze ticket, inspect evidence, and use Approve & save note or Reject draft. Refreshing preserves the pending decision or saved note. Sessions expire after 24 hours. The simulated-mode label stays visible; arbitrary fixture questions are rejected. The optional SSO question demonstrates insufficient evidence. Two analyses per minute, ten daily attempts per session, and forty per environment are the conservative defaults.
 
 The local environment helper writes ignored mode-0600 files and never prints generated credentials. It preserves existing files. Docker exposes PostgreSQL only on loopback port 54329. The local runtime helper separates the restricted API login from the migration owner. Hosted runtime must likewise use the restricted role described in [deployment](docs/deployment.md). The integration tests run API operations as that restricted role.
 
@@ -98,6 +98,6 @@ Use two Vercel Hobby projects, Supabase Free PostgreSQL/pgvector, and Cloudflare
 
 Citation integrity is not semantic correctness. Prompt injection cannot grant tools, but a plausible inaccurate answer remains possible and requires review. Expired or changed tickets need regeneration. Interrupted analysis does not resume at an arbitrary graph node. Live failures never become simulated successes. A missing database leaves the case descriptions and evaluation record available and reports session creation as unavailable. The protected dev Preview is paired with its own API and isolated Free Supabase database; it never shares production state. Free services have quotas and Supabase inactivity pauses. Cleanup is a bounded explicit command: `npm run db:cleanup`.
 
-A [demo script](docs/demo-script.md) covers answer/source inspection, abstention, rejection, approval retries, and evaluation limitations. Screenshots are from the running local fixture app, verified at 375, 768, and 1440 px; no recording is claimed. [Mobile investigation](docs/screenshots/workspace-375.png) · [Claim-associated evidence](docs/screenshots/evidence-1440.png). Potential future work includes stronger semantic review and real identity integration, beyond this deliberately small scope.
+A [demo script](docs/demo-script.md) covers answer/source inspection, abstention, rejection, approval retries, and evaluation limitations. Screenshots are from the running local fixture app, verified at 375, 768, and 1440 px; no recording is claimed. [Before/after UX record](docs/ux-improvements.md) · [Mobile investigation](docs/screenshots/workspace-375.png) · [Claim-associated evidence](docs/screenshots/evidence-1440.png). Potential future work includes stronger semantic review and real identity integration, beyond this deliberately small scope.
 
 Original code and synthetic data: MIT. See [third-party notices](THIRD_PARTY_NOTICES.md).

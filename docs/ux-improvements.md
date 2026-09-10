@@ -47,3 +47,69 @@ writers.
 
 Fresh baseline captures are in [ux-before](screenshots/ux-before). Updated
 captures and the verified release record will accompany the implementation.
+
+## Implemented and verified locally
+
+- Retained the paper/teal visual character and three routes. Added active
+  navigation and a distinct workspace page title.
+- The landing page explains AI assistance, fictional data, the approval
+  boundary, and the four-step journey beside the sample list.
+- Mobile Analyze is visible without scrolling at 375 × 812. The decision
+  follows sources and precedes saved notes in both visual and keyboard order.
+- AI drafts, original passages, and approved notes have distinct labels and
+  surfaces. Source controls name the document; source integrity is never
+  presented as an answer-quality guarantee.
+- Source loading/error/retry stays in the native drawer. Escape and both tab
+  directions retain/restore focus; completion moves focus to the new result.
+- Expiry updates while a draft is open. Approval response loss preserves the
+  draft and offers a read-only refresh; a real database test of that journey
+  recovers exactly one saved note without another decision request.
+- Optional questions, draft/source metadata, and decision history remain
+  available through native disclosures. The evaluation page summarizes
+  existing records without changing or inventing model-quality results.
+
+Local release checks at implementation `46349f2`: lint, TypeScript, optimized
+production build, Python lint/types, **44 real PostgreSQL/API tests** with no
+skips, **22 Chromium browser tests**, API-contract drift, npm/pip audits, staged
+secret scan, and full Git-history scan passed. Automated axe checks found no
+violations of the selected WCAG A/AA rules on all three pages, the draft,
+source dialog, and saved state. Manual browser inspection covered desktop and
+mobile. Responsive checks cover 320, 375, 768, and 1440px; keyboard and reduced
+motion checks pass. Automated checks are not a claim of complete accessibility
+certification or a human usability study.
+
+The local browser suite uses the supported development server and an isolated
+native PostgreSQL fixture database. An additional `next start` attempt correctly
+rejected the local HTTP upstream under the existing production HTTPS guard;
+no guard was relaxed. Production runtime behavior is verified on hosted HTTPS.
+
+## Before and after captures
+
+These are genuine screenshots from the running local fixture app, with the
+simulated-mode label visible. Baseline is `cd0869f`; after is `46349f2`. No live
+model-quality result is inferred from these images. Normal test runs now write
+to ignored `test-results`; refresh the reviewed captures explicitly with
+`SCREENSHOT_DIR=docs/screenshots npm run test:browser`.
+
+| View | Before | After |
+| --- | --- | --- |
+| Desktop landing, 1440px | [Before](screenshots/ux-before/landing-1440.png) | [After](screenshots/landing-1440.png) |
+| Mobile landing, 375px | [Before](screenshots/ux-before/landing-375.png) | [After](screenshots/landing-375.png) |
+| Desktop saved note, 1440px | [Before](screenshots/ux-before/workspace.png) | [After](screenshots/workspace.png) |
+| Mobile pending review, 375px | [Before](screenshots/ux-before/workspace-375.png) | [After](screenshots/workspace-375.png) |
+| Mobile source, 375px | [Before](screenshots/ux-before/evidence-375.png) | [After](screenshots/evidence-375.png) |
+
+[Mobile ready to analyze](screenshots/workspace-ready-375.png) ·
+[Loading](screenshots/analysis-loading.png) · [Error](screenshots/analysis-error.png)
+
+## Hosted release checks
+
+Use the existing [protected dev](https://evidencedesk-web-git-dev-umitvices-projects.vercel.app)
+and [production](https://evidencedesk-web.vercel.app) projects, paired with their
+existing isolated APIs/databases. Verify exact deployment revisions and CI,
+then run the bounded browser smoke on dev before promoting master. The smoke
+covers two real generations, original quote inspection, exact approval and
+refresh persistence, rejection without a note, secure session cookies, mobile
+reflow, and automated accessibility. Record actual CI/deployment identifiers
+and outcomes in the final delivery receipt; do not treat a READY deployment
+alone as functional verification.
