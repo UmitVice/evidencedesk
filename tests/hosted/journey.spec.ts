@@ -46,10 +46,15 @@ test("hosted sources, approval persistence, rejection, and responsive accessibil
     .click();
   await expect(
     page.getByRole("button", { name: "Approve & save note" }),
-  ).toBeVisible({ timeout: 55_000 });
+  ).toBeEnabled({ timeout: 55_000 });
   await expect(page.getByTestId("analysis-mode")).toHaveText("Live AI");
   const draft = await page.locator(".proposed-note").innerText();
   await expect(page.locator(".saved-note")).toHaveCount(0);
+  // A draft can arrive before the final ticket refresh finishes.
+  // Wait for the rendered source controls before enumerating the live result.
+  await expect(
+    page.getByRole("button", { name: /View source/ }).first(),
+  ).toBeVisible();
   const sources = await page.getByRole("button", { name: /View source/ }).all();
   expect(sources.length).toBeGreaterThan(0);
   for (const source of sources) {
@@ -95,6 +100,9 @@ test("hosted sources, approval persistence, rejection, and responsive accessibil
   await expect(page.getByRole("button", { name: "Reject draft" })).toBeVisible({
     timeout: 55_000,
   });
+  await expect(
+    page.getByRole("button", { name: "Reject draft" }),
+  ).toBeEnabled();
   await page
     .getByRole("button", { name: /View source/ })
     .first()
