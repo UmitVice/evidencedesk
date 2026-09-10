@@ -31,7 +31,7 @@ def search_knowledge(
                 "corpus_mismatch", "The corpus must be ingested for this AI mode.", 503
             )
         lexical = conn.execute(
-            "SELECT c.id,c.heading,c.body,d.title,d.source_id,d.version,"
+            "SELECT c.id,c.heading,c.body,d.title,d.source_id,d.version,d.status,"
             "ts_rank_cd(c.search,websearch_to_tsquery('english',%s)) score "
             "FROM evidence.chunks c JOIN evidence.documents d ON d.id=c.document_id "
             "WHERE c.tenant=%s AND d.status='active' "
@@ -40,7 +40,7 @@ def search_knowledge(
             (lexical_query, tenant, lexical_query, config.candidate_limit),
         ).fetchall()
         vectors = conn.execute(
-            "SELECT c.id,c.heading,c.body,d.title,d.source_id,d.version,"
+            "SELECT c.id,c.heading,c.body,d.title,d.source_id,d.version,d.status,"
             "c.embedding <=> %s::vector distance "
             "FROM evidence.chunks c JOIN evidence.documents d ON d.id=c.document_id "
             "WHERE c.tenant=%s AND d.status='active' AND c.embedding IS NOT NULL "

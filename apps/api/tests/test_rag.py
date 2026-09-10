@@ -76,6 +76,7 @@ def test_retrieval_filters_before_context(db):
         )
         assert all(x["source_id"] not in ("summit-private", "summit-export") for x in results)
         assert all(x["version"] == 2 for x in results)
+        assert all(x["status"] == "active" for x in results)
     with pytest.raises(DomainError, match="corpus_mismatch"):
         search_knowledge("harbor", "webhook", fixture_vector("webhook"), {"model": "different"})
 
