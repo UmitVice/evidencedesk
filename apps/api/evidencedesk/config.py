@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     ai_enabled: bool = True
     cloudflare_account_id: str = ""
     cloudflare_api_token: SecretStr = SecretStr("")
+    gemini_api_key: SecretStr = SecretStr("")
     session_hours: int = Field(default=24, ge=1, le=48)
     session_limit: int = Field(default=500, ge=1, le=5000)
     sessions_per_hour: int = Field(default=30, ge=1, le=200)

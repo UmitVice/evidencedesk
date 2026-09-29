@@ -22,9 +22,11 @@ from evidencedesk.responses import (
     TicketsResponse,
 )
 from evidencedesk.sessions import create_session, get_ticket, require_service, session
+from evidencedesk.voice import voice_router
 from evidencedesk.workflow import analyze, read_run
 
 app = FastAPI(title="EvidenceDesk API", version="0.1.0")
+app.include_router(voice_router)
 Owner = Annotated[dict[str, Any], Depends(session)]
 logger = logging.getLogger("evidencedesk")
 if not logger.handlers:
