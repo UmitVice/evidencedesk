@@ -109,6 +109,7 @@ export function VoiceCopilot({
   const lastSentTranscriptRef = useRef<string>("");
   const isRecordingRef = useRef<boolean>(false);
   const voiceStateRef = useRef<VoiceState>("idle");
+  const recorderMimeTypeRef = useRef<string>("");
 
   useEffect(() => {
     voiceStateRef.current = voiceState;
@@ -133,14 +134,20 @@ export function VoiceCopilot({
   }, []);
 
   // Helper to compile recorded audio blobs and link playable URL to the current user turn
-  const attachAudioToTurn = useCallback(() => {
+  const attachAudioToTurn = useCallback((overrideTargetId?: string | null) => {
     if (recordedBlobsRef.current.length > 0) {
-      const mimeType = recordedBlobsRef.current[0].type || "audio/webm";
-      const audioBlob = new Blob(recordedBlobsRef.current, { type: mimeType });
+      const actualMimeType =
+        recorderMimeTypeRef.current ||
+        recordedBlobsRef.current[0]?.type ||
+        (typeof MediaRecorder !== "undefined" && MediaRecorder.isTypeSupported("audio/webm")
+          ? "audio/webm"
+          : "audio/mp4");
+      const audioBlob = new Blob(recordedBlobsRef.current, { type: actualMimeType });
       const url = URL.createObjectURL(audioBlob);
       setRecordingUrl(url);
 
-      const targetId = currentUserTurnIdRef.current;
+      const targetId =
+        overrideTargetId !== undefined ? overrideTargetId : currentUserTurnIdRef.current;
       const spokenText = currentUserTextRef.current?.trim() || "";
 
       setTranscripts((prev) => {
@@ -167,7 +174,7 @@ export function VoiceCopilot({
             matched = true;
             return {
               ...turn,
-              audioUrl: turn.audioUrl || url,
+              audioUrl: url,
               isFinal: true,
               text: turn.text || spokenText || "Voice note recorded",
             };
@@ -180,7 +187,7 @@ export function VoiceCopilot({
             if (next[i].role === "user") {
               next[i] = {
                 ...next[i],
-                audioUrl: next[i].audioUrl || url,
+                audioUrl: url,
                 isFinal: true,
                 text: next[i].text || spokenText || "Voice note recorded",
               };
@@ -212,7 +219,7 @@ export function VoiceCopilot({
     return null;
   }, []);
 
-  // Flush and attach current recorded user audio to latest user turn
+  // Flush recorded user audio chunks during active turns
   const saveUserTurnAudio = useCallback(() => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
       try {
@@ -221,8 +228,7 @@ export function VoiceCopilot({
         // Ignore
       }
     }
-    return attachAudioToTurn();
-  }, [attachAudioToTurn]);
+  }, []);
 
   // Gracefully complete the call, save user audio recording, and keep dialogue permanently visible
   const completeCall = useCallback(() => {
@@ -240,25 +246,55 @@ export function VoiceCopilot({
       recognitionRef.current = null;
     }
 
-    // 2. Stop MediaRecorder and generate playable audio blob for user voice message
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+    // 2. Stop MediaRecorder and generate complete playable audio blob
+    const targetTurnId = currentUserTurnIdRef.current;
+    const recorder = mediaRecorderRef.current;
+    mediaRecorderRef.current = null;
+
+    const finalizeAndCleanUp = () => {
+      attachAudioToTurn(targetTurnId);
+
+      // Stop microphone tracks AFTER recorder has fully stopped
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+        mediaStreamRef.current = null;
+      }
+
+      // Close AudioContext
+      if (inputAudioCtxRef.current) {
+        try {
+          void inputAudioCtxRef.current.close();
+        } catch {
+          // Ignore
+        }
+        inputAudioCtxRef.current = null;
+      }
+
+      setVoiceState("idle");
+      setActiveTurnId(null);
+      currentUserTurnIdRef.current = null;
+      currentUserTextRef.current = "";
+      lastSentTranscriptRef.current = "";
+    };
+
+    if (recorder && recorder.state !== "inactive") {
+      recorder.onstop = () => {
+        finalizeAndCleanUp();
+      };
       try {
-        mediaRecorderRef.current.requestData();
+        recorder.requestData();
       } catch {
         // Ignore
       }
-      mediaRecorderRef.current.onstop = () => {
-        attachAudioToTurn();
-      };
       try {
-        mediaRecorderRef.current.stop();
+        recorder.stop();
       } catch (err) {
         console.warn("Error stopping MediaRecorder:", err);
+        finalizeAndCleanUp();
       }
-      mediaRecorderRef.current = null;
+    } else {
+      finalizeAndCleanUp();
     }
-    // Immediate attachment pass to guarantee audio blob is ready
-    attachAudioToTurn();
 
     // 3. Close WebSocket gracefully
     if (wsRef.current) {
@@ -282,28 +318,6 @@ export function VoiceCopilot({
       }
       scriptProcessorRef.current = null;
     }
-
-    // 5. Stop microphone tracks
-    if (mediaStreamRef.current) {
-      mediaStreamRef.current.getTracks().forEach((track) => track.stop());
-      mediaStreamRef.current = null;
-    }
-
-    // 6. Close audio contexts
-    if (inputAudioCtxRef.current) {
-      try {
-        void inputAudioCtxRef.current.close();
-      } catch {
-        // Ignore
-      }
-      inputAudioCtxRef.current = null;
-    }
-
-    setVoiceState("idle");
-    setActiveTurnId(null);
-    currentUserTurnIdRef.current = null;
-    currentUserTextRef.current = "";
-    lastSentTranscriptRef.current = "";
   }, [attachAudioToTurn, stopPlayback]);
 
   // Cleanup on unmount
@@ -390,6 +404,7 @@ export function VoiceCopilot({
           ? "audio/mp4"
           : "";
         const recorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+        recorderMimeTypeRef.current = recorder.mimeType || mimeType || "";
         recorder.ondataavailable = (e) => {
           if (e.data && e.data.size > 0) {
             recordedBlobsRef.current.push(e.data);
@@ -754,7 +769,13 @@ export function VoiceCopilot({
             className={`voice-btn mic-btn ${isConnected ? "active" : ""}`}
             onClick={isConnected ? completeCall : connect}
             disabled={voiceState === "connecting"}
-            aria-label={isConnected ? "Save & Disconnect Voice Note" : "Record Voice Note"}
+            aria-label={
+              isConnected
+                ? "Save & Disconnect Voice Note"
+                : hasDialogue || hasRecordedAudio
+                ? "Record Another Voice Note"
+                : "Record Voice Note"
+            }
           >
             <span className="mic-icon" aria-hidden="true">
               {isConnected ? "⏹" : "🎙"}
@@ -828,26 +849,17 @@ export function VoiceCopilot({
                       <div className="user-voice-card">
                         {/* Voice audio player on top: Click to listen to user's recorded speech */}
                         <div className="voice-player-row">
-                          {turn.audioUrl ? (
-                            <audio
-                              controls
-                              src={turn.audioUrl}
-                              className="voice-note-audio-player"
-                              preload="metadata"
-                            >
-                              Your browser does not support audio playback.
-                            </audio>
-                          ) : isCurrentActiveTurn ? (
+                          {isCurrentActiveTurn ? (
                             <div className="recording-in-progress-pill">
                               <span className="rec-dot" aria-hidden="true">●</span>
                               <span>Recording your voice note… (audio player ready when saved)</span>
                             </div>
-                          ) : audioSource ? (
+                          ) : (turn.audioUrl || audioSource) ? (
                             <audio
                               controls
-                              src={audioSource}
+                              src={(turn.audioUrl || audioSource) || undefined}
                               className="voice-note-audio-player"
-                              preload="metadata"
+                              preload="auto"
                             >
                               Your browser does not support audio playback.
                             </audio>
