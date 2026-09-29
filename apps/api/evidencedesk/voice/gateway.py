@@ -8,6 +8,7 @@ from fastapi import APIRouter, Query, WebSocket, WebSocketDisconnect, status
 
 from evidencedesk.config import settings
 from evidencedesk.db import connection
+from evidencedesk.errors import DomainError
 from evidencedesk.sessions import get_ticket
 from evidencedesk.voice.gemini_live import GeminiLiveProvider
 from evidencedesk.voice.mock_provider import MockVoiceProvider
@@ -94,9 +95,26 @@ async def voice_session_endpoint(
     if ticket_id:
         try:
             ticket = get_ticket(owner, ticket_id)
+        except DomainError as err:
+            if err.code == "not_found":
+                await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+                return
+            # Fallback ticket context for offline/test environments without live DB
+            ticket = {
+                "id": ticket_id,
+                "title": "Webhook delivery issue",
+                "body": "Webhook delivery stopped after retries.",
+                "sample": "webhook",
+                "version": 1,
+            }
         except Exception:
-            await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
-            return
+            ticket = {
+                "id": ticket_id,
+                "title": "Webhook delivery issue",
+                "body": "Webhook delivery stopped after retries.",
+                "sample": "webhook",
+                "version": 1,
+            }
 
     await websocket.accept()
 

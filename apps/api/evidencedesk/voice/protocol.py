@@ -115,6 +115,22 @@ def parse_client_message(raw: str | bytes) -> VoiceClientEvent:
         return TranscriptEvent(role="user", text=raw, is_final=True)
 
 
+def parse_server_message(raw: str | bytes) -> VoiceServerEvent:
+    """Parse incoming WebSocket message from the server into a validated server event."""
+    if isinstance(raw, bytes):
+        return AudioFrame.from_bytes(raw)
+    try:
+        return _server_adapter.validate_json(raw)
+    except Exception:
+        try:
+            parsed = json.loads(raw)
+            if isinstance(parsed, dict) and "type" in parsed:
+                return _server_adapter.validate_python(parsed)
+        except Exception:
+            pass
+        return TranscriptEvent(role="assistant", text=raw, is_final=True)
+
+
 def serialize_server_message(event: VoiceServerEvent) -> str:
     """Serialize server event to JSON string for WebSocket transmission."""
     return _server_adapter.dump_json(event).decode("utf-8")
