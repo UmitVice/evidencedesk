@@ -1107,6 +1107,315 @@ th {
     padding: 10px 7px;
   }
 }
+
+/* Voice Copilot Styles */
+.voice-copilot-card {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 18px 22px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+.voice-copilot-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.voice-status-group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.status-indicator {
+  position: relative;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #94a3b8;
+}
+.status-indicator.connecting {
+  background: #f59e0b;
+}
+.status-indicator.listening {
+  background: #10b981;
+}
+.status-indicator.assistant_speaking {
+  background: #06b6d4;
+}
+.status-indicator.interrupted {
+  background: #f97316;
+}
+.status-indicator.error {
+  background: #ef4444;
+}
+.status-indicator.listening .indicator-pulse,
+.status-indicator.assistant_speaking .indicator-pulse {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: inherit;
+  opacity: 0.6;
+  animation: voice-pulse 1.6s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+@keyframes voice-pulse {
+  0% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+.voice-copilot-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--ink);
+}
+.voice-status-caption {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 2px 0 0 0;
+}
+.voice-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.voice-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--ink);
+  transition: all 0.15s ease-in-out;
+}
+.voice-btn:hover:not(:disabled) {
+  background: var(--tint);
+  border-color: var(--accent);
+}
+.mic-btn.active {
+  background: #dc2626;
+  color: white;
+  border-color: #dc2626;
+}
+.mic-btn.active:hover {
+  background: #b91c1c;
+  border-color: #b91c1c;
+}
+.interrupt-btn {
+  background: #fef3c7;
+  color: #92400e;
+  border-color: #fcd34d;
+}
+.interrupt-btn:hover {
+  background: #fde68a;
+}
+.voice-context-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  padding: 4px 10px;
+  background: var(--tint);
+  border-radius: 6px;
+  font-size: 12px;
+}
+.pill-label {
+  font-weight: 600;
+  color: var(--accent);
+}
+.pill-ticket {
+  color: var(--ink);
+}
+.voice-error-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 14px;
+  padding: 10px 14px;
+  background: #fee2e2;
+  color: #b91c1c;
+  border-radius: 8px;
+  font-size: 13px;
+}
+.dismiss-btn {
+  background: none;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  color: #b91c1c;
+}
+.voice-transcripts-box {
+  margin-top: 16px;
+  padding: 14px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.transcripts-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 12px;
+  color: var(--muted);
+  font-size: 13px;
+  text-align: center;
+}
+.transcripts-placeholder p {
+  margin: 0 0 6px 0;
+}
+.audio-wave-hint {
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 600;
+}
+.transcript-bubble {
+  padding: 8px 12px;
+  border-radius: 8px;
+  max-width: 85%;
+  font-size: 13.5px;
+  line-height: 1.45;
+}
+.transcript-bubble.user {
+  align-self: flex-end;
+  background: #dbeafe;
+  color: #1e3a8a;
+  border-bottom-right-radius: 2px;
+}
+.transcript-bubble.assistant {
+  align-self: flex-start;
+  background: white;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-bottom-left-radius: 2px;
+}
+.transcript-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11px;
+  opacity: 0.75;
+  margin-bottom: 2px;
+}
+.transcript-speaker {
+  font-weight: 600;
+}
+.voice-citations-container {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+.citations-header {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+  margin: 0 0 10px 0;
+}
+.citations-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+}
+.voice-citation-card {
+  padding: 12px 14px;
+  background: var(--tint);
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.voice-citation-card:hover {
+  border-color: var(--accent);
+  background: white;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+.citation-title {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--ink);
+}
+.citation-heading {
+  font-size: 11.5px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.citation-quote {
+  margin: 0;
+  font-size: 12.5px;
+  color: #334155;
+  font-style: italic;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.citation-action {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+}
+.voice-proposal-banner {
+  margin-top: 16px;
+  padding: 14px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+}
+.proposal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.proposal-tag {
+  font-size: 12px;
+  font-weight: 700;
+  color: #166534;
+  text-transform: uppercase;
+}
+.proposal-status {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  background: #dcfce7;
+  color: #15803d;
+  border-radius: 4px;
+}
+.proposal-content {
+  font-size: 13.5px;
+  color: #14532d;
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+.apply-proposal-btn {
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.apply-proposal-btn:hover {
+  background: #0f5650;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

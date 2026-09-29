@@ -223,3 +223,53 @@ def test_run_voice_evals_metrics():
 
     # 100% abstention accuracy on unsupported knowledge
     assert metrics["abstention_accuracy"]["score"] == 1.0
+
+
+def test_create_voice_ticket_and_handshake():
+    """Verify short-lived single-use voice ticket creation and WebSocket authentication."""
+    import time
+
+    from evidencedesk.voice.gateway import _VOICE_TICKETS, VoiceTicket
+
+    client = TestClient(app)
+    ticket_code = "voice-auth-token-test-12345"
+    _VOICE_TICKETS[ticket_code] = VoiceTicket(
+        ticket=ticket_code,
+        owner={"id": MOCK_SESSION_ID, "tenant": "harbor"},
+        expires_at=time.time() + 60.0,
+        redeemed=False,
+    )
+
+    # Connect using single-use ticket
+    with client.websocket_connect(f"/api/voice/session?ticket={ticket_code}") as ws:
+        msg = ws.receive_json()
+        assert msg["type"] == "control"
+        assert msg["action"] == "start"
+        assert msg["payload"]["tenant"] == "harbor"
+
+    # Subsequent connection with redeemed ticket must be rejected with 1008
+    with pytest.raises(WebSocketDisconnect) as exc_info:
+        with client.websocket_connect(f"/api/voice/session?ticket={ticket_code}"):
+            pass
+    assert exc_info.value.code == 1008
+
+
+def test_voice_ticket_expired_rejection():
+    """Verify expired voice tickets are rejected with 1008 Policy Violation."""
+    import time
+
+    from evidencedesk.voice.gateway import _VOICE_TICKETS, VoiceTicket
+
+    client = TestClient(app)
+    ticket_code = "expired-token-xyz"
+    _VOICE_TICKETS[ticket_code] = VoiceTicket(
+        ticket=ticket_code,
+        owner={"id": MOCK_SESSION_ID, "tenant": "harbor"},
+        expires_at=time.time() - 10.0,
+        redeemed=False,
+    )
+
+    with pytest.raises(WebSocketDisconnect) as exc_info:
+        with client.websocket_connect(f"/api/voice/session?ticket={ticket_code}"):
+            pass
+    assert exc_info.value.code == 1008

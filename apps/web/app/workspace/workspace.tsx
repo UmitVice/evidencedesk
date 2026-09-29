@@ -8,6 +8,7 @@ import type {
   RunResponse,
   SourceResponse,
 } from "../../lib/api-contract";
+import { VoiceCopilot } from "./voice-copilot";
 
 type Operation =
   | "session"
@@ -452,6 +453,25 @@ export default function Workspace() {
                 </p>
               </div>
             </section>
+            {ticket && (
+              <VoiceCopilot
+                ticketId={ticket.id}
+                ticketTitle={ticket.title}
+                onNoteProposed={async () => {
+                  await act("refresh", refresh);
+                }}
+                onSelectSource={async (sourceId) => {
+                  try {
+                    setSource(null);
+                    setSourceOpen(true);
+                    dialog.current?.showModal();
+                    setSource(await api<SourceResponse>(`sources/${sourceId}`));
+                  } catch (err) {
+                    console.warn("Failed to load source:", err);
+                  }
+                }}
+              />
+            )}
             <section
               className="card investigation"
               aria-labelledby="answer-heading"

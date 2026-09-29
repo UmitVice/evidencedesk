@@ -22,6 +22,7 @@ const routes = new Map<string, RegExp[]>([
       /^sessions$/,
       new RegExp(`^tickets/${uuid}/analyze$`),
       new RegExp(`^proposals/${uuid}/decision$`),
+      /^voice\/ticket$/,
     ],
   ],
 ]);

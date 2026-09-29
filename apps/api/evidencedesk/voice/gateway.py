@@ -2,14 +2,16 @@ import asyncio
 import hashlib
 import logging
 import secrets
-from typing import Any
+import time
+from dataclasses import dataclass
+from typing import Annotated, Any
 
-from fastapi import APIRouter, Query, WebSocket, WebSocketDisconnect, status
+from fastapi import APIRouter, Depends, Query, WebSocket, WebSocketDisconnect, status
 
 from evidencedesk.config import settings
 from evidencedesk.db import connection
 from evidencedesk.errors import DomainError
-from evidencedesk.sessions import get_ticket
+from evidencedesk.sessions import get_ticket, session
 from evidencedesk.voice.gemini_live import GeminiLiveProvider
 from evidencedesk.voice.mock_provider import MockVoiceProvider
 from evidencedesk.voice.protocol import (
@@ -29,7 +31,45 @@ from evidencedesk.voice.vad import AudioFrameBuffer, VADConfig, VoiceActivityDet
 
 logger = logging.getLogger("evidencedesk.voice.gateway")
 
-voice_router = APIRouter(prefix="/api/voice", tags=["voice"])
+voice_router = APIRouter(tags=["voice"])
+Owner = Annotated[dict[str, Any], Depends(session)]
+
+
+@dataclass
+class VoiceTicket:
+    ticket: str
+    owner: dict[str, Any]
+    expires_at: float
+    redeemed: bool = False
+
+
+_VOICE_TICKETS: dict[str, VoiceTicket] = {}
+
+
+@voice_router.post("/api/voice/ticket")
+@voice_router.post("/voice/ticket")
+def create_voice_ticket(owner: Owner) -> dict[str, Any]:
+    """
+    Create a short-lived (60s) single-use voice ticket for the authenticated session.
+    Enforces server-only credentials without exposing SERVICE_KEY to the browser.
+    """
+    now = time.time()
+    expired = [k for k, v in _VOICE_TICKETS.items() if v.expires_at <= now or v.redeemed]
+    for k in expired:
+        _VOICE_TICKETS.pop(k, None)
+
+    ticket = secrets.token_urlsafe(32)
+    _VOICE_TICKETS[ticket] = VoiceTicket(
+        ticket=ticket,
+        owner=owner,
+        expires_at=now + 60.0,
+        redeemed=False,
+    )
+    return {
+        "ticket": ticket,
+        "expires_in": 60,
+        "mode": settings().ai_mode,
+    }
 
 
 def _authenticate_ws(
@@ -69,9 +109,11 @@ def get_voice_provider(provider_name: str | None = None) -> VoiceProvider:
     return MockVoiceProvider()
 
 
-@voice_router.websocket("/session")
+@voice_router.websocket("/api/voice/session")
+@voice_router.websocket("/voice/session")
 async def voice_session_endpoint(
     websocket: WebSocket,
+    ticket_token: str | None = Query(None, alias="ticket"),
     token: str | None = Query(None),
     service_key: str | None = Query(None),
     ticket_id: str | None = Query(None),
@@ -79,14 +121,31 @@ async def voice_session_endpoint(
 ) -> None:
     """
     Bidirectional WebSocket gateway for real-time speech copilot sessions.
-    Validates tenant and session credentials, coordinates VAD, dispatches RAG tools,
-    and streams synthesized audio and citation cards.
+    Validates single-use ticket or session credentials, coordinates VAD,
+    dispatches RAG tools, and streams synthesized audio and citation cards.
     """
-    # Fallback to headers if query parameters are omitted
-    effective_token = token or websocket.headers.get("x-session-token")
-    effective_service_key = service_key or websocket.headers.get("x-service-key")
+    owner: dict[str, Any] | None = None
+    now = time.time()
 
-    owner = _authenticate_ws(effective_token, effective_service_key)
+    if ticket_token:
+        voice_ticket = _VOICE_TICKETS.get(ticket_token)
+        if (
+            voice_ticket is not None
+            and not voice_ticket.redeemed
+            and voice_ticket.expires_at > now
+        ):
+            voice_ticket.redeemed = True
+            owner = voice_ticket.owner
+            _VOICE_TICKETS.pop(ticket_token, None)
+        else:
+            await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+            return
+    else:
+        # Fallback to headers if query parameters are omitted (tests / direct access)
+        effective_token = token or websocket.headers.get("x-session-token")
+        effective_service_key = service_key or websocket.headers.get("x-service-key")
+        owner = _authenticate_ws(effective_token, effective_service_key)
+
     if owner is None:
         await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
         return
