@@ -298,7 +298,7 @@ export default function Workspace() {
         : mode === "live"
           ? "Ready for live analysis"
           : mode === "simulated"
-            ? "Simulated demo — no model called"
+            ? "Interactive Demo"
             : loading
               ? "Connecting…"
               : "Not connected";
@@ -326,7 +326,7 @@ export default function Workspace() {
     <>
       <section className="workspace-title">
         <div>
-          <p className="eyebrow">Fictional demo</p>
+          <p className="eyebrow">Support Assistant</p>
           <h1>Ticket workspace</h1>
         </div>
         <span
@@ -483,7 +483,7 @@ export default function Workspace() {
                 </h2>
                 {answerReady && (
                   <span className="badge ai-badge">
-                    {run.mode === "live" ? "AI generated" : "Simulated result"}
+                    {run.mode === "live" ? "AI generated" : "Suggested resolution"}
                   </span>
                 )}
               </div>

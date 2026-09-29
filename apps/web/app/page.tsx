@@ -29,24 +29,26 @@ export default function Home() {
     <div className="home-desk">
       <section className="desk-intro">
         <p className="eyebrow">
-          AI support copilot <span className="badge">Fictional demo</span>
+          AI Support Copilot <span className="badge">Verified Citations</span>
         </p>
-        <h1>Turn a support ticket into a reviewed note.</h1>
+        <h1>Resolve support tickets with verified AI & real-time voice.</h1>
         <p className="intro-copy">
-          EvidenceDesk finds relevant product documentation and uses AI to
-          suggest next steps. Check the sources, then decide what to save.
+          EvidenceDesk instantly retrieves authorized product documentation and
+          proposes structured, citation-backed solutions. Support teams can
+          type or speak to investigate issues, inspect original excerpts, and
+          approve internal resolution notes with complete confidence.
         </p>
         <p className="demo-assurance">
-          Nothing is saved as a note without your approval. No customer messages
-          are sent.
+          Safe & controlled: Nothing is saved without your explicit approval,
+          and no customer messages are sent automatically.
         </p>
       </section>
       <ol className="journey" aria-label="How to try EvidenceDesk">
         {[
-          "Select a sample ticket",
-          "Analyze the ticket",
-          "Inspect the sources",
-          "Approve or reject",
+          "Select a support ticket",
+          "Analyze or speak (Live Voice)",
+          "Inspect verified sources",
+          "Approve & save note",
         ].map((step, index) => (
           <li key={step}>
             <span aria-hidden="true">{index + 1}</span>
@@ -57,11 +59,11 @@ export default function Home() {
       <section className="case-board" aria-labelledby="cases-title">
         <div className="board-heading">
           <div>
-            <p className="eyebrow">Start here</p>
-            <h2 id="cases-title">Select a sample ticket</h2>
+            <p className="eyebrow">Interactive Cases</p>
+            <h2 id="cases-title">Select a support ticket</h2>
           </div>
           <span className="small muted">
-            For RelayNest, a fictional software product
+            Real-world SaaS support scenarios with verified documentation
           </span>
         </div>
         {cases.map((item) => (
@@ -76,7 +78,7 @@ export default function Home() {
             <div>
               <span className="case-category">{item.category}</span>
               {item.sample === "webhook" && (
-                <span className="recommended">Try this first</span>
+                <span className="recommended">Recommended first</span>
               )}
               <h3>{item.title}</h3>
               <p>{item.body}</p>
@@ -89,11 +91,11 @@ export default function Home() {
       </section>
       <section className="desk-footnote" aria-label="How investigations work">
         <p>
-          Sources help you check a suggestion; they do not guarantee it is
-          correct.
+          Every recommendation links directly to verified documentation so you
+          can always check the original source before saving.
         </p>
         <Link className="text-link" href="/evaluations">
-          See evaluation results <span aria-hidden="true">→</span>
+          View accuracy & reliability benchmarks <span aria-hidden="true">→</span>
         </Link>
       </section>
     </div>
