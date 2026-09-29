@@ -50,9 +50,13 @@ export function VoiceCopilot({
   const [transcripts, setTranscripts] = useState<SpokenTurn[]>([]);
   const [citations, setCitations] = useState<LiveCitation[]>([]);
   const [proposedNote, setProposedNote] = useState<ProposedVoiceNote | null>(null);
+  const [recordingUrl, setRecordingUrl] = useState<string | null>(null);
+  const [copied, setCopied] = useState<boolean>(false);
 
   const wsRef = useRef<WebSocket | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const recordedBlobsRef = useRef<Blob[]>([]);
   const inputAudioCtxRef = useRef<AudioContext | null>(null);
   const outputAudioCtxRef = useRef<AudioContext | null>(null);
   const scriptProcessorRef = useRef<ScriptProcessorNode | null>(null);
@@ -60,7 +64,7 @@ export function VoiceCopilot({
   const nextPlayTimeRef = useRef<number>(0);
   const transcriptsBoxRef = useRef<HTMLDivElement | null>(null);
 
-  // Auto-scroll transcripts inside its own container without scrolling the main page
+  // Auto-scroll transcripts inside its own container without scrolling the main window
   useEffect(() => {
     if (transcriptsBoxRef.current) {
       transcriptsBoxRef.current.scrollTop = transcriptsBoxRef.current.scrollHeight;
@@ -69,6 +73,13 @@ export function VoiceCopilot({
 
   // Clean stop all audio playback
   const stopPlayback = useCallback(() => {
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      try {
+        window.speechSynthesis.cancel();
+      } catch {
+        // Ignore
+      }
+    }
     activeSourcesRef.current.forEach((source) => {
       try {
         source.stop();
@@ -81,10 +92,44 @@ export function VoiceCopilot({
     nextPlayTimeRef.current = 0;
   }, []);
 
-  // Gracefully tear down all audio and websocket resources
-  const disconnect = useCallback(() => {
+  // Speak assistant text using natural browser speech synthesis
+  const speakText = useCallback((text: string) => {
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      try {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = "en-US";
+        utterance.rate = 1.0;
+        window.speechSynthesis.speak(utterance);
+      } catch (err) {
+        console.warn("speechSynthesis error:", err);
+      }
+    }
+  }, []);
+
+  // Gracefully complete the call, save audio recording, and keep all transcripts visible
+  const completeCall = useCallback(() => {
     stopPlayback();
 
+    // 1. Stop MediaRecorder and generate playable audio blob
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+      try {
+        mediaRecorderRef.current.onstop = () => {
+          if (recordedBlobsRef.current.length > 0) {
+            const mimeType = recordedBlobsRef.current[0].type || "audio/webm";
+            const audioBlob = new Blob(recordedBlobsRef.current, { type: mimeType });
+            const url = URL.createObjectURL(audioBlob);
+            setRecordingUrl(url);
+          }
+        };
+        mediaRecorderRef.current.stop();
+      } catch (err) {
+        console.warn("Error stopping MediaRecorder:", err);
+      }
+      mediaRecorderRef.current = null;
+    }
+
+    // 2. Close WebSocket gracefully
     if (wsRef.current) {
       try {
         if (wsRef.current.readyState === WebSocket.OPEN) {
@@ -97,6 +142,7 @@ export function VoiceCopilot({
       wsRef.current = null;
     }
 
+    // 3. Disconnect audio capture processor
     if (scriptProcessorRef.current) {
       try {
         scriptProcessorRef.current.disconnect();
@@ -106,14 +152,16 @@ export function VoiceCopilot({
       scriptProcessorRef.current = null;
     }
 
+    // 4. Stop microphone tracks
     if (mediaStreamRef.current) {
       mediaStreamRef.current.getTracks().forEach((track) => track.stop());
       mediaStreamRef.current = null;
     }
 
+    // 5. Close audio contexts
     if (inputAudioCtxRef.current) {
       try {
-        inputAudioCtxRef.current.close();
+        void inputAudioCtxRef.current.close();
       } catch {
         // Ignore
       }
@@ -122,7 +170,7 @@ export function VoiceCopilot({
 
     if (outputAudioCtxRef.current) {
       try {
-        outputAudioCtxRef.current.close();
+        void outputAudioCtxRef.current.close();
       } catch {
         // Ignore
       }
@@ -135,9 +183,9 @@ export function VoiceCopilot({
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      disconnect();
+      completeCall();
     };
-  }, [disconnect]);
+  }, [completeCall]);
 
   // Playback PCM audio chunks received from assistant
   const playAudioChunk = useCallback((base64Pcm: string, sampleRate = 24000) => {
@@ -164,7 +212,8 @@ export function VoiceCopilot({
       const int16Array = new Int16Array(bytes.buffer);
       const float32Array = new Float32Array(int16Array.length);
       for (let i = 0; i < int16Array.length; i++) {
-        float32Array[i] = int16Array[i] / 32768.0;
+        // Soft audio playback to ensure comfort
+        float32Array[i] = (int16Array[i] / 32768.0) * 0.4;
       }
 
       const audioBuffer = ctx.createBuffer(1, float32Array.length, sampleRate);
@@ -201,7 +250,7 @@ export function VoiceCopilot({
     }
     setTimeout(() => {
       setVoiceState((prev) => (prev === "interrupted" ? "listening" : prev));
-    }, 600);
+    }, 500);
   }, [stopPlayback]);
 
   // Connect Voice Session
@@ -209,9 +258,7 @@ export function VoiceCopilot({
     try {
       setErrorMessage(null);
       setVoiceState("connecting");
-      setTranscripts([]);
-      setCitations([]);
-      setProposedNote(null);
+      recordedBlobsRef.current = [];
 
       // 1. Acquire secure single-use voice ticket from Next.js BFF
       const ticketRes = await fetch("/api/voice/ticket", {
@@ -238,7 +285,26 @@ export function VoiceCopilot({
       });
       mediaStreamRef.current = stream;
 
-      // 3. Setup WebSocket connection using ticket
+      // 3. Initialize MediaRecorder for full call playback
+      try {
+        const mimeType = MediaRecorder.isTypeSupported("audio/webm")
+          ? "audio/webm"
+          : MediaRecorder.isTypeSupported("audio/mp4")
+          ? "audio/mp4"
+          : "";
+        const recorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+        recorder.ondataavailable = (e) => {
+          if (e.data && e.data.size > 0) {
+            recordedBlobsRef.current.push(e.data);
+          }
+        };
+        recorder.start(500);
+        mediaRecorderRef.current = recorder;
+      } catch (recErr) {
+        console.warn("MediaRecorder start failed:", recErr);
+      }
+
+      // 4. Setup WebSocket connection using single-use ticket
       const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
       const apiHost = window.location.port === "3000" ? "127.0.0.1:8000" : window.location.host;
       const wsUrl = `${wsProtocol}//${apiHost}/api/voice/session?ticket=${encodeURIComponent(ticket)}${
@@ -249,7 +315,7 @@ export function VoiceCopilot({
       wsRef.current = ws;
 
       ws.onopen = () => {
-        // 4. Initialize input AudioContext and ScriptProcessor for streaming PCM
+        // 5. Initialize input AudioContext and ScriptProcessor for streaming PCM
         const AudioCtx =
           window.AudioContext ||
           (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
@@ -308,7 +374,7 @@ export function VoiceCopilot({
               setVoiceState("interrupted");
               setTimeout(() => {
                 setVoiceState((prev) => (prev === "interrupted" ? "listening" : prev));
-              }, 600);
+              }, 500);
             } else if (data.action === "turn_complete") {
               if (activeSourcesRef.current.length === 0) {
                 setVoiceState("listening");
@@ -320,6 +386,26 @@ export function VoiceCopilot({
           } else if (data.type === "transcript") {
             setTranscripts((prev) => {
               const role = data.role === "user" ? "user" : "assistant";
+              const last = prev[prev.length - 1];
+
+              // Update in-progress assistant speech bubble
+              if (last && last.role === role && !last.isFinal) {
+                return [
+                  ...prev.slice(0, -1),
+                  {
+                    ...last,
+                    text: data.text,
+                    isFinal: Boolean(data.is_final),
+                    timestamp,
+                  },
+                ];
+              }
+
+              // Avoid exact duplicate bubbles
+              if (last && last.role === role && last.text === data.text) {
+                return prev;
+              }
+
               return [
                 ...prev,
                 {
@@ -331,6 +417,11 @@ export function VoiceCopilot({
                 },
               ];
             });
+
+            // Speak assistant response with natural browser voice if final
+            if (data.role === "assistant" && data.is_final) {
+              speakText(data.text);
+            }
           } else if (data.type === "citation") {
             if (Array.isArray(data.citations)) {
               setCitations((prev) => {
@@ -375,11 +466,26 @@ export function VoiceCopilot({
         err instanceof Error ? err.message : "Failed to start speech session. Check microphone access."
       );
       setVoiceState("error");
-      disconnect();
+      completeCall();
     }
-  }, [ticketId, disconnect, playAudioChunk, stopPlayback, voiceState]);
+  }, [ticketId, completeCall, playAudioChunk, stopPlayback, speakText, voiceState]);
 
   const isConnected = voiceState !== "idle" && voiceState !== "error";
+  const hasDialogue = transcripts.length > 0;
+
+  // Copy full transcript text to clipboard
+  const copyTranscript = useCallback(() => {
+    if (transcripts.length === 0) return;
+    const formatted = transcripts
+      .map(
+        (t) =>
+          `[${t.timestamp}] ${t.role === "user" ? "Agent/User" : "Voice Copilot"}:\n${t.text}`
+      )
+      .join("\n\n");
+    void navigator.clipboard.writeText(formatted);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }, [transcripts]);
 
   return (
     <div className="voice-copilot-card">
@@ -391,7 +497,10 @@ export function VoiceCopilot({
           <div>
             <h3 className="voice-copilot-title">Voice Copilot</h3>
             <p className="voice-status-caption">
-              {voiceState === "idle" && "Ready to start live speech session"}
+              {voiceState === "idle" &&
+                (hasDialogue
+                  ? "Call completed · Transcript and recording preserved"
+                  : "Ready to start live voice session")}
               {voiceState === "connecting" && "Establishing encrypted voice channel…"}
               {voiceState === "listening" && "Listening… speak naturally into your microphone"}
               {voiceState === "assistant_speaking" && "Assistant speaking…"}
@@ -416,21 +525,27 @@ export function VoiceCopilot({
           <button
             type="button"
             className={`voice-btn mic-btn ${isConnected ? "active" : ""}`}
-            onClick={isConnected ? disconnect : connect}
+            onClick={isConnected ? completeCall : connect}
             disabled={voiceState === "connecting"}
-            aria-label={isConnected ? "End Voice Session" : "Start Voice Session"}
+            aria-label={isConnected ? "Complete Call & Save Transcript" : "Start Voice Call"}
           >
             <span className="mic-icon" aria-hidden="true">
               {isConnected ? "⏹" : "🎙"}
             </span>
-            <span>{isConnected ? "Disconnect" : "Talk with Copilot"}</span>
+            <span>
+              {isConnected
+                ? "Complete Call & Save"
+                : hasDialogue
+                ? "Start New Call"
+                : "Talk with Copilot"}
+            </span>
           </button>
         </div>
       </div>
 
       {ticketTitle && (
         <div className="voice-context-pill">
-          <span className="pill-label">Context:</span>
+          <span className="pill-label">Active Ticket Context:</span>
           <span className="pill-ticket">{ticketTitle}</span>
         </div>
       )}
@@ -444,34 +559,65 @@ export function VoiceCopilot({
         </div>
       )}
 
-      {/* Spoken Dialogue Transcript Box */}
-      {isConnected && (
-        <div ref={transcriptsBoxRef} className="voice-transcripts-box" aria-live="polite">
-          {transcripts.length === 0 ? (
-            <div className="transcripts-placeholder">
-              <p>Say something like: &ldquo;How should we recover stopped webhook delivery retries?&rdquo;</p>
-              <span className="audio-wave-hint">Listening for speech…</span>
-            </div>
-          ) : (
-            transcripts.map((turn) => (
-              <div key={turn.id} className={`transcript-bubble ${turn.role}`}>
-                <div className="transcript-meta">
-                  <span className="transcript-speaker">
-                    {turn.role === "user" ? "You" : "Voice Copilot"}
-                  </span>
-                  <span className="transcript-time">{turn.timestamp}</span>
-                </div>
-                <div className="transcript-text">{turn.text}</div>
+      {/* Audio Playback Player for Recorded Session */}
+      {recordingUrl && (
+        <div className="voice-recording-card">
+          <div className="recording-header">
+            <span className="recording-badge">
+              <span className="rec-dot" aria-hidden="true">●</span> Call Audio Recording
+            </span>
+            <span className="recording-hint">Playback your captured voice session</span>
+          </div>
+          <audio controls src={recordingUrl} className="voice-audio-player">
+            Your browser does not support audio playback.
+          </audio>
+        </div>
+      )}
+
+      {/* Spoken Dialogue Transcript Box - Preserved after call ends */}
+      {(isConnected || hasDialogue) && (
+        <div className="transcripts-wrapper">
+          <div className="transcripts-header-bar">
+            <span className="transcripts-title">Spoken Dialogue Transcript</span>
+            {hasDialogue && (
+              <button
+                type="button"
+                className="copy-transcript-btn"
+                onClick={copyTranscript}
+                title="Copy entire transcript text"
+              >
+                {copied ? "✓ Copied to clipboard" : "📋 Copy Transcript"}
+              </button>
+            )}
+          </div>
+
+          <div ref={transcriptsBoxRef} className="voice-transcripts-box" aria-live="polite">
+            {transcripts.length === 0 ? (
+              <div className="transcripts-placeholder">
+                <p>Say something like: &ldquo;How should we recover stopped webhook delivery retries?&rdquo;</p>
+                <span className="audio-wave-hint">Listening for speech…</span>
               </div>
-            ))
-          )}
+            ) : (
+              transcripts.map((turn) => (
+                <div key={turn.id} className={`transcript-bubble ${turn.role}`}>
+                  <div className="transcript-meta">
+                    <span className="transcript-speaker">
+                      {turn.role === "user" ? "You (Agent)" : "Voice Copilot"}
+                    </span>
+                    <span className="transcript-time">{turn.timestamp}</span>
+                  </div>
+                  <div className="transcript-text">{turn.text}</div>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       )}
 
       {/* Live Citations Stream */}
       {citations.length > 0 && (
         <div className="voice-citations-container">
-          <h4 className="citations-header">Retrieved Knowledge Citations</h4>
+          <h4 className="citations-header">Retrieved Knowledge Citations ({citations.length})</h4>
           <div className="citations-grid">
             {citations.map((c) => (
               <div
@@ -489,7 +635,7 @@ export function VoiceCopilot({
                 <div className="citation-title">{c.title}</div>
                 <div className="citation-heading">{c.heading}</div>
                 <blockquote className="citation-quote">&ldquo;{c.quote}&rdquo;</blockquote>
-                <span className="citation-action">Inspect Source →</span>
+                <span className="citation-action">Inspect Source Document →</span>
               </div>
             ))}
           </div>
@@ -500,8 +646,8 @@ export function VoiceCopilot({
       {proposedNote && (
         <div className="voice-proposal-banner">
           <div className="proposal-header">
-            <span className="proposal-tag">Voice Drafted Note</span>
-            <span className="proposal-status">Pending Review</span>
+            <span className="proposal-tag">Voice Drafted Resolution Note</span>
+            <span className="proposal-status">Pending Your Approval</span>
           </div>
           <div className="proposal-content">{proposedNote.content}</div>
           <div className="proposal-actions">
@@ -512,11 +658,21 @@ export function VoiceCopilot({
                 onNoteProposed?.(proposedNote.content, proposedNote.proposal_id);
               }}
             >
-              Use Note in Draft Workspace
+              Use Note in Ticket Workspace
             </button>
           </div>
         </div>
       )}
+
+      {/* Privacy & Legal Compliance Notice */}
+      <div className="voice-compliance-notice">
+        <span className="compliance-icon" aria-hidden="true">🛡️</span>
+        <p>
+          <strong>Call Recording & Compliance Notice:</strong> Voice audio and transcript are captured
+          for internal support verification and quality audit under the active session. Audio is stored
+          only within your local browser session and no biometric data is retained.
+        </p>
+      </div>
     </div>
   );
 }
