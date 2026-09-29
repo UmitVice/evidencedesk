@@ -37,19 +37,56 @@ The local environment helper writes ignored mode-0600 files and never prints gen
 
 ```mermaid
 flowchart LR
-    Browser --> Next[Next.js UI / same-origin BFF]
-    Next --> API[FastAPI + bounded LangGraph]
-    API --> DB[(PostgreSQL + pgvector)]
-    API --> AI[Cloudflare Workers AI REST]
-    Human[Human decision] --> Next
+    subgraph Client [Browser / Next.js]
+        WebUI[Workspace / Inspection UI]
+        Mic[Web Audio API Mic 16kHz]
+        Spk[Audio Playback 24kHz]
+        Cards[Live Citation Drawer]
+    end
+
+    subgraph BFF [Next.js BFF]
+        AuthProxy[HTTP Proxy / Session Cookie]
+        TicketGen[POST /api/voice/ticket]
+    end
+
+    subgraph API [FastAPI Backend]
+        REST[REST Endpoints]
+        WS["/api/voice/session (WebSocket)"]
+        VAD[Voice Activity Detection / Buffer]
+        Router[Voice Session Coordinator]
+    end
+
+    subgraph Providers [AI & S2S Providers]
+        CF[Cloudflare Workers AI REST]
+        MockVoice[Deterministic Mock Voice Provider]
+        GeminiLive[GCP Gemini 2.0 Multimodal Live API]
+    end
+
+    subgraph Storage [Authorized Storage]
+        DB[(PostgreSQL + pgvector)]
+    end
+
+    WebUI --> AuthProxy --> REST --> DB
+    REST --> CF
+    TicketGen --> REST
+    Mic -->|Linear PCM Audio| WS
+    WS -->|Audio Chunks| Spk
+    WS -->|Citations & Transcripts| Cards
+    WS <--> VAD <--> Router
+    Router <--> MockVoice
+    Router <--> GeminiLive
+    Router -->|RAG Tool Calls| DB
 ```
 
 - 24 original Markdown documents, two synthetic tenants, three sandbox tickets.
+- Real-time Voice & Speech-to-Speech (S2S) Copilot over WebSockets with frame-accurate Voice Activity Detection (VAD) and barge-in interruption.
+- Dual-provider voice architecture: GCP Gemini 2.0 Multimodal Live API with standard `websockets`, paired with a zero-cost deterministic Mock Voice Provider for offline testing.
+- Secure single-use voice tickets ensuring `SERVICE_KEY` remains server-only while browser streams directly via Web Audio API.
 - Token-bounded, hashed ingestion; explicit 384-dimensional embedding manifests.
 - PostgreSQL full-text ranking, exact cosine search, and reciprocal rank fusion.
 - Strict structured answers with citation-ID and quote checks; no arbitrary model tool execution.
 - Immutable, expiring proposals tied to ticket versions. One transactional note effect under retries.
-- Three pages: landing, analysis workspace, and read-only evaluations.
+- Full workspace interface: text analysis, real-time voice copilot, and read-only evaluations.
 
 See [architecture decisions](docs/architecture.md), [OpenAPI](docs/openapi.json), and [security boundaries](SECURITY.md).
 
@@ -81,12 +118,23 @@ Use a separate database named `evidencedesk_eval*`, set DATABASE_URL and MIGRATI
 
 For live checks, configure server-side Cloudflare credentials in development, run the provider smoke and idempotent live ingestion, then `npm run eval:smoke`. After inspecting that ten-case run and confirming free account capacity, an explicit maintainer run can evaluate all 40 cases. The support-v3 full live suite at clean `b1943513cef15e6f42335fbf2642bf094c09217c` processed all 40 cases: 30 real generation attempts/completions and ten engineering-control references. Twenty-eight outputs passed schema/citation checks, two failed structured validation, and five valid outputs disagreed with the expected answer/abstention status. Retrieval n=16: Recall@5 1.0 for all methods; MRR lexical 0.703125, vector 0.921875, hybrid 0.875. Latency n=30: p50 1.15 s, p95 2.44 s. Human semantic review remains pending. The held-out results were measured after prompt tuning and were not used to tune the released prompt. Historical reports and the ten-case smoke remain in [reports/history](reports/history). See the [method, budgets, and review rubric](docs/evaluation.md).
 
+### Real-Time Voice & Speech Evals
+
+The voice pipeline includes an automated low-latency eval framework ([`apps/api/evidencedesk/voice/evals.py`](apps/api/evidencedesk/voice/evals.py)) executed against deterministic offline scenarios and live S2S streams:
+- **TTFA (Time-To-First-Audio)**: Tracks audio arrival latency from turn initiation. SLA budget is p95 < 600 ms (measured at ~31 ms on local stream).
+- **Barge-in / Interruption Cancellation**: Measures milliseconds to cancel assistant streaming upon user speech. SLA budget is p95 < 300 ms (measured at < 1 ms).
+- **Spoken Citation Faithfulness**: 100% verification that spoken claims match retrieved Markdown excerpts without hallucinated policies.
+- **Abstention Accuracy**: 100% compliance verifying that unanswerable queries explicitly abstain without fabricating guidance.
+
 ## What this project demonstrates
 
 | Engineering area | Inspectable evidence |
 | --- | --- |
 | Python APIs and typed contracts | [FastAPI routes](apps/api/main.py), [contract generator](scripts/api-contract.py) |
 | Bounded RAG and provider integration | [workflow](apps/api/evidencedesk/workflow.py), [retrieval](apps/api/evidencedesk/retrieval.py), [Cloudflare adapter](apps/api/evidencedesk/providers.py) |
+| Real-Time Voice & S2S RAG | [WebSocket Gateway](apps/api/evidencedesk/voice/gateway.py), [VAD & Audio Framing](apps/api/evidencedesk/voice/vad.py), [Gemini & Mock Providers](apps/api/evidencedesk/voice/provider.py) |
+| Voice Evals & Low-Latency SLA | [Voice Evals Framework](apps/api/evidencedesk/voice/evals.py), [Automated Voice Test Suite](apps/api/tests/test_voice.py) |
+| Interactive Web Audio Streaming | [Voice Copilot Component](apps/web/app/workspace/voice-copilot.tsx), [BFF Single-Use Ticket](apps/web/app/api/[...path]/route.ts) |
 | Authorization and idempotency | [approval transaction](apps/api/evidencedesk/actions.py), [SQL invariants](apps/api/migrations/003_approvals.sql), [race tests](apps/api/tests/test_actions.py) |
 | Evaluation discipline | [evaluation runner](apps/api/evidencedesk/evaluation.py), [dataset checks](apps/api/tests/test_evaluations.py) |
 | Cloud deployment and CI/CD | [GitHub Actions](.github/workflows/ci.yml), [Vercel/Supabase runbook](docs/deployment.md) |
