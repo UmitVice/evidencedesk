@@ -42,7 +42,15 @@ def auth_mock(monkeypatch):
             "tenant": "harbor",
         }
 
-    with patch("evidencedesk.voice.gateway._authenticate_ws", side_effect=mock_auth):
+    mock_ticket = {
+        "id": MOCK_TICKET_ID,
+        "sample": "webhook",
+        "version": 1,
+        "title": "Webhook retry failure",
+    }
+    with patch("evidencedesk.voice.gateway._authenticate_ws", side_effect=mock_auth), patch(
+        "evidencedesk.voice.gateway.get_ticket", return_value=mock_ticket
+    ):
         yield
 
 

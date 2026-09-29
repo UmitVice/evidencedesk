@@ -24,7 +24,7 @@ def generate_synthetic_pcm(
     num_samples = int(sample_rate * (duration_ms / 1000.0))
     raw = bytearray()
     for i in range(num_samples):
-        val = int(math.sin(2 * math.pi * freq_hz * (i / sample_rate)) * 8000)
+        val = int(math.sin(2 * math.pi * freq_hz * (i / sample_rate)) * 3600)
         raw.extend(struct.pack("<h", val))
     return bytes(raw)
 
@@ -44,17 +44,19 @@ class MockVoiceProvider(VoiceProvider):
         self._interrupted: bool = False
         self._closed: bool = False
         self._active_turn_task: asyncio.Task[None] | None = None
+        self._turn_completed: bool = False
 
     async def connect(self, context: VoiceSessionContext) -> None:
         self._context = context
         self._interrupted = False
         self._closed = False
+        self._turn_completed = False
 
     async def send_audio(self, pcm_bytes: bytes) -> None:
-        """Handle incoming user audio. In mock mode, triggers response after minimum audio."""
-        if self._closed or self._interrupted:
+        """Handle incoming user audio. In mock mode, triggers response once per speech turn."""
+        if self._closed or self._interrupted or self._turn_completed:
             return
-        # If no turn is running, initiate simulated response for incoming audio
+        # If no turn is running and current turn not completed, initiate simulated response
         if self._active_turn_task is None or self._active_turn_task.done():
             ticket_sample = (
                 self._context.ticket.get("sample", "webhook")
@@ -71,11 +73,13 @@ class MockVoiceProvider(VoiceProvider):
         if self._active_turn_task and not self._active_turn_task.done():
             self._active_turn_task.cancel()
         self._interrupted = False
+        self._turn_completed = False
         self._active_turn_task = asyncio.create_task(self._simulate_turn(text))
 
     async def interrupt(self) -> None:
         """Handle barge-in interruption immediately."""
         self._interrupted = True
+        self._turn_completed = False
         if self._active_turn_task and not self._active_turn_task.done():
             self._active_turn_task.cancel()
 
@@ -215,9 +219,9 @@ class MockVoiceProvider(VoiceProvider):
 
             # Synthetic Audio Chunks (24kHz PCM)
             synthetic_pcm = generate_synthetic_pcm(
-                duration_ms=120, freq_hz=520.0, sample_rate=24000
+                duration_ms=100, freq_hz=440.0, sample_rate=24000
             )
-            for _ in range(4):
+            for _ in range(2):
                 if self._interrupted:
                     return
                 frame = AudioFrame.from_bytes(synthetic_pcm, sample_rate=24000)
@@ -227,6 +231,7 @@ class MockVoiceProvider(VoiceProvider):
 
             # Final Transcript and Turn Complete
             if not self._interrupted:
+                self._turn_completed = True
                 await self._event_queue.put(
                     TranscriptEvent(role="assistant", text=response_text, is_final=True)
                 )

@@ -58,11 +58,13 @@ export function VoiceCopilot({
   const scriptProcessorRef = useRef<ScriptProcessorNode | null>(null);
   const activeSourcesRef = useRef<AudioBufferSourceNode[]>([]);
   const nextPlayTimeRef = useRef<number>(0);
-  const transcriptsEndRef = useRef<HTMLDivElement | null>(null);
+  const transcriptsBoxRef = useRef<HTMLDivElement | null>(null);
 
-  // Auto-scroll transcripts
+  // Auto-scroll transcripts inside its own container without scrolling the main page
   useEffect(() => {
-    transcriptsEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (transcriptsBoxRef.current) {
+      transcriptsBoxRef.current.scrollTop = transcriptsBoxRef.current.scrollHeight;
+    }
   }, [transcripts]);
 
   // Clean stop all audio playback
@@ -444,7 +446,7 @@ export function VoiceCopilot({
 
       {/* Spoken Dialogue Transcript Box */}
       {isConnected && (
-        <div className="voice-transcripts-box" aria-live="polite">
+        <div ref={transcriptsBoxRef} className="voice-transcripts-box" aria-live="polite">
           {transcripts.length === 0 ? (
             <div className="transcripts-placeholder">
               <p>Say something like: &ldquo;How should we recover stopped webhook delivery retries?&rdquo;</p>
@@ -463,7 +465,6 @@ export function VoiceCopilot({
               </div>
             ))
           )}
-          <div ref={transcriptsEndRef} />
         </div>
       )}
 
