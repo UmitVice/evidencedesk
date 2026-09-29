@@ -16,6 +16,7 @@ export interface SpokenTurn {
   text: string;
   isFinal: boolean;
   timestamp: string;
+  audioUrl?: string;
 }
 
 export interface LiveCitation {
@@ -58,10 +59,7 @@ export function VoiceCopilot({
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordedBlobsRef = useRef<Blob[]>([]);
   const inputAudioCtxRef = useRef<AudioContext | null>(null);
-  const outputAudioCtxRef = useRef<AudioContext | null>(null);
   const scriptProcessorRef = useRef<ScriptProcessorNode | null>(null);
-  const activeSourcesRef = useRef<AudioBufferSourceNode[]>([]);
-  const nextPlayTimeRef = useRef<number>(0);
   const transcriptsBoxRef = useRef<HTMLDivElement | null>(null);
 
   // Auto-scroll transcripts inside its own container without scrolling the main window
@@ -71,7 +69,7 @@ export function VoiceCopilot({
     }
   }, [transcripts]);
 
-  // Clean stop all audio playback
+  // Clean stop any ongoing audio/speech
   const stopPlayback = useCallback(() => {
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
       try {
@@ -80,38 +78,42 @@ export function VoiceCopilot({
         // Ignore
       }
     }
-    activeSourcesRef.current.forEach((source) => {
-      try {
-        source.stop();
-        source.disconnect();
-      } catch {
-        // Source might already have ended
-      }
-    });
-    activeSourcesRef.current = [];
-    nextPlayTimeRef.current = 0;
   }, []);
 
-  // Speak assistant text using natural browser speech synthesis
-  const speakText = useCallback((text: string) => {
-    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+  // Flush and attach current recorded user audio to latest user turn
+  const saveUserTurnAudio = useCallback(() => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
       try {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = "en-US";
-        utterance.rate = 1.0;
-        window.speechSynthesis.speak(utterance);
-      } catch (err) {
-        console.warn("speechSynthesis error:", err);
+        mediaRecorderRef.current.requestData();
+      } catch {
+        // Ignore
       }
     }
+    if (recordedBlobsRef.current.length > 0) {
+      const mimeType = recordedBlobsRef.current[0].type || "audio/webm";
+      const audioBlob = new Blob([...recordedBlobsRef.current], { type: mimeType });
+      const url = URL.createObjectURL(audioBlob);
+      setRecordingUrl(url);
+      setTranscripts((prev) => {
+        const updated = [...prev];
+        for (let i = updated.length - 1; i >= 0; i--) {
+          if (updated[i].role === "user") {
+            updated[i] = { ...updated[i], audioUrl: updated[i].audioUrl || url };
+            break;
+          }
+        }
+        return updated;
+      });
+      return url;
+    }
+    return null;
   }, []);
 
-  // Gracefully complete the call, save audio recording, and keep all transcripts visible
+  // Gracefully complete the call, save user audio recording, and keep dialogue visible
   const completeCall = useCallback(() => {
     stopPlayback();
 
-    // 1. Stop MediaRecorder and generate playable audio blob
+    // 1. Stop MediaRecorder and generate playable audio blob for user voice message
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
       try {
         mediaRecorderRef.current.onstop = () => {
@@ -120,6 +122,9 @@ export function VoiceCopilot({
             const audioBlob = new Blob(recordedBlobsRef.current, { type: mimeType });
             const url = URL.createObjectURL(audioBlob);
             setRecordingUrl(url);
+            setTranscripts((prev) =>
+              prev.map((t) => (t.role === "user" ? { ...t, audioUrl: t.audioUrl || url } : t))
+            );
           }
         };
         mediaRecorderRef.current.stop();
@@ -127,6 +132,14 @@ export function VoiceCopilot({
         console.warn("Error stopping MediaRecorder:", err);
       }
       mediaRecorderRef.current = null;
+    } else if (recordedBlobsRef.current.length > 0) {
+      const mimeType = recordedBlobsRef.current[0].type || "audio/webm";
+      const audioBlob = new Blob(recordedBlobsRef.current, { type: mimeType });
+      const url = URL.createObjectURL(audioBlob);
+      setRecordingUrl(url);
+      setTranscripts((prev) =>
+        prev.map((t) => (t.role === "user" ? { ...t, audioUrl: t.audioUrl || url } : t))
+      );
     }
 
     // 2. Close WebSocket gracefully
@@ -168,15 +181,6 @@ export function VoiceCopilot({
       inputAudioCtxRef.current = null;
     }
 
-    if (outputAudioCtxRef.current) {
-      try {
-        void outputAudioCtxRef.current.close();
-      } catch {
-        // Ignore
-      }
-      outputAudioCtxRef.current = null;
-    }
-
     setVoiceState("idle");
   }, [stopPlayback]);
 
@@ -186,62 +190,6 @@ export function VoiceCopilot({
       completeCall();
     };
   }, [completeCall]);
-
-  // Playback PCM audio chunks received from assistant
-  const playAudioChunk = useCallback((base64Pcm: string, sampleRate = 24000) => {
-    if (!outputAudioCtxRef.current) {
-      const AudioCtx =
-        window.AudioContext ||
-        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      outputAudioCtxRef.current = new AudioCtx({ sampleRate });
-    }
-
-    const ctx = outputAudioCtxRef.current;
-    if (ctx.state === "suspended") {
-      void ctx.resume();
-    }
-
-    try {
-      const binaryString = atob(base64Pcm);
-      const len = binaryString.length;
-      const bytes = new Uint8Array(len);
-      for (let i = 0; i < len; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
-      }
-
-      const int16Array = new Int16Array(bytes.buffer);
-      const float32Array = new Float32Array(int16Array.length);
-      for (let i = 0; i < int16Array.length; i++) {
-        // Soft audio playback to ensure comfort
-        float32Array[i] = (int16Array[i] / 32768.0) * 0.4;
-      }
-
-      const audioBuffer = ctx.createBuffer(1, float32Array.length, sampleRate);
-      audioBuffer.getChannelData(0).set(float32Array);
-
-      const sourceNode = ctx.createBufferSource();
-      sourceNode.buffer = audioBuffer;
-      sourceNode.connect(ctx.destination);
-
-      const startTime = Math.max(ctx.currentTime, nextPlayTimeRef.current);
-      sourceNode.start(startTime);
-      nextPlayTimeRef.current = startTime + audioBuffer.duration;
-
-      activeSourcesRef.current.push(sourceNode);
-      setVoiceState("assistant_speaking");
-
-      sourceNode.onended = () => {
-        activeSourcesRef.current = activeSourcesRef.current.filter((s) => s !== sourceNode);
-        if (activeSourcesRef.current.length === 0) {
-          setVoiceState((prev) => (prev === "assistant_speaking" ? "listening" : prev));
-        }
-      };
-    } catch (err) {
-      console.warn("Failed to decode and play audio chunk:", err);
-    }
-  }, []);
-
-  // Handle client-initiated barge-in interrupt
   const triggerBargeIn = useCallback(() => {
     stopPlayback();
     setVoiceState("interrupted");
@@ -376,9 +324,8 @@ export function VoiceCopilot({
                 setVoiceState((prev) => (prev === "interrupted" ? "listening" : prev));
               }, 500);
             } else if (data.action === "turn_complete") {
-              if (activeSourcesRef.current.length === 0) {
-                setVoiceState("listening");
-              }
+              saveUserTurnAudio();
+              setVoiceState("listening");
             } else if (data.action === "error") {
               setErrorMessage(data.message || "Voice engine encountered an error.");
               setVoiceState("error");
@@ -418,9 +365,10 @@ export function VoiceCopilot({
               ];
             });
 
-            // Speak assistant response with natural browser voice if final
-            if (data.role === "assistant" && data.is_final) {
-              speakText(data.text);
+            // If assistant begins or finishes response, flush user audio to bubble
+            if (data.role === "assistant") {
+              saveUserTurnAudio();
+              setVoiceState("assistant_speaking");
             }
           } else if (data.type === "citation") {
             if (Array.isArray(data.citations)) {
@@ -433,7 +381,7 @@ export function VoiceCopilot({
               });
             }
           } else if (data.type === "audio") {
-            playAudioChunk(data.data, data.sample_rate || 24000);
+            // Intentionally silent: AI produces text response without synthesized robotic sound
           } else if (data.type === "tool_result") {
             if (data.name === "propose_ticket_note" && data.result) {
               setProposedNote({
@@ -468,7 +416,7 @@ export function VoiceCopilot({
       setVoiceState("error");
       completeCall();
     }
-  }, [ticketId, completeCall, playAudioChunk, stopPlayback, speakText, voiceState]);
+  }, [ticketId, completeCall, saveUserTurnAudio, stopPlayback, voiceState]);
 
   const isConnected = voiceState !== "idle" && voiceState !== "error";
   const hasDialogue = transcripts.length > 0;
@@ -499,12 +447,12 @@ export function VoiceCopilot({
             <p className="voice-status-caption">
               {voiceState === "idle" &&
                 (hasDialogue
-                  ? "Call completed · Transcript and recording preserved"
-                  : "Ready to start live voice session")}
-              {voiceState === "connecting" && "Establishing encrypted voice channel…"}
-              {voiceState === "listening" && "Listening… speak naturally into your microphone"}
-              {voiceState === "assistant_speaking" && "Assistant speaking…"}
-              {voiceState === "interrupted" && "Interrupted by speech"}
+                  ? "Voice note saved · Click play on your message to listen"
+                  : "Ready to record voice note · AI will reply silently in text")}
+              {voiceState === "connecting" && "Accessing microphone…"}
+              {voiceState === "listening" && "Recording your voice… speak into your microphone"}
+              {voiceState === "assistant_speaking" && "AI generated response (silent)"}
+              {voiceState === "interrupted" && "Interrupted by user speech"}
               {voiceState === "error" && "Session interrupted"}
             </p>
           </div>
@@ -516,7 +464,7 @@ export function VoiceCopilot({
               type="button"
               className="voice-btn interrupt-btn"
               onClick={triggerBargeIn}
-              title="Interrupt speech"
+              title="Interrupt AI"
             >
               Interrupt
             </button>
@@ -527,17 +475,17 @@ export function VoiceCopilot({
             className={`voice-btn mic-btn ${isConnected ? "active" : ""}`}
             onClick={isConnected ? completeCall : connect}
             disabled={voiceState === "connecting"}
-            aria-label={isConnected ? "Complete Call & Save Transcript" : "Start Voice Call"}
+            aria-label={isConnected ? "Save & Disconnect Voice Note" : "Record Voice Note"}
           >
             <span className="mic-icon" aria-hidden="true">
               {isConnected ? "⏹" : "🎙"}
             </span>
             <span>
               {isConnected
-                ? "Complete Call & Save"
+                ? "Save & Disconnect"
                 : hasDialogue
-                ? "Start New Call"
-                : "Talk with Copilot"}
+                ? "Record Another Voice Note"
+                : "Record Voice Note"}
             </span>
           </button>
         </div>
@@ -556,21 +504,6 @@ export function VoiceCopilot({
           <button type="button" onClick={() => setErrorMessage(null)} className="dismiss-btn">
             ✕
           </button>
-        </div>
-      )}
-
-      {/* Audio Playback Player for Recorded Session */}
-      {recordingUrl && (
-        <div className="voice-recording-card">
-          <div className="recording-header">
-            <span className="recording-badge">
-              <span className="rec-dot" aria-hidden="true">●</span> Call Audio Recording
-            </span>
-            <span className="recording-hint">Playback your captured voice session</span>
-          </div>
-          <audio controls src={recordingUrl} className="voice-audio-player">
-            Your browser does not support audio playback.
-          </audio>
         </div>
       )}
 
@@ -602,11 +535,46 @@ export function VoiceCopilot({
                 <div key={turn.id} className={`transcript-bubble ${turn.role}`}>
                   <div className="transcript-meta">
                     <span className="transcript-speaker">
-                      {turn.role === "user" ? "You (Agent)" : "Voice Copilot"}
+                      {turn.role === "user" ? "You (Voice Note)" : "Voice Copilot (AI)"}
                     </span>
                     <span className="transcript-time">{turn.timestamp}</span>
                   </div>
-                  <div className="transcript-text">{turn.text}</div>
+
+                  {turn.role === "user" ? (
+                    <div className="user-voice-card">
+                      {/* Voice audio player on top: Click to listen to user's recorded speech */}
+                      <div className="voice-player-row">
+                        {turn.audioUrl || recordingUrl ? (
+                          <audio
+                            controls
+                            src={turn.audioUrl || recordingUrl || undefined}
+                            className="voice-note-audio-player"
+                            preload="metadata"
+                          >
+                            Your browser does not support audio playback.
+                          </audio>
+                        ) : isConnected ? (
+                          <div className="recording-in-progress-pill">
+                            <span className="rec-dot" aria-hidden="true">●</span>
+                            <span>Recording your voice note… (audio player ready when saved)</span>
+                          </div>
+                        ) : (
+                          <span className="voice-audio-fallback-note">Voice note recorded</span>
+                        )}
+                      </div>
+
+                      {/* Transcribed text underneath */}
+                      <div className="voice-transcription-underneath">
+                        <span className="transcription-label">Transcribed Speech</span>
+                        <div className="transcript-text">{turn.text}</div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="assistant-message-card">
+                      <div className="transcript-text">{turn.text}</div>
+                      <span className="assistant-silent-tag">Silent AI response · No voice audio played</span>
+                    </div>
+                  )}
                 </div>
               ))
             )}
@@ -668,9 +636,9 @@ export function VoiceCopilot({
       <div className="voice-compliance-notice">
         <span className="compliance-icon" aria-hidden="true">🛡️</span>
         <p>
-          <strong>Call Recording & Compliance Notice:</strong> Voice audio and transcript are captured
-          for internal support verification and quality audit under the active session. Audio is stored
-          only within your local browser session and no biometric data is retained.
+          <strong>Voice Note & Compliance Notice:</strong> Your recorded voice audio and transcript are preserved
+          locally in your active browser session for quality audit and support resolution. The AI assistant responds
+          strictly in silent text. No biometric data is retained or processed by external parties.
         </p>
       </div>
     </div>
