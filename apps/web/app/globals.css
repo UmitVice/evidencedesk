@@ -1361,6 +1361,15 @@ th {
   color: #3b82f6;
   margin-bottom: 2px;
 }
+.transcription-listening-hint {
+  font-style: italic;
+  color: #2563eb;
+  opacity: 0.9;
+}
+.transcription-empty-note {
+  font-style: italic;
+  color: var(--muted);
+}
 .assistant-message-card {
   display: flex;
   flex-direction: column;
