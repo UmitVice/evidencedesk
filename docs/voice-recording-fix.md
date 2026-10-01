@@ -31,6 +31,8 @@ Production is promoted only after the dev CI/deployment/voice gates pass. The re
 
 The final dev CI at `5af2c0d` additionally caught an enabled microphone button halfway through an opacity transition after approval (contrast 3.79:1). The button now transitions only background/border colors; enabled text returns immediately to full contrast. Accessibility checks remain unchanged.
 
+Production live voice and text approval/rejection checks both passed at `dd5468c`. The subsequent CI run caught a pre-existing mobile measurement race: automatic focus scrolled the page between two separately awaited bounding-box reads. The test now waits for completed analysis/focus and measures both headings in one DOM read, preserving both DOM-order and visual-order assertions. Application code is unchanged by this test repair.
+
 ## Provider documentation
 
 - [Vercel WebSockets](https://vercel.com/docs/functions/websockets): current beta supports Python ASGI, but Next.js requires an upgrade handler and persistent authentication state must not depend on process-local memory. This repair uses bounded HTTP requests instead of introducing a new socket layer.

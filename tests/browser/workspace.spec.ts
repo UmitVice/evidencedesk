@@ -317,19 +317,26 @@ test("mobile action is visible and review precedes saved notes", async ({
     .getByRole("button", { name: "Analyze ticket", exact: true })
     .click();
   const draft = page.getByRole("heading", { name: "Review the internal note" });
-  const saved = page.getByRole("heading", { name: "Saved internal notes" });
   await expect(
     page.getByRole("button", { name: "Approve & save note" }),
-  ).toBeVisible();
+  ).toBeEnabled();
+  await expect(
+    page.getByRole("heading", { name: "AI suggestion", exact: true }),
+  ).toBeFocused();
   const order = await page.evaluate(() =>
     document
       .querySelector("#proposal-title")!
       .compareDocumentPosition(document.querySelector("#saved-notes-title")!),
   );
   expect(order & 4).toBe(4);
-  expect((await draft.boundingBox())!.y).toBeLessThan(
-    (await saved.boundingBox())!.y,
-  );
+  // Compare both visual positions in one frame; focus scrolling must not mix coordinate systems.
+  const positions = await page.evaluate(() => ({
+    draft: document.querySelector("#proposal-title")!.getBoundingClientRect()
+      .top,
+    saved: document.querySelector("#saved-notes-title")!.getBoundingClientRect()
+      .top,
+  }));
+  expect(positions.draft).toBeLessThan(positions.saved);
   await page
     .getByRole("link", { name: /Review the proposed note/ })
     .press("Enter");
