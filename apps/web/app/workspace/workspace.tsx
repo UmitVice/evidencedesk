@@ -364,8 +364,8 @@ export default function Workspace() {
             {pending === "session" ? "Opening demo…" : "Open demo workspace"}
           </button>
           <p className="small muted">
-            Your session lasts up to 24 hours. AI runs only when you select
-            Analyze ticket.
+            Your session lasts up to 24 hours. Voice transcription starts when
+            you stop recording. Analysis runs only when you ask for it.
           </p>
           <Link className="text-link" href="/">
             Choose a sample ticket instead
