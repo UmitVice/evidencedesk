@@ -116,9 +116,9 @@ async function forward(
       "X-Service-Key": key,
     };
     if (token) headers["X-Session-Token"] = token;
-    if (process.env.VERCEL_AUTOMATION_BYPASS_SECRET)
+    if (process.env.API_PROTECTION_BYPASS_SECRET)
       headers["x-vercel-protection-bypass"] =
-        process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
+        process.env.API_PROTECTION_BYPASS_SECRET;
     const upstream = await fetch(new URL(route, apiUrl), {
       method: request.method,
       body,

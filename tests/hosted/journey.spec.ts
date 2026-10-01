@@ -30,7 +30,7 @@ test("hosted sources, approval persistence, rejection, and responsive accessibil
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-    "Turn a support ticket into a reviewed note.",
+    "Resolve support tickets with verified AI & real-time voice.",
   );
   await page.screenshot({
     path: `${screenshots}/landing-desktop.png`,
@@ -140,7 +140,9 @@ test("hosted sources, approval persistence, rejection, and responsive accessibil
   }
   await page.getByRole("link", { name: "Evaluations", exact: true }).click();
   await expect(
-    page.getByRole("heading", { name: "How reliable are the suggestions?" }),
+    page.getByRole("heading", {
+      name: "How reliable and accurate are the answers?",
+    }),
   ).toBeVisible();
   expect(analyses).toHaveLength(2);
   expect(errors).toEqual([]);
