@@ -3,6 +3,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 
+import certifi
 import psycopg
 from psycopg.conninfo import conninfo_to_dict
 from psycopg.rows import dict_row
@@ -25,6 +26,8 @@ def connection(*, migration: bool = False) -> Iterator[psycopg.Connection[dict[s
                 "sslmode": "verify-full",
                 "sslrootcert": str(Path(__file__).parent / "assets" / "supabase-ca.crt"),
             }
+        elif host.endswith(".neon.tech"):
+            options = {"sslmode": "verify-full", "sslrootcert": certifi.where()}
         with psycopg.Connection[dict[str, Any]].connect(
             url,
             row_factory=dict_row,
