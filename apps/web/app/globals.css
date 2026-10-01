@@ -1198,7 +1198,7 @@ th {
   border: 1px solid var(--line);
   background: var(--paper);
   color: var(--ink);
-  transition: all 0.15s ease-in-out;
+  transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
 }
 .voice-btn:hover:not(:disabled) {
   background: var(--tint);

@@ -29,6 +29,8 @@ The first hosted test invocation stopped before recording because its initial ba
 
 Production is promoted only after the dev CI/deployment/voice gates pass. The release procedure repeats the same opt-in voice check and the independent text approval/rejection smoke against the public production origin and verifies the final branch SHAs and READY aliases. Those final results are reported in the delivery evidence.
 
+The final dev CI at `5af2c0d` additionally caught an enabled microphone button halfway through an opacity transition after approval (contrast 3.79:1). The button now transitions only background/border colors; enabled text returns immediately to full contrast. Accessibility checks remain unchanged.
+
 ## Provider documentation
 
 - [Vercel WebSockets](https://vercel.com/docs/functions/websockets): current beta supports Python ASGI, but Next.js requires an upgrade handler and persistent authentication state must not depend on process-local memory. This repair uses bounded HTTP requests instead of introducing a new socket layer.
