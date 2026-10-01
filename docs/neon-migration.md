@@ -91,4 +91,38 @@ explicit server-only `API_PROTECTION_BYPASS_SECRET` for the API preview instead
 of the platform's web-project `VERCEL_AUTOMATION_BYPASS_SECRET`. Only the dev
 branch gets the existing API access secret; preview protection remains enabled.
 
-Final dev browser and production verification are pending.
+Both final deployed browser journeys passed at application commit
+`30b279802ce9fb7f24f75b8a00ec5372deee45f9`: real generation, source inspection,
+exact-note approval and persistence after reload, rejection without a note,
+secure session cookie checks, mobile/desktop reflow, and automated accessibility.
+Both environment APIs passed foreign-session, tampered-content, stale-proposal,
+idempotency, and abstention checks. Dev and production CI passed:
+[dev 36899402312](https://github.com/UmitVice/evidencedesk/actions/runs/36899402312),
+[master 36899892437](https://github.com/UmitVice/evidencedesk/actions/runs/36899892437).
+
+A controlled sleep/wake check first confirmed each compute was `idle` and not
+`disabled`, then called the public BFF to create a session and read all three
+tickets. Both returned HTTP 200 and the compute became `active`, without an
+explicit start call. Measured full session/ticket request time was 1.52 seconds
+for dev and 2.27 seconds for production; these are two observations, not latency
+percentiles or an availability guarantee.
+
+The initial production browser run approved and persisted its first note, but
+the credential-ticket model response failed structured validation. The failed
+run remains stored with `invalid_model_output` and no proposal. A separately
+invoked bounded browser smoke passed both analyses; validators, provider mode,
+quotas, and automatic test retries were unchanged. An earlier repeat of the
+local browser suite exhausted its disposable session quota; the final suite
+passed on a fresh disposable database, without resetting any quota.
+
+Original Supabase sources were manually paused after successful migration and
+live verification. Their data remains available under Supabase's restore
+window (currently up to one year), and the full local exports remain in ignored
+mode-0600 files. Deployed EvidenceDesk uses only Neon for its application state.
+No paid plan was enabled; the Vaniras Launch organization remains unchanged.
+
+The [sanitized verification receipt](../reports/neon-migration.json) contains
+snapshot counts/hashes, CI links, exact application validation revision, and
+functional results. A later documentation-only release preserves this same
+application tree; its final deployments must be checked separately for readiness
+and BFF session access.

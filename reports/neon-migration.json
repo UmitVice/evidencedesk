@@ -1,0 +1,233 @@
+{
+  "verified_at": "2026-10-01",
+  "application_validation_commit": "30b279802ce9fb7f24f75b8a00ec5372deee45f9",
+  "application_tree": "fd011558b8a368ef073eea13a455793b650ee4e2",
+  "account": "umitvice@gmail.com",
+  "organization": {
+    "id": "org-divine-wind-27513562",
+    "name": "EvidenceDesk",
+    "plan": "free",
+    "managed_by": "console"
+  },
+  "projects": {
+    "development": "cold-mode-47834829",
+    "production": "flat-frost-26354813"
+  },
+  "database": {
+    "region": "aws-us-east-2",
+    "postgresql": "17.11",
+    "pgvector": "0.8.0",
+    "compute_cu": 0.25,
+    "tls": "verify-full with certifi 2026.7.22"
+  },
+  "migration": {
+    "development": {
+      "tables": {
+        "sessions": {
+          "count": 8,
+          "sha256": "6834eacdfb6e0f71a4b4a6253963b301bea3f2132de5cca7bc009b4103508975"
+        },
+        "documents": {
+          "count": 24,
+          "sha256": "9cab09cc2beafe9abafd700accf314b45c1a56e076eca846809686a3c964ab77"
+        },
+        "chunks": {
+          "count": 24,
+          "sha256": "7cff6de3b2fcbd590385d2272a7349da0a15fc6beac6ae3e887b9f4c133f2a6d"
+        },
+        "tickets": {
+          "count": 24,
+          "sha256": "796b92667dc3b0a474d50508265fb53c9af7c1d2deb44e9346f7be386a577f71"
+        },
+        "usage_counters": {
+          "count": 25,
+          "sha256": "3c43a9b2d1b3e55209afdd5cb47cd531877f594d21017d477984b222b89217cc"
+        },
+        "runs": {
+          "count": 17,
+          "sha256": "04d04b15d38500408f9442718c3eb65c2b28f0980b38bbe8cbb7725c72f73d65"
+        },
+        "proposals": {
+          "count": 14,
+          "sha256": "b5b163d50a5cb7360aaab89b4ffe03c62508851c0a0f300a10b94c40245bf101"
+        },
+        "notes": {
+          "count": 5,
+          "sha256": "7652c3a9638409b06017df164f0d84abb0119cfdfc6b9e1e1a5f243c5c49d728"
+        },
+        "audit_events": {
+          "count": 25,
+          "sha256": "546653c35c3ee944469746a6824c438329b142c73b31b7e980f61973056062c2"
+        }
+      },
+      "migration_checksums": [
+        [
+          "001_sandbox.sql",
+          "84cca0b460f9a55faee8a4ed847ab1f6d73ac117da3b026de18987596208d121"
+        ],
+        [
+          "002_analysis.sql",
+          "92e6e70d03c4217f0ae4196a7c7e949d96cbaefcee8b6146b38689ef1d8da64b"
+        ],
+        [
+          "003_approvals.sql",
+          "2ad33b6191c9f4d89c4fef38fdecac62a6f849eb9c095088dd3d8d46bc3faafc"
+        ],
+        [
+          "004_private_metadata.sql",
+          "11437c4598b97c9125bb0a9d079ddcf8cebedd4c0498e0a94178e49afc0f55b1"
+        ],
+        [
+          "005_private_defaults.sql",
+          "c14069397dd81df9d630d1a861f252290db2b59a3658d0ecbbcc49599dc20303"
+        ]
+      ],
+      "quota_counters_preserved": true,
+      "runtime_privileges": "verified restricted"
+    },
+    "production": {
+      "tables": {
+        "sessions": {
+          "count": 14,
+          "sha256": "211af924cd06532a734931a4c3b41655bc1c067172fbb27a3b43d1dbbda20587"
+        },
+        "documents": {
+          "count": 24,
+          "sha256": "9cab09cc2beafe9abafd700accf314b45c1a56e076eca846809686a3c964ab77"
+        },
+        "chunks": {
+          "count": 24,
+          "sha256": "7cff6de3b2fcbd590385d2272a7349da0a15fc6beac6ae3e887b9f4c133f2a6d"
+        },
+        "tickets": {
+          "count": 42,
+          "sha256": "5262d5ac4cba2d52f4d425251818844db8a3271e71e41ed66827f8660655c395"
+        },
+        "usage_counters": {
+          "count": 40,
+          "sha256": "a48f1b18f56d3faaaf619aca870b5ff7c2e00bb81e1cadd8d75171ec1c85cc91"
+        },
+        "runs": {
+          "count": 24,
+          "sha256": "61d9aa97d2727d1dfba13c278bb5f1975aea4f4599c673e6edfb99f1c3f05d93"
+        },
+        "proposals": {
+          "count": 19,
+          "sha256": "94ce753c13e357ff48b5d8738de0019887586c787c3d77627ca82f30d649ed3a"
+        },
+        "notes": {
+          "count": 7,
+          "sha256": "65c7c0b9f6dfbeba04e494229184321b2bb9e9d0444fc6ef1ca06f9783a3ba6b"
+        },
+        "audit_events": {
+          "count": 34,
+          "sha256": "8da405a4b1f2af4ff58fe3f7cd69621ba7771a7e1249b32289fa3cfd4069e6e5"
+        }
+      },
+      "migration_checksums": [
+        [
+          "001_sandbox.sql",
+          "84cca0b460f9a55faee8a4ed847ab1f6d73ac117da3b026de18987596208d121"
+        ],
+        [
+          "002_analysis.sql",
+          "92e6e70d03c4217f0ae4196a7c7e949d96cbaefcee8b6146b38689ef1d8da64b"
+        ],
+        [
+          "003_approvals.sql",
+          "2ad33b6191c9f4d89c4fef38fdecac62a6f849eb9c095088dd3d8d46bc3faafc"
+        ],
+        [
+          "004_private_metadata.sql",
+          "11437c4598b97c9125bb0a9d079ddcf8cebedd4c0498e0a94178e49afc0f55b1"
+        ],
+        [
+          "005_private_defaults.sql",
+          "c14069397dd81df9d630d1a861f252290db2b59a3658d0ecbbcc49599dc20303"
+        ]
+      ],
+      "quota_counters_preserved": true,
+      "runtime_privileges": "verified restricted"
+    }
+  },
+  "verification": {
+    "local_python_postgresql_tests": 55,
+    "local_simulated_browser_tests": 22,
+    "lint": "passed",
+    "types": "passed",
+    "build": "passed",
+    "api_contract": "passed",
+    "npm_audit": "no vulnerabilities",
+    "python_audit": "no known vulnerabilities",
+    "secret_scans": "passed"
+  },
+  "ci": {
+    "development": "https://github.com/UmitVice/evidencedesk/actions/runs/36899402312",
+    "production": "https://github.com/UmitVice/evidencedesk/actions/runs/36899892437"
+  },
+  "live_checks": {
+    "development": {
+      "browser_journey": "passed",
+      "wakeup": {
+        "environment": "dev",
+        "before": "idle",
+        "disabled": false,
+        "public_bff_session_status": 200,
+        "tickets": 3,
+        "after": "active",
+        "elapsed_seconds": 1.52,
+        "explicit_start_call": false
+      },
+      "api_checks": {
+        "timestamp": "2026-10-01T17:23:47.538072+00:00",
+        "origin": "https://evidencedesk-api-git-dev-umitvices-projects.vercel.app",
+        "deployment_sha": "c2763af1b0c03edcd379c7ec24ca4c21159b82fe",
+        "checks": {
+          "session_and_tickets": true,
+          "real_generation_and_citations": true,
+          "foreign_session_rejected": true,
+          "tampered_content_rejected": true,
+          "exact_note_persisted_once": true,
+          "stale_proposal_rejected": true,
+          "rejection_without_note": true,
+          "unsupported_question_abstains": true
+        }
+      }
+    },
+    "production": {
+      "browser_journey": "passed",
+      "wakeup": {
+        "environment": "production",
+        "before": "idle",
+        "disabled": false,
+        "public_bff_session_status": 200,
+        "tickets": 3,
+        "after": "active",
+        "elapsed_seconds": 2.27,
+        "explicit_start_call": false
+      },
+      "api_checks": {
+        "timestamp": "2026-10-01T17:35:18.944693+00:00",
+        "origin": "https://evidencedesk-web.vercel.app",
+        "deployment_sha": "30b279802ce9fb7f24f75b8a00ec5372deee45f9",
+        "checks": {
+          "session_and_tickets": true,
+          "real_generation_and_citations": true,
+          "foreign_session_rejected": true,
+          "tampered_content_rejected": true,
+          "exact_note_persisted_once": true,
+          "stale_proposal_rejected": true,
+          "rejection_without_note": true,
+          "unsupported_question_abstains": true
+        }
+      }
+    }
+  },
+  "limitations": [
+    "Functional smoke only; not a model-quality evaluation.",
+    "One initial production credential-ticket answer failed structured validation; no proposal/note was created. The failure is retained in the database; a separately run browser smoke then passed.",
+    "An earlier repeated local browser suite exhausted its disposable session quota; a fresh disposable database passed without changing quotas.",
+    "Free provider quotas still apply.",
+    "Old Supabase sources and restricted local backups are retained; after new writes, rollback requires reconciliation."
+  ]
+}

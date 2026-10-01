@@ -5,7 +5,7 @@ Verified 2026-09-09 using official npm registry `/PACKAGE/latest` and PyPI `/pyp
 | Component | Selected |
 | --- | --- |
 | Node | 24.21.0 local/CI target; Vercel 24.x patch managed by platform |
-| Next / eslint-config-next | 16.3.4 |
+| Next / eslint-config-next | 16.3.8 (security update 2026-10-01) |
 | React / React DOM / React types | 19.3.0 |
 | TypeScript | 7.0.2 |
 | Tailwind / PostCSS integration | 4.3.3 |
@@ -20,7 +20,7 @@ Verified 2026-09-09 using official npm registry `/PACKAGE/latest` and PyPI `/pyp
 | Tokenizers / Uvicorn | 0.23.2 / 0.52.4 |
 | Ruff / Pyright / pytest / pip-audit | 0.16.6 / 1.1.413 / 9.1.1 / 2.10.1 |
 | Local PostgreSQL / pgvector | Homebrew 17.11 / 0.8.6; confirmed by actual server queries |
-| Hosted PostgreSQL / pgvector | Not provisioned; actual versions unverified |
+| Hosted Neon PostgreSQL / pgvector | PostgreSQL 17.11 / pgvector 0.8.0; directly verified 2026-10-01 |
 
 Sources: [npm](https://registry.npmjs.org/next/latest), [PyPI](https://pypi.org/project/fastapi/), [Node release index](https://nodejs.org/dist/index.json), [Python release](https://www.python.org/downloads/release/python-31315/), [Next support](https://nextjs.org/support-policy), [pgvector](https://github.com/pgvector/pgvector), [container tag](https://hub.docker.com/v2/repositories/pgvector/pgvector/tags/pg17).
 
@@ -28,7 +28,7 @@ Sources: [npm](https://registry.npmjs.org/next/latest), [PyPI](https://pypi.org/
 
 [FastAPI preset](https://vercel.com/docs/frameworks/backend/fastapi): `apps/api/main.py` exports `app`; app-local pyproject/uv.lock. [Hobby](https://vercel.com/docs/plans/hobby) is limited to personal non-commercial use. Use two projects and two logical environments, never production secrets in previews.
 
-[Supabase Free](https://supabase.com/pricing): two active project slots, 500 MB each, inactivity pause possible. Check actual account capacity before provisioning. [Transaction pooler](https://supabase.com/docs/guides/database/connecting-to-postgres): disable prepared statements; separate migration connection.
+[Neon Free](https://neon.com/docs/introduction/plans): isolated Free organization, separate development/production projects, automatic sleep and wake on connection, and provider resource quotas. Disable prepared statements on the pooled runtime connection; use a separate direct connection for maintenance. Supabase Free was the original provider and remains only in historical recovery notes.
 
 [Workers AI pricing](https://developers.cloudflare.com/workers-ai/platform/pricing/): 10,000 shared account Neurons daily on Free, not 10,000 requests. No billing changes authorized. [Generation candidate](https://developers.cloudflare.com/workers-ai/models/llama-3.1-8b-instruct-fast/) and [JSON mode](https://developers.cloudflare.com/workers-ai/features/json-mode/) inspected. Live smoke and account eligibility remain unverified until the scoped API token is provided. [BGE small](https://developers.cloudflare.com/workers-ai/models/bge-small-en-v1.5/): 384 dimensions and 512 tokens; explicit pooling and tokenizer validation required before live ingestion.
 
@@ -38,10 +38,12 @@ Vercel build verification: its uv 0.10.11 could not resolve a 3.13.14 patch pin.
 
 Security tooling: Gitleaks 8.30.1 installed from the verified Homebrew bottle; pinned gitleaks-action revision and GITLEAKS_VERSION in CI. Personal-account repositories do not require an action license key. Comments and extra artifact upload are disabled.
 
-Hatchling 1.32.0 build backend verified on PyPI and pinned. Database timeouts use transaction-local SET, avoiding persistent session settings on the transaction pooler; see https://supabase.com/docs/guides/database/postgres/timeouts. Hosted pooler connectivity still requires live verification.
+Hatchling 1.32.0 build backend verified on PyPI and pinned. Database timeouts use transaction-local SET, avoiding persistent session settings on the transaction pooler; see https://supabase.com/docs/guides/database/postgres/timeouts. Neon direct and pooled connectivity were verified during migration.
 
 Hosted verification (2026-09-10): PostgreSQL 17.6, pgvector 0.8.2. Supabase published CA downloaded from https://supabase-downloads.s3-ap-southeast-1.amazonaws.com/prod/ssl/prod-ca-2021.crt and bundled as a public trust certificate. SHA-256 certificate fingerprint: 807025AD50D4ED219D2C9C7D299C004F824EB00CF7F65AFEF607D07B72E6CAFA. Both pooler modes use verify-full; passwords are URI-encoded. Vercel cle1 is us-east-2, matching Ohio: https://vercel.com/docs/regions.
 
 Cloudflare JSON Mode supports JSON-object requests on the retained fast model. Live activation exposed inconsistent cross-field output with the generated JSON-schema contract. `support-v2` places the schema and answer/abstention rules in the prompt and uses JSON-object mode; application validation remains mandatory. Official contract: https://developers.cloudflare.com/workers-ai/features/json-mode/. Both a cited answer and an unrelated-question abstention were verified with real calls.
 
 The support-v3 revision retains those model IDs and adds source title/version/status plus explicit temporal-condition preservation. The full 40-case live evaluation is recorded separately from historical activation checks.
+
+Neon migration verification (2026-10-01): both AWS Ohio projects use PostgreSQL 17.11 and pgvector 0.8.0. Certifi 2026.7.22 supplies the Mozilla CA trust bundle; `verify-full` is enforced for direct and pooled Neon connections. Next.js/eslint-config-next were updated to 16.3.8 and urllib3 to 2.8.0 for release security checks. Supabase version/CA notes above are historical recovery context. Current hosting uses Neon Free in an isolated organization; see [migration verification](neon-migration.md).
