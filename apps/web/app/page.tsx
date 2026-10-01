@@ -31,22 +31,22 @@ export default function Home() {
         <p className="eyebrow">
           AI Support Copilot <span className="badge">Verified Citations</span>
         </p>
-        <h1>Resolve support tickets with verified AI & real-time voice.</h1>
+        <h1>Resolve support tickets with verified AI & voice notes.</h1>
         <p className="intro-copy">
           EvidenceDesk instantly retrieves authorized product documentation and
-          proposes structured, citation-backed solutions. Support teams can
-          type or speak to investigate issues, inspect original excerpts, and
-          approve internal resolution notes with complete confidence.
+          proposes structured, citation-backed solutions. Support teams can type
+          or speak to investigate issues, inspect original excerpts, and approve
+          internal resolution notes after reviewing the evidence.
         </p>
         <p className="demo-assurance">
-          Safe & controlled: Nothing is saved without your explicit approval,
-          and no customer messages are sent automatically.
+          Safe & controlled: No internal note is saved without your explicit
+          approval, and no customer messages are sent automatically.
         </p>
       </section>
       <ol className="journey" aria-label="How to try EvidenceDesk">
         {[
           "Select a support ticket",
-          "Analyze or speak (Live Voice)",
+          "Analyze a typed or recorded question",
           "Inspect verified sources",
           "Approve & save note",
         ].map((step, index) => (
@@ -95,7 +95,8 @@ export default function Home() {
           can always check the original source before saving.
         </p>
         <Link className="text-link" href="/evaluations">
-          View accuracy & reliability benchmarks <span aria-hidden="true">→</span>
+          View accuracy & reliability benchmarks{" "}
+          <span aria-hidden="true">→</span>
         </Link>
       </section>
     </div>

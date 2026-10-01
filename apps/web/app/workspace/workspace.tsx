@@ -129,7 +129,8 @@ export default function Workspace() {
   const focusTarget = useRef<"answer" | "decision" | null>(null);
   const generation = useRef(0);
   const opening = useRef<Promise<TicketsResponse> | null>(null);
-  const busy = pending !== null;
+  const [voiceBusy, setVoiceBusy] = useState(false);
+  const busy = pending !== null || voiceBusy;
 
   const select = useCallback(async (id: string) => {
     const request = ++generation.current;
@@ -248,13 +249,13 @@ export default function Workspace() {
   async function refresh() {
     if (ticket) await select(ticket.id);
   }
-  async function analyze() {
+  async function analyze(input = question) {
     if (!ticket) return;
     const previousId = run?.id;
     setRun(null);
     try {
       const result = await api<RunResponse>(`tickets/${ticket.id}/analyze`, {
-        question,
+        question: input,
       });
       setRun(result);
       focusTarget.current = "answer";
@@ -455,20 +456,14 @@ export default function Workspace() {
             </section>
             {ticket && (
               <VoiceCopilot
+                key={ticket.id}
                 ticketId={ticket.id}
                 ticketTitle={ticket.title}
-                onNoteProposed={async () => {
-                  await act("refresh", refresh);
-                }}
-                onSelectSource={async (sourceId) => {
-                  try {
-                    setSource(null);
-                    setSourceOpen(true);
-                    dialog.current?.showModal();
-                    setSource(await api<SourceResponse>(`sources/${sourceId}`));
-                  } catch (err) {
-                    console.warn("Failed to load source:", err);
-                  }
+                busy={pending !== null}
+                onBusyChange={setVoiceBusy}
+                onAnalyze={async (text) => {
+                  setQuestion(text);
+                  await act("analysis", () => analyze(text));
                 }}
               />
             )}
@@ -483,7 +478,9 @@ export default function Workspace() {
                 </h2>
                 {answerReady && (
                   <span className="badge ai-badge">
-                    {run.mode === "live" ? "AI generated" : "Suggested resolution"}
+                    {run.mode === "live"
+                      ? "AI generated"
+                      : "Suggested resolution"}
                   </span>
                 )}
               </div>

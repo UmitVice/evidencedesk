@@ -32,7 +32,11 @@ Short Psycopg connections disable prepared statements for transaction poolers an
 
 Approval locks the proposal first, then the ticket. A duplicate approval of an already-applied proposal returns its existing note ID. A pending approval checks expiry and ticket version, inserts the unique note, increments the version and records the final decision atomically. Competing proposals for one ticket serialize on its row and the second becomes stale. Approval versus rejection serializes on the same proposal. This demonstrates one database effect, not global exactly-once distributed processing.
 
-## Real-Time Voice Copilot & Speech-to-Speech (S2S) Architecture
+## Hosted voice notes
+
+The current hosted UI uses microphone → bounded PCM WAV upload → same-origin HTTPS BFF → authenticated Python transcription endpoint → Cloudflare Whisper. The user reviews the transcript before the normal RAG analysis. Quotes and schemas are validated, proposals are persisted, and only explicit approval saves an internal note. Raw audio is not retained in the database. Maximum recording length is 30 seconds; both transcription and analysis consume durable quota. The streaming architecture below is a legacy local experiment, not the hosted voice transport.
+
+## Legacy local streaming architecture
 
 ```mermaid
 flowchart LR

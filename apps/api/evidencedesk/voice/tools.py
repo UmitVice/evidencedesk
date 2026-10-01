@@ -63,9 +63,7 @@ def _search_fixture_knowledge(tenant: str, query: str, limit: int = 4) -> list[d
             if meta.tenant != tenant or meta.status != "active":
                 continue
             for heading, chunk_body in chunks(body):
-                chunk_terms = set(
-                    re.findall(r"[a-zA-Z0-9]+", (heading + " " + chunk_body).lower())
-                )
+                chunk_terms = set(re.findall(r"[a-zA-Z0-9]+", (heading + " " + chunk_body).lower()))
                 overlap = len(terms & chunk_terms)
                 if overlap > 0:
                     matches.append(
@@ -98,10 +96,10 @@ def search_knowledge_base(tenant: str, query: str, limit: int = 4) -> dict[str, 
     try:
         adapter = provider()
         vector = adapter.embed([query])[0]
-        rows = search_knowledge(
-            tenant, query, vector, adapter.manifest, mode="hybrid", limit=limit
-        )
+        rows = search_knowledge(tenant, query, vector, adapter.manifest, mode="hybrid", limit=limit)
     except Exception:
+        if settings().ai_mode == "live":
+            raise
         rows = _search_fixture_knowledge(tenant, query, limit=limit)
 
     citations: list[dict[str, Any]] = []
@@ -187,6 +185,8 @@ def propose_ticket_note(
             else None,
         }
     except Exception:
+        if settings().ai_mode == "live":
+            raise
         # Fallback offline simulation for unit testing when PostgreSQL is not running
         expires = datetime.now(UTC) + timedelta(minutes=30)
         return {

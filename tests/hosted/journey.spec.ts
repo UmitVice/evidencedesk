@@ -30,7 +30,7 @@ test("hosted sources, approval persistence, rejection, and responsive accessibil
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-    "Resolve support tickets with verified AI & real-time voice.",
+    "Resolve support tickets with verified AI & voice notes.",
   );
   await page.screenshot({
     path: `${screenshots}/landing-desktop.png`,

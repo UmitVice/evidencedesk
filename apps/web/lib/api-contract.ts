@@ -82,6 +82,7 @@ export type TicketsResponse = {
   tickets: Array<TicketSummary>;
   mode: "simulated" | "live";
 };
+export type TranscriptionResponse = { text: string; model: string };
 export type ValidationError = {
   loc: Array<string | number>;
   msg: string;

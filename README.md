@@ -37,56 +37,27 @@ The local environment helper writes ignored mode-0600 files and never prints gen
 
 ```mermaid
 flowchart LR
-    subgraph Client [Browser / Next.js]
-        WebUI[Workspace / Inspection UI]
-        Mic[Web Audio API Mic 16kHz]
-        Spk[Audio Playback 24kHz]
-        Cards[Live Citation Drawer]
-    end
-
-    subgraph BFF [Next.js BFF]
-        AuthProxy[HTTP Proxy / Session Cookie]
-        TicketGen[POST /api/voice/ticket]
-    end
-
-    subgraph API [FastAPI Backend]
-        REST[REST Endpoints]
-        WS["/api/voice/session (WebSocket)"]
-        VAD[Voice Activity Detection / Buffer]
-        Router[Voice Session Coordinator]
-    end
-
-    subgraph Providers [AI & S2S Providers]
-        CF[Cloudflare Workers AI REST]
-        MockVoice[Deterministic Mock Voice Provider]
-        GeminiLive[GCP Gemini 2.0 Multimodal Live API]
-    end
-
-    subgraph Storage [Authorized Storage]
-        DB[(PostgreSQL + pgvector)]
-    end
-
-    WebUI --> AuthProxy --> REST --> DB
-    REST --> CF
-    TicketGen --> REST
-    Mic -->|Linear PCM Audio| WS
-    WS -->|Audio Chunks| Spk
-    WS -->|Citations & Transcripts| Cards
-    WS <--> VAD <--> Router
-    Router <--> MockVoice
-    Router <--> GeminiLive
-    Router -->|RAG Tool Calls| DB
+    UI[Workspace] --> BFF[Next.js HTTPS BFF]
+    Mic[Microphone: up to 30 seconds] --> WAV[PCM WAV]
+    WAV --> BFF --> API[Authenticated Python API]
+    API --> ASR[Cloudflare Whisper]
+    ASR --> Review[Review and edit transcript]
+    Review --> RAG[Existing validated RAG analysis]
+    RAG --> Sources[Inspect original sources]
+    Sources --> Approval[Explicit exact-note approval]
+    API --> DB[(Neon PostgreSQL and pgvector)]
+    Approval --> DB
 ```
 
 - 24 original Markdown documents, two synthetic tenants, three sandbox tickets.
-- Real-time Voice & Speech-to-Speech (S2S) Copilot over WebSockets with frame-accurate Voice Activity Detection (VAD) and barge-in interruption.
-- Dual-provider voice architecture: GCP Gemini 2.0 Multimodal Live API with standard `websockets`, paired with a zero-cost deterministic Mock Voice Provider for offline testing.
-- Secure single-use voice tickets ensuring `SERVICE_KEY` remains server-only while browser streams directly via Web Audio API.
+- Bounded recorded voice questions, real server-side transcription, editable transcript review, and the same cited analysis and persisted approval as text input.
+- Legacy local streaming adapters (not the deployed recording transport): optional GCP Gemini adapter with standard `websockets`, paired with a zero-cost deterministic Mock Voice Provider for offline testing.
+- Same-origin HTTPS voice uploads; `SERVICE_KEY` and provider credentials remain server-only.
 - Token-bounded, hashed ingestion; explicit 384-dimensional embedding manifests.
 - PostgreSQL full-text ranking, exact cosine search, and reciprocal rank fusion.
 - Strict structured answers with citation-ID and quote checks; no arbitrary model tool execution.
 - Immutable, expiring proposals tied to ticket versions. One transactional note effect under retries.
-- Full workspace interface: text analysis, real-time voice copilot, and read-only evaluations.
+- Full workspace interface: text analysis, recorded voice questions with editable transcripts, and read-only evaluations.
 
 See [architecture decisions](docs/architecture.md), [OpenAPI](docs/openapi.json), and [security boundaries](SECURITY.md).
 
@@ -118,7 +89,7 @@ Use a separate database named `evidencedesk_eval*`, set DATABASE_URL and MIGRATI
 
 For live checks, configure server-side Cloudflare credentials in development, run the provider smoke and idempotent live ingestion, then `npm run eval:smoke`. After inspecting that ten-case run and confirming free account capacity, an explicit maintainer run can evaluate all 40 cases. The support-v3 full live suite at clean `b1943513cef15e6f42335fbf2642bf094c09217c` processed all 40 cases: 30 real generation attempts/completions and ten engineering-control references. Twenty-eight outputs passed schema/citation checks, two failed structured validation, and five valid outputs disagreed with the expected answer/abstention status. Retrieval n=16: Recall@5 1.0 for all methods; MRR lexical 0.703125, vector 0.921875, hybrid 0.875. Latency n=30: p50 1.15 s, p95 2.44 s. Human semantic review remains pending. The held-out results were measured after prompt tuning and were not used to tune the released prompt. Historical reports and the ten-case smoke remain in [reports/history](reports/history). See the [method, budgets, and review rubric](docs/evaluation.md).
 
-### Real-Time Voice & Speech Evals
+### Legacy Real-Time Voice & Speech Evals
 
 The voice pipeline includes an automated low-latency eval framework ([`apps/api/evidencedesk/voice/evals.py`](apps/api/evidencedesk/voice/evals.py)) executed against deterministic offline scenarios and live S2S streams:
 - **TTFA (Time-To-First-Audio)**: Tracks audio arrival latency from turn initiation. SLA budget is p95 < 600 ms (measured at ~31 ms on local stream).
@@ -132,9 +103,9 @@ The voice pipeline includes an automated low-latency eval framework ([`apps/api/
 | --- | --- |
 | Python APIs and typed contracts | [FastAPI routes](apps/api/main.py), [contract generator](scripts/api-contract.py) |
 | Bounded RAG and provider integration | [workflow](apps/api/evidencedesk/workflow.py), [retrieval](apps/api/evidencedesk/retrieval.py), [Cloudflare adapter](apps/api/evidencedesk/providers.py) |
-| Real-Time Voice & S2S RAG | [WebSocket Gateway](apps/api/evidencedesk/voice/gateway.py), [VAD & Audio Framing](apps/api/evidencedesk/voice/vad.py), [Gemini & Mock Providers](apps/api/evidencedesk/voice/provider.py) |
+| Legacy local streaming experiments | [WebSocket Gateway](apps/api/evidencedesk/voice/gateway.py), [VAD & Audio Framing](apps/api/evidencedesk/voice/vad.py), [Gemini & Mock Providers](apps/api/evidencedesk/voice/provider.py) |
 | Voice Evals & Low-Latency SLA | [Voice Evals Framework](apps/api/evidencedesk/voice/evals.py), [Automated Voice Test Suite](apps/api/tests/test_voice.py) |
-| Interactive Web Audio Streaming | [Voice Copilot Component](apps/web/app/workspace/voice-copilot.tsx), [BFF Single-Use Ticket](apps/web/app/api/[...path]/route.ts) |
+| Hosted voice recording | [Voice UI](apps/web/app/workspace/voice-copilot.tsx), [bounded transcription](apps/api/evidencedesk/voice/recording.py), HTTPS BFF, existing validated RAG |
 | Authorization and idempotency | [approval transaction](apps/api/evidencedesk/actions.py), [SQL invariants](apps/api/migrations/003_approvals.sql), [race tests](apps/api/tests/test_actions.py) |
 | Evaluation discipline | [evaluation runner](apps/api/evidencedesk/evaluation.py), [dataset checks](apps/api/tests/test_evaluations.py) |
 | Cloud deployment and CI/CD | [GitHub Actions](.github/workflows/ci.yml), [Vercel/Neon runbook](docs/deployment.md) |
@@ -149,3 +120,7 @@ Citation integrity is not semantic correctness. Prompt injection cannot grant to
 A [demo script](docs/demo-script.md) covers answer/source inspection, abstention, rejection, approval retries, and evaluation limitations. Screenshots are from the running local fixture app, verified at 375, 768, and 1440 px; no recording is claimed. [Before/after UX record](docs/ux-improvements.md) · [Mobile investigation](docs/screenshots/workspace-375.png) · [Claim-associated evidence](docs/screenshots/evidence-1440.png). Potential future work includes stronger semantic review and real identity integration, beyond this deliberately small scope.
 
 Original code and synthetic data: MIT. See [third-party notices](THIRD_PARTY_NOTICES.md).
+
+### Hosted voice notes
+
+The live voice UI records up to 30 seconds, transcribes via server-only Cloudflare Whisper, and lets the user review or edit the transcript before running the same source-validated analysis and explicit approval as text questions. No browser provider keys or socket tickets are required. Transcription and analysis each consume the existing durable AI budget. See [voice transport fix and verification](docs/voice-recording-fix.md). The legacy streaming adapters remain local experiments.

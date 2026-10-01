@@ -23,10 +23,12 @@ from evidencedesk.responses import (
 )
 from evidencedesk.sessions import create_session, get_ticket, require_service, session
 from evidencedesk.voice import voice_router
+from evidencedesk.voice.recording import MAX_AUDIO_BYTES, recording_router
 from evidencedesk.workflow import analyze, read_run
 
 app = FastAPI(title="EvidenceDesk API", version="0.1.0")
 app.include_router(voice_router)
+app.include_router(recording_router)
 Owner = Annotated[dict[str, Any], Depends(session)]
 logger = logging.getLogger("evidencedesk")
 if not logger.handlers:
@@ -40,9 +42,15 @@ async def boundary(request: Request, call_next):
     request.state.request_id = str(uuid4())
     start = time.monotonic()
     body = bytearray()
+    audio_route = (
+        request.method == "POST"
+        and request.url.path.startswith("/tickets/")
+        and request.url.path.endswith("/transcribe")
+    )
+    limit = MAX_AUDIO_BYTES if audio_route else 4096
     async for chunk in request.stream():
         body.extend(chunk)
-        if len(body) > 4096:
+        if len(body) > limit:
             return JSONResponse(
                 {
                     "error": {

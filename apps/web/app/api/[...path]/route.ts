@@ -23,6 +23,7 @@ const routes = new Map<string, RegExp[]>([
       new RegExp(`^tickets/${uuid}/analyze$`),
       new RegExp(`^proposals/${uuid}/decision$`),
       /^voice\/ticket$/,
+      new RegExp(`^tickets/${uuid}/transcribe$`),
     ],
   ],
 ]);
@@ -51,10 +52,20 @@ async function forward(
       "Reload this page before trying again.",
       403,
     );
-  let body: string | undefined;
+  const audioRoute = new RegExp(`^tickets/${uuid}/transcribe$`).test(route);
+  const contentType = audioRoute ? "audio/wav" : "application/json";
+  let body: ArrayBuffer | undefined;
   if (request.method === "POST") {
-    if (!request.headers.get("content-type")?.startsWith("application/json"))
-      return failure("invalid_request", "JSON request required.", 415);
+    if (
+      audioRoute
+        ? request.headers.get("content-type") !== contentType
+        : !request.headers.get("content-type")?.startsWith(contentType)
+    )
+      return failure(
+        "invalid_request",
+        "A supported request format is required.",
+        415,
+      );
     const reader = request.body?.getReader();
     const parts: Uint8Array[] = [];
     let size = 0;
@@ -63,14 +74,14 @@ async function forward(
         const { done, value } = await reader.read();
         if (done) break;
         size += value.length;
-        if (size > 4096) {
+        if (size > (audioRoute ? 960044 : 4096)) {
           await reader.cancel();
           return failure("body_too_large", "Request too large.", 413);
         }
         parts.push(value);
       }
     }
-    body = Buffer.concat(parts).toString("utf8");
+    body = Uint8Array.from(Buffer.concat(parts)).buffer;
   }
   const api = process.env.API_ORIGIN;
   const key = process.env.SERVICE_KEY;
@@ -112,7 +123,7 @@ async function forward(
     return failure("session_expired", "Start a new sandbox session.", 401);
   try {
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
+      "Content-Type": contentType,
       "X-Service-Key": key,
     };
     if (token) headers["X-Session-Token"] = token;

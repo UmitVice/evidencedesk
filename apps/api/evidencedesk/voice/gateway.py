@@ -106,6 +106,8 @@ def get_voice_provider(provider_name: str | None = None) -> VoiceProvider:
         and bool(config.gemini_api_key.get_secret_value())
     ):
         return GeminiLiveProvider()
+    if config.ai_mode == "live":
+        raise DomainError("provider_unavailable", "Live streaming voice is not configured.", 503)
     return MockVoiceProvider()
 
 
@@ -129,11 +131,7 @@ async def voice_session_endpoint(
 
     if ticket_token:
         voice_ticket = _VOICE_TICKETS.get(ticket_token)
-        if (
-            voice_ticket is not None
-            and not voice_ticket.redeemed
-            and voice_ticket.expires_at > now
-        ):
+        if voice_ticket is not None and not voice_ticket.redeemed and voice_ticket.expires_at > now:
             voice_ticket.redeemed = True
             owner = voice_ticket.owner
             _VOICE_TICKETS.pop(ticket_token, None)
@@ -158,7 +156,10 @@ async def voice_session_endpoint(
             if err.code == "not_found":
                 await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
                 return
-            # Fallback ticket context for offline/test environments without live DB
+            if settings().ai_mode == "live":
+                await websocket.close(code=status.WS_1011_INTERNAL_ERROR)
+                return
+            # Local fixture context only.
             ticket = {
                 "id": ticket_id,
                 "title": "Webhook delivery issue",
@@ -167,6 +168,9 @@ async def voice_session_endpoint(
                 "version": 1,
             }
         except Exception:
+            if settings().ai_mode == "live":
+                await websocket.close(code=status.WS_1011_INTERNAL_ERROR)
+                return
             ticket = {
                 "id": ticket_id,
                 "title": "Webhook delivery issue",
@@ -184,7 +188,11 @@ async def voice_session_endpoint(
         ticket_id=ticket_id,
         ticket=ticket,
     )
-    provider = get_voice_provider(provider_name)
+    try:
+        provider = get_voice_provider(provider_name)
+    except DomainError:
+        await websocket.close(code=status.WS_1011_INTERNAL_ERROR)
+        return
     vad = VoiceActivityDetector(VADConfig())
     frame_buffer = AudioFrameBuffer(frame_size=vad.config.frame_size_bytes)
 
@@ -240,9 +248,7 @@ async def voice_session_endpoint(
                     pcm = event.to_bytes()
                     frame_buffer.push(pcm)
                     for frame in frame_buffer.pop_all_frames():
-                        vad_res = vad.process_frame(
-                            frame, assistant_speaking=is_assistant_speaking
-                        )
+                        vad_res = vad.process_frame(frame, assistant_speaking=is_assistant_speaking)
                         if vad_res.barge_in:
                             is_assistant_speaking = False
                             await provider.interrupt()
@@ -290,9 +296,7 @@ async def voice_session_endpoint(
                     if event.name == "search_knowledge_base":
                         query = str(event.args.get("query", ""))
                         tool_res = search_knowledge_base(owner["tenant"], query)
-                        citations = [
-                            CitationItem(**item) for item in tool_res.get("citations", [])
-                        ]
+                        citations = [CitationItem(**item) for item in tool_res.get("citations", [])]
                         # Immediate citation card event for UI
                         await websocket.send_text(
                             serialize_server_message(CitationEvent(citations=citations))
