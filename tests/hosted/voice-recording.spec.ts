@@ -47,7 +47,10 @@ test("hosted spoken recording, transcript, sources, approval and persisted note"
   });
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto("/workspace?sample=webhook");
-  await expect(page.getByTestId("analysis-mode")).toHaveText("Live AI");
+  await expect(page.getByTestId("analysis-mode")).toHaveText(
+    "Ready for live analysis",
+    { timeout: 15000 },
+  );
   await page
     .getByRole("button", { name: "Record Voice Note", exact: true })
     .click();
@@ -93,6 +96,7 @@ test("hosted spoken recording, transcript, sources, approval and persisted note"
   await expect(
     page.getByRole("button", { name: "Approve & save note" }),
   ).toBeEnabled({ timeout: 55000 });
+  await expect(page.getByTestId("analysis-mode")).toHaveText("Live AI");
   const draft = await page.locator(".proposed-note").innerText();
   await expect(page.locator(".saved-note")).toHaveCount(0);
   const sources = page.getByRole("button", { name: /View source/ });

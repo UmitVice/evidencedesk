@@ -21,6 +21,14 @@ Legacy streaming adapters remain for local experimental tests. Live-mode missing
 
 The hosted `tests/hosted/voice-recording.spec.ts` is opt-in using `HOSTED_VOICE_AUDIO`: it injects a spoken WAV into Chromium's microphone input, exercises the actual deployed recording/upload/transcription/RAG flow without mocking provider responses, checks all sources, approves the exact note, reloads to verify database persistence, and checks mobile reflow/accessibility. It makes one transcription and one analysis, with no automatic test retry or quota reset. Existing text approval/rejection smoke remains separate. Individual live measurements are recorded after deployment; they do not establish speech accuracy across accents/devices/languages.
 
+## Hosted development evidence
+
+The application revision `f7c8b970d45f006875d83802e440092b8bc475f9` passed [development CI](https://github.com/UmitVice/evidencedesk/actions/runs/36904607236). Both paired dev deployments were READY at that revision. The opt-in hosted voice check passed with real Cloudflare transcription and generation: spoken question preserved, playable recorded audio, all source drawers inspected, exact note approved and persisted after reload, 320/375/768-pixel reflow, automated accessibility, no page errors, one transcription, one analysis, and zero voice WebSocket connections.
+
+The first hosted test invocation stopped before recording because its initial badge assertion expected “Live AI” before an analysis; the UI correctly showed “Ready for live analysis.” The test now verifies readiness first and live-result provenance after analysis. No provider call or quota reset was used to repair that assertion. Local early failures included an unsupported microphone in Chromium's older headless shell and ambiguous test selectors; the checks now use full Chromium's native recording path and scoped selectors. These were test-harness corrections, not relaxed application validators.
+
+Production is promoted only after the dev CI/deployment/voice gates pass. The release procedure repeats the same opt-in voice check and the independent text approval/rejection smoke against the public production origin and verifies the final branch SHAs and READY aliases. Those final results are reported in the delivery evidence.
+
 ## Provider documentation
 
 - [Vercel WebSockets](https://vercel.com/docs/functions/websockets): current beta supports Python ASGI, but Next.js requires an upgrade handler and persistent authentication state must not depend on process-local memory. This repair uses bounded HTTP requests instead of introducing a new socket layer.
