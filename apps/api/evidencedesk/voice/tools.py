@@ -158,8 +158,8 @@ def propose_ticket_note(
                         settings().ai_mode,
                         "Voice Copilot interaction",
                         json.dumps([]),
-                        json.dumps({"proposed_note": cleaned}),
-                        json.dumps({"channel": "voice"}),
+                        None,
+                        json.dumps({"channel": "voice", "proposed_note_chars": len(cleaned)}),
                     ),
                 ).fetchone()
                 assert run_row
@@ -184,10 +184,11 @@ def propose_ticket_note(
             if proposal.get("expires_at")
             else None,
         }
-    except Exception:
-        if settings().ai_mode == "live":
+    except DomainError as exc:
+        # Offline simulation only when PostgreSQL is unreachable; other domain errors, such
+        # as a ticket owned by another session, always propagate.
+        if exc.code != "database_unavailable" or settings().ai_mode == "live":
             raise
-        # Fallback offline simulation for unit testing when PostgreSQL is not running
         expires = datetime.now(UTC) + timedelta(minutes=30)
         return {
             "proposal_id": str(uuid4()),

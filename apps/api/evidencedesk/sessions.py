@@ -62,7 +62,9 @@ def create_session() -> dict[str, Any]:
     now = datetime.now(UTC)
     with connection() as conn:
         conn.execute("SELECT pg_advisory_xact_lock(1001)")
-        count = conn.execute("SELECT count(*) AS n FROM evidence.sessions").fetchone()
+        count = conn.execute(
+            "SELECT count(*) AS n FROM evidence.sessions WHERE expires_at > now()"
+        ).fetchone()
         if count and count["n"] >= config.session_limit:
             raise DomainError("quota_exhausted", "Sandbox capacity is full. Try again later.", 429)
         row = conn.execute(

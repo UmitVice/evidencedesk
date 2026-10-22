@@ -79,9 +79,10 @@ def _authenticate_ws(
     """Validate service key and session token for WebSocket connections."""
     config = settings()
     expected_service_key = config.service_key.get_secret_value()
-    if len(expected_service_key) >= 32:
-        if not service_key or not secrets.compare_digest(service_key, expected_service_key):
-            return None
+    if len(expected_service_key) < 32:
+        return None
+    if not service_key or not secrets.compare_digest(service_key, expected_service_key):
+        return None
 
     if not session_token or not (40 <= len(session_token) <= 128):
         return None
@@ -277,7 +278,9 @@ async def voice_session_endpoint(
                     await provider.send_text(event.text)
 
                 elif isinstance(event, ToolResultEvent):
-                    await provider.send_tool_result(event.call_id, event.name, event.result)
+                    # Tool results come only from server-side execution; a client-sent result
+                    # could forge citations, so it is dropped.
+                    logger.warning("Ignored client-supplied tool result for %s", event.name)
 
         except (WebSocketDisconnect, asyncio.CancelledError):
             pass
@@ -295,7 +298,9 @@ async def voice_session_endpoint(
                 elif isinstance(event, ToolCallEvent):
                     if event.name == "search_knowledge_base":
                         query = str(event.args.get("query", ""))
-                        tool_res = search_knowledge_base(owner["tenant"], query)
+                        tool_res = await asyncio.to_thread(
+                            search_knowledge_base, owner["tenant"], query
+                        )
                         citations = [CitationItem(**item) for item in tool_res.get("citations", [])]
                         # Immediate citation card event for UI
                         await websocket.send_text(
@@ -317,7 +322,9 @@ async def voice_session_endpoint(
                     elif event.name == "propose_ticket_note":
                         content = str(event.args.get("content", ""))
                         if ticket_id:
-                            tool_res = propose_ticket_note(owner, ticket_id, content)
+                            tool_res = await asyncio.to_thread(
+                                propose_ticket_note, owner, ticket_id, content
+                            )
                         else:
                             tool_res = {"error": "Active ticket required to propose note."}
 
