@@ -1,0 +1,34 @@
+[project]
+name = "evidencedesk-ml"
+version = "0.1.0"
+description = "Distillation dataset, MLX fine-tuning, and export tooling for EvidenceDesk"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "evidencedesk-api",
+    "mlx-lm==0.32.2",
+    "mlx-tune==0.6.0",
+    "huggingface-hub>=1.0",
+    "httpx==0.28.1",
+    "safetensors>=0.6",
+    "numpy>=2.2",
+]
+
+[dependency-groups]
+dev = ["ruff==0.16.6", "pytest==9.1.1"]
+
+[tool.uv.sources]
+evidencedesk-api = { path = "../apps/api", editable = true }
+
+[build-system]
+requires = ["hatchling==1.32.0"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["evidencedesk_ml"]
+
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]

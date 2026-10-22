@@ -16,3 +16,7 @@ playwright-report/
 .vercel
 
 apps/web/next-env.d.ts
+
+# ML artifacts (published to Hugging Face, not git)
+ml/data/
+ml/artifacts/
