@@ -16,6 +16,16 @@ class Settings(BaseSettings):
     cloudflare_account_id: str = ""
     cloudflare_api_token: SecretStr = SecretStr("")
     gemini_api_key: SecretStr = SecretStr("")
+    # Generation can move to a self-hosted OpenAI-compatible server (for example llama.cpp
+    # serving the fine-tuned Gemma model); embeddings always stay on the live manifest.
+    generation_provider: Literal["cloudflare", "openai_compatible"] = "cloudflare"
+    generation_base_url: str = ""
+    generation_model: str = ""
+    generation_api_key: SecretStr = SecretStr("")
+    generation_timeout_seconds: float = Field(default=30, ge=1, le=120)
+    generation_json_schema: bool = True
+    generation_fallback: bool = True
+    analysis_deadline_seconds: int = Field(default=40, ge=30, le=180)
     session_hours: int = Field(default=24, ge=1, le=48)
     session_limit: int = Field(default=500, ge=1, le=5000)
     sessions_per_hour: int = Field(default=30, ge=1, le=200)

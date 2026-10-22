@@ -10,7 +10,7 @@ from evidencedesk.config import settings
 from evidencedesk.db import connection
 from evidencedesk.errors import DomainError, missing
 from evidencedesk.models import Answer
-from evidencedesk.providers import GENERATION_MODEL, PROMPT_VERSION, Provider, provider
+from evidencedesk.providers import PROMPT_VERSION, Provider, provider
 from evidencedesk.quotas import reserve
 from evidencedesk.retrieval import search_knowledge
 from evidencedesk.sessions import get_ticket
@@ -93,8 +93,11 @@ def analyze(
         "attempts": 0,
         "usage": None,
         "embedding_manifest": adapter.manifest,
-        "generation_model": GENERATION_MODEL if config.ai_mode == "live" else "fixture-v1",
+        "generation_model": getattr(adapter, "model_id", "unknown"),
     }
+    # Defaults reproduce the original 26 s / 14 s / 40 s budget; slower self-hosted models
+    # raise the whole deadline instead of each step.
+    deadline = config.analysis_deadline_seconds
 
     def load(_: State) -> State:
         return {"ticket": ticket}
@@ -115,15 +118,20 @@ def analyze(
         if not state["evidence"]:
             return {"raw": Answer(status="insufficient_evidence", claims=[]).model_dump_json()}
         for attempt in range(2):
-            if time.monotonic() - started > 26:
+            if time.monotonic() - started > deadline - 14:
                 raise DomainError("request_timeout", "Analysis deadline reached.", 504)
             trace["attempts"] += 1
             try:
                 raw, usage = adapter.generate(state["ticket"], question, state["evidence"])
                 trace["usage"] = usage
+                trace["generation_model"] = getattr(adapter, "model_id", "unknown")
                 return {"raw": raw}
             except DomainError as exc:
-                if attempt or exc.code != "provider_transient" or time.monotonic() - started > 14:
+                if (
+                    attempt
+                    or exc.code != "provider_transient"
+                    or time.monotonic() - started > deadline - 26
+                ):
                     raise
                 reserve(owner, retry=True)
         raise RuntimeError("Unreachable generation state")
@@ -134,7 +142,7 @@ def analyze(
 
     def persist(state: State) -> State:
         assert "result" in state and "evidence" in state
-        if time.monotonic() - started > 40:
+        if time.monotonic() - started > deadline:
             raise DomainError("request_timeout", "Analysis deadline reached.", 504)
         trace["elapsed_ms"] = round((time.monotonic() - started) * 1000)
         with connection() as conn:

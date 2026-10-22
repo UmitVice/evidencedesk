@@ -33,7 +33,7 @@ def test_live_report_does_not_count_local_abstention_as_generation(monkeypatch):
 
     config = Settings(database_url="postgresql://localhost/evidencedesk_eval")
     monkeypatch.setattr(evaluation, "settings", lambda: config)
-    monkeypatch.setattr(evaluation, "CloudflareProvider", FixtureProvider)
+    monkeypatch.setattr(evaluation, "provider", FixtureProvider)
     monkeypatch.setattr(evaluation, "reserve", lambda *args, **kwargs: None)
     monkeypatch.setattr(evaluation, "search_knowledge", lambda *args: [])
     report = evaluation.run_evaluation("live", "development", 1)
@@ -56,7 +56,7 @@ def test_evaluation_validation_details_exclude_raw_model_content(monkeypatch, tm
 
     config = Settings(database_url="postgresql://localhost/evidencedesk_eval")
     monkeypatch.setattr(evaluation, "settings", lambda: config)
-    monkeypatch.setattr(evaluation, "CloudflareProvider", Invalid)
+    monkeypatch.setattr(evaluation, "provider", Invalid)
     monkeypatch.setattr(evaluation, "reserve", lambda *args, **kwargs: None)
     monkeypatch.setattr(
         evaluation, "search_knowledge", lambda *args: [{"source_id": "webhook-retries"}]

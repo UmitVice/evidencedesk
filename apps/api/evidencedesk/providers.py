@@ -1,6 +1,8 @@
 import asyncio
+import concurrent.futures
 import json
 import math
+from collections.abc import Coroutine
 from typing import Any, Protocol
 
 import httpx
@@ -43,20 +45,168 @@ Choose exactly one response shape:
 - Unsupported: {"status":"insufficient_evidence","claims":[],"proposed_note":null}
 Never put claims in an insufficient_evidence response. Keep each quote under 200 characters and
 the proposed note under 500 characters. Do not answer an unrelated question using ticket context."""
+FALLBACK_CODES = frozenset(
+    {
+        "provider_transient",
+        "provider_timeout",
+        "provider_unavailable",
+        "provider_invalid",
+        "provider_quota",
+    }
+)
 
 
+def build_messages(
+    ticket: dict[str, Any], question: str, evidence: list[dict[str, Any]]
+) -> list[dict[str, str]]:
+    """Build the exact chat messages every generator receives.
 
-class Provider(Protocol):
+    Training data is rendered with this function too, so serving and fine-tuning share one
+    prompt format.
+    """
+    context = [
+        {
+            "source_id": str(x["id"]),
+            "title": x.get("title", ""),
+            "heading": x.get("heading", ""),
+            "version": x.get("version"),
+            "status": x.get("status", ""),
+            "passage": x["body"],
+        }
+        for x in evidence
+    ]
+    data = {
+        "ticket": ticket["body"],
+        "question": question or ticket["body"],
+        "evidence": context,
+    }
+    return [
+        {
+            "role": "system",
+            "content": SYSTEM_PROMPT
+            + "\nRequired JSON schema: "
+            + json.dumps(Answer.model_json_schema()),
+        },
+        {"role": "user", "content": json.dumps(data)},
+    ]
+
+
+def answer_json_schema(source_ids: list[str]) -> dict[str, Any]:
+    """JSON schema for constrained decoding, limited to the retrieved source IDs.
+
+    Grammar-based decoders cannot express the quote-substring rule, so `validate_response`
+    still runs on every answer.
+    """
+    citation = {
+        "type": "object",
+        "properties": {
+            "source_id": {"type": "string", "enum": source_ids},
+            "quote": {"type": "string", "minLength": 10},
+        },
+        "required": ["source_id", "quote"],
+        "additionalProperties": False,
+    }
+    claim = {
+        "type": "object",
+        "properties": {
+            "text": {"type": "string", "minLength": 1},
+            "citations": {"type": "array", "items": citation, "minItems": 1, "maxItems": 3},
+        },
+        "required": ["text", "citations"],
+        "additionalProperties": False,
+    }
+    return {
+        "anyOf": [
+            {
+                "type": "object",
+                "properties": {
+                    "status": {"const": "answered"},
+                    "claims": {"type": "array", "items": claim, "minItems": 1, "maxItems": 4},
+                    "proposed_note": {"type": ["string", "null"]},
+                },
+                "required": ["status", "claims", "proposed_note"],
+                "additionalProperties": False,
+            },
+            {
+                "type": "object",
+                "properties": {
+                    "status": {"const": "insufficient_evidence"},
+                    "claims": {"type": "array", "maxItems": 0},
+                    "proposed_note": {"type": "null"},
+                },
+                "required": ["status", "claims", "proposed_note"],
+                "additionalProperties": False,
+            },
+        ]
+    }
+
+
+def run_sync[T](coroutine: Coroutine[Any, Any, T]) -> T:
+    """Run a coroutine from sync code, including code called inside a running event loop."""
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        return asyncio.run(coroutine)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+        return pool.submit(asyncio.run, coroutine).result()
+
+
+async def post_json(
+    url: str,
+    headers: dict[str, str],
+    payload: dict[str, Any],
+    timeout: float,
+    transport: httpx.BaseTransport | httpx.AsyncBaseTransport | None = None,
+) -> tuple[int, Any]:
+    async with (
+        asyncio.timeout(timeout),
+        httpx.AsyncClient(
+            timeout=httpx.Timeout(timeout, connect=3),
+            transport=transport,  # type: ignore[arg-type]
+        ) as client,
+    ):
+        async with client.stream("POST", url, headers=headers, json=payload) as response:
+            if response.status_code != 200:
+                return response.status_code, {}
+            body = bytearray()
+            async for chunk in response.aiter_bytes():
+                body.extend(chunk)
+                if len(body) > 524288:
+                    raise ValueError("Provider response exceeds size limit")
+            return response.status_code, json.loads(body)
+
+
+def raise_for_status(status: int) -> None:
+    if status == 429:
+        raise DomainError("provider_quota", "Live AI quota is exhausted.", 429)
+    if status >= 500:
+        raise DomainError("provider_transient", "Live AI is temporarily unavailable.", 503)
+    if status != 200:
+        raise DomainError("provider_unavailable", "Live AI request was refused.", 503)
+
+
+class Embedder(Protocol):
     manifest: dict[str, Any]
 
     def embed(self, texts: list[str]) -> list[list[float]]: ...
+
+
+class Generator(Protocol):
+    @property
+    def model_id(self) -> str: ...
+
     def generate(
         self, ticket: dict[str, Any], question: str, evidence: list[dict[str, Any]]
     ) -> tuple[str, dict[str, Any] | None]: ...
 
 
+class Provider(Embedder, Generator, Protocol):
+    pass
+
+
 class FixtureProvider:
     manifest = FIXTURE_MANIFEST
+    model_id = "fixture-v1"
 
     def embed(self, texts: list[str]) -> list[list[float]]:
         return [fixture_vector(text) for text in texts]
@@ -87,6 +237,7 @@ class FixtureProvider:
 
 class CloudflareProvider:
     manifest = LIVE_MANIFEST
+    model_id = GENERATION_MODEL
 
     def __init__(self, transport: httpx.MockTransport | None = None):
         self.transport = transport
@@ -103,13 +254,8 @@ class CloudflareProvider:
                 "provider_unavailable", "Live AI account configuration is invalid.", 503
             )
         try:
-            status, data = asyncio.run(self._request(model, payload))
-            if status == 429:
-                raise DomainError("provider_quota", "Live AI quota is exhausted.", 429)
-            if status >= 500:
-                raise DomainError("provider_transient", "Live AI is temporarily unavailable.", 503)
-            if status != 200:
-                raise DomainError("provider_unavailable", "Live AI request was refused.", 503)
+            status, data = run_sync(self._request(model, payload))
+            raise_for_status(status)
             if (
                 not isinstance(data, dict)
                 or not data.get("success")
@@ -126,28 +272,13 @@ class CloudflareProvider:
 
     async def _request(self, model: str, payload: dict[str, Any]) -> tuple[int, Any]:
         config = settings()
-        async with (
-            asyncio.timeout(12),
-            httpx.AsyncClient(
-                timeout=httpx.Timeout(12, connect=3), transport=self.transport
-            ) as client,
-        ):
-            async with client.stream(
-                "POST",
-                f"https://api.cloudflare.com/client/v4/accounts/{config.cloudflare_account_id}/ai/run/{model}",
-                headers={
-                    "Authorization": "Bearer " + config.cloudflare_api_token.get_secret_value()
-                },
-                json=payload,
-            ) as response:
-                if response.status_code != 200:
-                    return response.status_code, {}
-                body = bytearray()
-                async for chunk in response.aiter_bytes():
-                    body.extend(chunk)
-                    if len(body) > 524288:
-                        raise ValueError("Provider response exceeds size limit")
-                return response.status_code, json.loads(body)
+        return await post_json(
+            f"https://api.cloudflare.com/client/v4/accounts/{config.cloudflare_account_id}/ai/run/{model}",
+            {"Authorization": "Bearer " + config.cloudflare_api_token.get_secret_value()},
+            payload,
+            12,
+            self.transport,
+        )
 
     def embed(self, texts: list[str]) -> list[list[float]]:
         if not 1 <= len(texts) <= 16:
@@ -173,31 +304,8 @@ class CloudflareProvider:
     def generate(
         self, ticket: dict[str, Any], question: str, evidence: list[dict[str, Any]]
     ) -> tuple[str, dict[str, Any] | None]:
-        context = [
-            {
-                "source_id": str(x["id"]),
-                "title": x.get("title", ""),
-                "heading": x.get("heading", ""),
-                "version": x.get("version"),
-                "status": x.get("status", ""),
-                "passage": x["body"],
-            }
-            for x in evidence
-        ]
-        data = {
-            "ticket": ticket["body"],
-            "question": question or ticket["body"],
-            "evidence": context,
-        }
         payload = {
-            "messages": [
-                {
-                    "role": "system",
-                    "content": SYSTEM_PROMPT + "\nRequired JSON schema: "
-                    + json.dumps(Answer.model_json_schema()),
-                },
-                {"role": "user", "content": json.dumps(data)},
-            ],
+            "messages": build_messages(ticket, question, evidence),
             "response_format": {"type": "json_object"},
             "max_tokens": 700,
             "temperature": 0,
@@ -214,5 +322,154 @@ class CloudflareProvider:
         )
 
 
+class OpenAICompatibleGenerator:
+    """Generator for any OpenAI-compatible chat endpoint (llama.cpp server, vLLM, Ollama).
+
+    Used for the self-hosted fine-tuned Gemma model. With `json_schema` enabled the request
+    asks the server for grammar-constrained decoding limited to the retrieved source IDs.
+    """
+
+    def __init__(
+        self,
+        base_url: str,
+        model: str,
+        api_key: str = "",
+        timeout: float = 30,
+        json_schema: bool = True,
+        transport: httpx.MockTransport | None = None,
+    ):
+        if not base_url.startswith(("http://", "https://")):
+            raise DomainError("provider_unavailable", "Self-hosted AI is not configured.", 503)
+        self.base_url = base_url.rstrip("/")
+        self.model = model
+        self.api_key = api_key
+        self.timeout = timeout
+        self.json_schema = json_schema
+        self.transport = transport
+
+    @classmethod
+    def from_settings(cls) -> "OpenAICompatibleGenerator":
+        config = settings()
+        return cls(
+            config.generation_base_url,
+            config.generation_model,
+            config.generation_api_key.get_secret_value(),
+            config.generation_timeout_seconds,
+            config.generation_json_schema,
+        )
+
+    @property
+    def model_id(self) -> str:
+        return self.model or "openai-compatible"
+
+    def generate(
+        self, ticket: dict[str, Any], question: str, evidence: list[dict[str, Any]]
+    ) -> tuple[str, dict[str, Any] | None]:
+        if not settings().ai_enabled:
+            raise DomainError("ai_disabled", "AI analysis is temporarily disabled.", 503)
+        payload: dict[str, Any] = {
+            "model": self.model,
+            "messages": build_messages(ticket, question, evidence),
+            "max_tokens": 700,
+            "temperature": 0,
+            "stream": False,
+        }
+        if self.json_schema:
+            payload["response_format"] = {
+                "type": "json_schema",
+                "json_schema": {
+                    "name": "evidencedesk_answer",
+                    "strict": True,
+                    "schema": answer_json_schema([str(x["id"]) for x in evidence]),
+                },
+            }
+        else:
+            payload["response_format"] = {"type": "json_object"}
+        headers = {"Authorization": "Bearer " + self.api_key} if self.api_key else {}
+        try:
+            status, data = run_sync(
+                post_json(
+                    self.base_url + "/chat/completions",
+                    headers,
+                    payload,
+                    self.timeout,
+                    self.transport,
+                )
+            )
+            raise_for_status(status)
+            content = data["choices"][0]["message"]["content"]
+            if not isinstance(content, str) or not content.strip():
+                raise ValueError("Empty completion")
+        except (TimeoutError, httpx.TimeoutException) as exc:
+            raise DomainError("provider_timeout", "Self-hosted AI timed out.", 504) from exc
+        except (ValueError, KeyError, IndexError, TypeError, httpx.HTTPError) as exc:
+            raise DomainError(
+                "provider_invalid", "Self-hosted AI returned an unusable response.", 502
+            ) from exc
+        usage = data.get("usage")
+        return content, usage if isinstance(usage, dict) else None
+
+
+class FallbackGenerator:
+    """Try the primary generator and fall back only on provider-level failures.
+
+    Validation failures are not retried here: an invalid answer from the primary model is
+    a quality signal that must surface in traces and evaluations.
+    """
+
+    def __init__(self, primary: Generator, fallback: Generator):
+        self.primary = primary
+        self.fallback = fallback
+        self.last_model_id = primary.model_id
+        self.fell_back = False
+
+    @property
+    def model_id(self) -> str:
+        return self.last_model_id
+
+    def generate(
+        self, ticket: dict[str, Any], question: str, evidence: list[dict[str, Any]]
+    ) -> tuple[str, dict[str, Any] | None]:
+        try:
+            result = self.primary.generate(ticket, question, evidence)
+            self.last_model_id, self.fell_back = self.primary.model_id, False
+            return result
+        except DomainError as exc:
+            if exc.code not in FALLBACK_CODES:
+                raise
+        result = self.fallback.generate(ticket, question, evidence)
+        self.last_model_id, self.fell_back = self.fallback.model_id, True
+        return result
+
+
+class CompositeProvider:
+    def __init__(self, embedder: Embedder, generator: Generator):
+        self.embedder = embedder
+        self.generator = generator
+        self.manifest = embedder.manifest
+
+    @property
+    def model_id(self) -> str:
+        return self.generator.model_id
+
+    def embed(self, texts: list[str]) -> list[list[float]]:
+        return self.embedder.embed(texts)
+
+    def generate(
+        self, ticket: dict[str, Any], question: str, evidence: list[dict[str, Any]]
+    ) -> tuple[str, dict[str, Any] | None]:
+        return self.generator.generate(ticket, question, evidence)
+
+
 def provider() -> Provider:
-    return CloudflareProvider() if settings().ai_mode == "live" else FixtureProvider()
+    config = settings()
+    if config.ai_mode != "live":
+        return FixtureProvider()
+    cloudflare = CloudflareProvider()
+    if config.generation_provider == "cloudflare":
+        return cloudflare
+    primary = OpenAICompatibleGenerator.from_settings()
+    generator: Generator = (
+        FallbackGenerator(primary, cloudflare) if config.generation_fallback else primary
+    )
+    return CompositeProvider(cloudflare, generator)

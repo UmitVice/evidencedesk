@@ -16,12 +16,7 @@ from evidencedesk.config import settings
 from evidencedesk.errors import DomainError
 from evidencedesk.live_ingest import corpus_hash
 from evidencedesk.models import Answer
-from evidencedesk.providers import (
-    GENERATION_MODEL,
-    PROMPT_VERSION,
-    CloudflareProvider,
-    FixtureProvider,
-)
+from evidencedesk.providers import PROMPT_VERSION, FixtureProvider, provider
 from evidencedesk.quotas import reserve
 from evidencedesk.retrieval import Mode, search_knowledge
 from evidencedesk.workflow import validate_response
@@ -55,7 +50,8 @@ def run_evaluation(mode: str, split: str, limit: int) -> dict[str, Any]:
         raise ValueError("Evaluation database name must start with evidencedesk_eval")
     dataset = json.loads(DATASET.read_text())
     selected = [case for case in dataset if split == "all" or case["split"] == split][:limit]
-    adapter = CloudflareProvider() if mode == "live" else FixtureProvider()
+    adapter = provider() if mode == "live" else FixtureProvider()
+    configured_model = getattr(adapter, "model_id", "unknown")
     outcomes, labels = [], []
     modes: list[Mode] = ["lexical", "vector", "hybrid"]
     rankings: dict[str, list[list[str]]] = {method: [] for method in modes}
@@ -128,8 +124,9 @@ def run_evaluation(mode: str, split: str, limit: int) -> dict[str, Any]:
                     {"sample": case["sample"], "body": case["question"]}, case["question"], evidence
                 )
                 outcome["generation_completed"] = True
-                answer = validate_response(raw, evidence)
+                outcome["generation_model"] = getattr(adapter, "model_id", "unknown")
                 outcome["usage"] = usage
+                answer = validate_response(raw, evidence)
             outcome.update(
                 status="evaluated",
                 schema_valid=True,
@@ -155,6 +152,14 @@ def run_evaluation(mode: str, split: str, limit: int) -> dict[str, Any]:
                 outcome["elapsed_ms"] = round((time.perf_counter() - started) * 1000, 2)
         outcomes.append(outcome)
     durations = [outcome["elapsed_ms"] for outcome in outcomes if "elapsed_ms" in outcome]
+    generated = [outcome for outcome in outcomes if outcome["generation_completed"]]
+    # Model-quality denominators exclude infrastructure failures such as quota or timeouts.
+    judged = [
+        outcome
+        for outcome in outcomes
+        if outcome.get("status") == "evaluated"
+        or outcome.get("error_code") in ("invalid_model_output", "invalid_citation")
+    ]
     return {
         "mode": mode,
         "label": "Live model evaluation"
@@ -171,7 +176,12 @@ def run_evaluation(mode: str, split: str, limit: int) -> dict[str, Any]:
         "corpus_hash": corpus_hash(),
         "prompt_version": PROMPT_VERSION,
         "embedding_manifest": adapter.manifest,
-        "generation_model": GENERATION_MODEL if mode == "live" else "fixture-v1",
+        "generation_model": configured_model,
+        "served_models": dict(
+            Counter(outcome.get("generation_model", "none") for outcome in generated)
+        ),
+        "quality": quality_metrics(judged),
+        "tokens": token_totals(generated),
         "budgets": {
             "session_attempts_per_day": config.attempts_per_session_day,
             "environment_attempts_per_day": config.attempts_per_environment_day,
@@ -212,10 +222,51 @@ def run_evaluation(mode: str, split: str, limit: int) -> dict[str, Any]:
     }
 
 
-def write_report(report: dict[str, Any], output: Path) -> None:
+def quality_metrics(outcomes: list[dict[str, Any]]) -> dict[str, Any]:
+    """Rates over generation cases; a failed case counts against every rate it could affect."""
+    n = len(outcomes)
+    if not n:
+        return {"n": 0}
+    schema_valid = sum(
+        1
+        for outcome in outcomes
+        if outcome.get("schema_valid")
+        or (outcome.get("status") == "failed" and outcome.get("error_code") == "invalid_citation")
+    )
+    citation_valid = sum(1 for outcome in outcomes if outcome.get("citation_integrity"))
+    abstention = sum(1 for outcome in outcomes if outcome.get("correct_abstention"))
+    return {
+        "n": n,
+        "schema_valid_rate": round(schema_valid / n, 4),
+        "citation_valid_rate": round(citation_valid / n, 4),
+        "status_accuracy": round(abstention / n, 4),
+        "end_to_end_pass_rate": round(
+            sum(
+                1
+                for outcome in outcomes
+                if outcome.get("citation_integrity") and outcome.get("correct_abstention")
+            )
+            / n,
+            4,
+        ),
+    }
+
+
+def token_totals(outcomes: list[dict[str, Any]]) -> dict[str, int]:
+    totals = {"prompt_tokens": 0, "completion_tokens": 0}
+    for outcome in outcomes:
+        usage = outcome.get("usage") or {}
+        for key in totals:
+            value = usage.get(key)
+            if isinstance(value, int):
+                totals[key] += value
+    return totals
+
+
+def write_report(report: dict[str, Any], output: Path, name: str | None = None) -> None:
     output.mkdir(parents=True, exist_ok=True)
-    name = "latest-" + report["mode"]
-    (output / (name + ".json")).write_text(json.dumps(report, indent=2) + "\n")
+    stem: str = name or "latest-" + report["mode"]
+    (output / (stem + ".json")).write_text(json.dumps(report, indent=2) + "\n")
     lines = [
         "# " + report["label"],
         "",
@@ -238,6 +289,18 @@ def write_report(report: dict[str, Any], output: Path) -> None:
     ]
     for method, metrics in report["methods"].items():
         lines.append(f"| {method} | {metrics['n']} | {metrics['recall_at_5']} | {metrics['mrr']} |")
+    quality = report.get("quality") or {}
+    if quality.get("n"):
+        lines += [
+            "",
+            "| Generation | n | Schema valid | Citations valid | Status accuracy | End-to-end |",
+            "| --- | --- | --- | --- | --- | --- |",
+            f"| {report['generation_model']} | {quality['n']} | {quality['schema_valid_rate']} "
+            f"| {quality['citation_valid_rate']} | {quality['status_accuracy']} "
+            f"| {quality['end_to_end_pass_rate']} |",
+            "",
+            f"Served models: {report.get('served_models')}. Tokens: {report.get('tokens')}.",
+        ]
     if report.get("latency"):
         timing = report["latency"]
         lines += [
@@ -262,7 +325,7 @@ def write_report(report: dict[str, Any], output: Path) -> None:
         "No failures recorded in this run; human semantic review remains pending."
     ]
     lines += ["", *report["limitations"]]
-    (output / (name + ".md")).write_text("\n".join(lines) + "\n")
+    (output / (stem + ".md")).write_text("\n".join(lines) + "\n")
 
 
 def main() -> None:
@@ -270,9 +333,12 @@ def main() -> None:
     parser.add_argument("--mode", choices=["offline", "live"], default="offline")
     parser.add_argument("--split", choices=["development", "holdout", "all"], default="development")
     parser.add_argument("--limit", type=int, choices=range(1, 41), default=10)
+    parser.add_argument(
+        "--name", default=None, help="Report file stem, for example compare-gemma-finetuned"
+    )
     args = parser.parse_args()
     report = run_evaluation(args.mode, args.split, args.limit)
-    write_report(report, ROOT / "reports")
+    write_report(report, ROOT / "reports", args.name)
     print("Report saved; live human quality review remains pending.")
 
 
