@@ -16,7 +16,7 @@ import pgserver
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / ".local" / "pgserver"
-DATABASES = ("evidencedesk_eval",)
+DATABASES = ("evidencedesk_eval", "evidencedesk_test")
 
 
 def main() -> None:

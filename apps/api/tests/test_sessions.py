@@ -55,3 +55,15 @@ def test_runtime_database_and_public_privileges(db):
         ).fetchone()["ok"]
         conn.execute("SET LOCAL ROLE evidencedesk_runtime")
         assert conn.execute("SELECT count(*) n FROM evidence.documents").fetchone()["n"] == 24
+
+
+def test_expired_sessions_do_not_consume_capacity(client, monkeypatch):
+    from evidencedesk.config import settings
+
+    assert client.post("/sessions").status_code == 200
+    monkeypatch.setenv("SESSION_LIMIT", "1")
+    settings.cache_clear()
+    assert client.post("/sessions").status_code == 429
+    with connection() as conn:
+        conn.execute("UPDATE evidence.sessions SET expires_at=now()-interval '1 second'")
+    assert client.post("/sessions").status_code == 200

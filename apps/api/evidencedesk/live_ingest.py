@@ -13,17 +13,25 @@ from evidencedesk.tokenization import check_embedding_input
 def ingest_live(
     max_batches: int = 2, *, allow_production: bool = False, smoke_receipt: Path | None = None
 ) -> int:
+    live = embedder()
+    manifest = live.manifest
+    remote = manifest.get("runtime") != "local-transformers"
     if settings().environment == "production":
-        if not allow_production or smoke_receipt is None:
+        if not allow_production:
             raise DomainError(
                 "production_guard", "Production ingestion needs an explicit flag and smoke receipt."
             )
-        from evidencedesk.smoke import require_smoke
+        # The smoke receipt proves a remote provider manifest; local embeddings have none.
+        if remote:
+            if smoke_receipt is None:
+                raise DomainError(
+                    "production_guard",
+                    "Production ingestion needs an explicit flag and smoke receipt.",
+                )
+            from evidencedesk.smoke import require_smoke
 
-        require_smoke(smoke_receipt)
+            require_smoke(smoke_receipt)
     seed(for_live=True)
-    live = embedder()
-    manifest = live.manifest
     with connection(migration=True) as conn:
         pending = conn.execute(
             "SELECT id,heading,body,content_hash FROM evidence.chunks "
@@ -38,7 +46,7 @@ def ingest_live(
         texts = [row["heading"] + "\n" + row["body"] for row in batch]
         for text in texts:
             check_embedding_input(text)
-        if manifest.get("runtime") != "local-transformers":
+        if remote:
             reserve({"id": "maintenance-ingestion"}, retry=True)
         vectors = live.embed(texts)
         changed.extend(zip(batch, vectors, strict=True))
