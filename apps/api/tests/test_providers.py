@@ -65,6 +65,7 @@ def test_openai_compatible_generator_sends_constrained_schema():
     assert seen["auth"] == "Bearer local-key"
     assert seen["body"]["messages"] == build_messages(TICKET, "", [SOURCE])
     assert seen["body"]["temperature"] == 0
+    assert seen["body"]["chat_template_kwargs"] == {"enable_thinking": False}
     schema = seen["body"]["response_format"]["json_schema"]["schema"]
     answered = schema["anyOf"][0]["properties"]["claims"]["items"]
     assert answered["properties"]["citations"]["items"]["properties"]["source_id"]["enum"] == [

@@ -336,6 +336,7 @@ class OpenAICompatibleGenerator:
         api_key: str = "",
         timeout: float = 30,
         json_schema: bool = True,
+        disable_thinking: bool = True,
         transport: httpx.MockTransport | None = None,
     ):
         if not base_url.startswith(("http://", "https://")):
@@ -345,6 +346,7 @@ class OpenAICompatibleGenerator:
         self.api_key = api_key
         self.timeout = timeout
         self.json_schema = json_schema
+        self.disable_thinking = disable_thinking
         self.transport = transport
 
     @classmethod
@@ -356,6 +358,7 @@ class OpenAICompatibleGenerator:
             config.generation_api_key.get_secret_value(),
             config.generation_timeout_seconds,
             config.generation_json_schema,
+            config.generation_disable_thinking,
         )
 
     @property
@@ -374,6 +377,10 @@ class OpenAICompatibleGenerator:
             "temperature": 0,
             "stream": False,
         }
+        if self.disable_thinking:
+            # Gemma 4 and Qwen templates can default to a reasoning channel that would consume
+            # the whole token budget; llama.cpp and vLLM read this per-request switch.
+            payload["chat_template_kwargs"] = {"enable_thinking": False}
         if self.json_schema:
             payload["response_format"] = {
                 "type": "json_schema",

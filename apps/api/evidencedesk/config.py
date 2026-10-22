@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     generation_api_key: SecretStr = SecretStr("")
     generation_timeout_seconds: float = Field(default=30, ge=1, le=120)
     generation_json_schema: bool = True
+    generation_disable_thinking: bool = True
     generation_fallback: bool = True
     analysis_deadline_seconds: int = Field(default=40, ge=30, le=180)
     session_hours: int = Field(default=24, ge=1, le=48)
