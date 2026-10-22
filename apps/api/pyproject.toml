@@ -14,6 +14,10 @@ dependencies = [
     "uvicorn==0.52.4",
     "certifi==2026.7.22",
 ]
+[project.optional-dependencies]
+# In-process bge-small embeddings for hosts without an embedding API (Hugging Face Space).
+local = ["transformers>=4.57", "torch>=2.8"]
+
 [dependency-groups]
 dev = ["ruff==0.16.6", "pyright==1.1.413", "pytest==9.1.1", "pip-audit==2.10.1"]
 [build-system]

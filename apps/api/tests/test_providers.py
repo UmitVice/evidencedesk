@@ -166,3 +166,26 @@ def test_voice_gateway_fails_closed_without_service_key(monkeypatch):
         assert _authenticate_ws("x" * 43, "anything") is None
     finally:
         settings.cache_clear()
+
+
+def test_local_embedder_has_its_own_manifest(monkeypatch):
+    from evidencedesk.providers import (
+        LIVE_MANIFEST,
+        LOCAL_MANIFEST,
+        CloudflareProvider,
+        LocalEmbedder,
+        embedder,
+        provider,
+    )
+
+    monkeypatch.setenv("AI_MODE", "live")
+    monkeypatch.setenv("EMBEDDING_PROVIDER", "local")
+    settings.cache_clear()
+    try:
+        assert isinstance(embedder(), LocalEmbedder)
+        assert LOCAL_MANIFEST != LIVE_MANIFEST
+        composite = provider()
+        assert composite.manifest == LOCAL_MANIFEST
+        assert composite.model_id == CloudflareProvider.model_id
+    finally:
+        settings.cache_clear()

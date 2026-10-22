@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     gemini_api_key: SecretStr = SecretStr("")
     # Generation can move to a self-hosted OpenAI-compatible server (for example llama.cpp
     # serving the fine-tuned Gemma model); embeddings always stay on the live manifest.
+    embedding_provider: Literal["cloudflare", "local"] = "cloudflare"
     generation_provider: Literal["cloudflare", "openai_compatible"] = "cloudflare"
     generation_base_url: str = ""
     generation_model: str = ""
