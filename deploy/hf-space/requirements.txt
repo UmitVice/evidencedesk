@@ -1,0 +1,14 @@
+spaces
+torch==2.13.0
+transformers>=5.20,<6
+peft>=0.21,<1
+accelerate>=1.10
+pgserver==0.1.4
+psycopg[binary]==3.3.5
+pgvector==0.5.0
+pydantic==2.13.5
+pydantic-settings==2.15.0
+langgraph==1.2.11
+httpx==0.28.1
+certifi
+fastapi==0.141.1
