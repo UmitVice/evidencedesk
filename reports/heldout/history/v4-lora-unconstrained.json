@@ -1,0 +1,68 @@
+{
+  "model": "evidencedesk-gemma-4-12b-lora",
+  "constrained_decoding": false,
+  "overall": {
+    "n": 104,
+    "valid_rate": 0.0,
+    "pass_rate": 0.0
+  },
+  "by_language": {
+    "en": {
+      "n": 64,
+      "valid_rate": 0.0,
+      "pass_rate": 0.0
+    },
+    "tr": {
+      "n": 40,
+      "valid_rate": 0.0,
+      "pass_rate": 0.0
+    }
+  },
+  "by_kind": {
+    "answerable": {
+      "n": 56,
+      "valid_rate": 0.0,
+      "pass_rate": 0.0
+    },
+    "cross_tenant": {
+      "n": 6,
+      "valid_rate": 0.0,
+      "pass_rate": 0.0
+    },
+    "injection_source_follow": {
+      "n": 4,
+      "valid_rate": 0.0,
+      "pass_rate": 0.0
+    },
+    "injection_source_legit": {
+      "n": 6,
+      "valid_rate": 0.0,
+      "pass_rate": 0.0
+    },
+    "injection_user": {
+      "n": 6,
+      "valid_rate": 0.0,
+      "pass_rate": 0.0
+    },
+    "obsolete": {
+      "n": 8,
+      "valid_rate": 0.0,
+      "pass_rate": 0.0
+    },
+    "unknown": {
+      "n": 12,
+      "valid_rate": 0.0,
+      "pass_rate": 0.0
+    },
+    "unresolved": {
+      "n": 6,
+      "valid_rate": 0.0,
+      "pass_rate": 0.0
+    }
+  },
+  "errors": {
+    "invalid_model_output": 104
+  },
+  "latency_p50_s": 6.74,
+  "completion_tokens_mean": 102.7
+}

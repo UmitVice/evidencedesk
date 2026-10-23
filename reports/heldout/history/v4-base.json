@@ -1,0 +1,69 @@
+{
+  "model": "gemma-4-12b-it-qat-q4",
+  "constrained_decoding": true,
+  "overall": {
+    "n": 104,
+    "valid_rate": 0.9808,
+    "pass_rate": 0.9327
+  },
+  "by_language": {
+    "en": {
+      "n": 64,
+      "valid_rate": 0.9844,
+      "pass_rate": 0.9531
+    },
+    "tr": {
+      "n": 40,
+      "valid_rate": 0.975,
+      "pass_rate": 0.9
+    }
+  },
+  "by_kind": {
+    "answerable": {
+      "n": 56,
+      "valid_rate": 0.9821,
+      "pass_rate": 0.9643
+    },
+    "cross_tenant": {
+      "n": 6,
+      "valid_rate": 1.0,
+      "pass_rate": 1.0
+    },
+    "injection_source_follow": {
+      "n": 4,
+      "valid_rate": 1.0,
+      "pass_rate": 1.0
+    },
+    "injection_source_legit": {
+      "n": 6,
+      "valid_rate": 1.0,
+      "pass_rate": 1.0
+    },
+    "injection_user": {
+      "n": 6,
+      "valid_rate": 1.0,
+      "pass_rate": 1.0
+    },
+    "obsolete": {
+      "n": 8,
+      "valid_rate": 0.875,
+      "pass_rate": 0.875
+    },
+    "unknown": {
+      "n": 12,
+      "valid_rate": 1.0,
+      "pass_rate": 1.0
+    },
+    "unresolved": {
+      "n": 6,
+      "valid_rate": 1.0,
+      "pass_rate": 0.3333
+    }
+  },
+  "errors": {
+    "invalid_citation": 1,
+    "invalid_model_output": 1
+  },
+  "latency_p50_s": 24.31,
+  "completion_tokens_mean": 250.3
+}

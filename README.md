@@ -4,7 +4,9 @@
 
 EvidenceDesk is a support copilot for the fictional SaaS product RelayNest. It retrieves authorized product documentation, returns structured claims with original excerpts, and proposes an internal ticket note. Only an explicit human decision can save that note.
 
-[Live demo](https://evidencedesk-web.vercel.app) · [Evaluation record](https://evidencedesk-web.vercel.app/evaluations) · [API health](https://evidencedesk-api.vercel.app/health)
+[Recorded demo on Hugging Face](https://huggingface.co/spaces/UmitVice/evidencedesk) · [Fine-tuned model](https://huggingface.co/UmitVice/evidencedesk-gemma-4-12b-lora) · [GGUF](https://huggingface.co/UmitVice/evidencedesk-gemma-4-12b-GGUF) · [Training data](https://huggingface.co/datasets/UmitVice/evidencedesk-grounded-support) · [Model comparison](reports/model-comparison.md)
+
+Previous Vercel deployment: [web](https://evidencedesk-web.vercel.app) · [evaluation record](https://evidencedesk-web.vercel.app/evaluations)
 
 ![Ticket-first sample cases](docs/screenshots/landing-1440.png)
 
@@ -79,7 +81,7 @@ uv run --project apps/api pip-audit --skip-editable
 python3 scripts/scan-secrets.py
 ```
 
-Without TEST_DATABASE_URL, integration tests explicitly skip; that is not a full verification. To create the test database with Compose: `docker compose exec db createdb -U evidencedesk evidencedesk_test`. Tests guard the database name before clearing sandbox test rows. Browser tests need the local `.env` files and seeded database; Playwright starts API/UI servers if absent. CI uses standard Linux runners, a real pgvector service, pinned actions, no model or cloud database secrets, and short-lived failure artifacts.
+Without TEST_DATABASE_URL, integration tests explicitly skip; that is not a full verification. Without Docker, `uv run --python 3.12 --with pgserver==0.1.4 scripts/local-pgserver.py` starts PostgreSQL 16 + pgvector on a Unix socket and prints URLs for `evidencedesk_test` and `evidencedesk_eval` (percent-encode the socket path in `host=`). To create the test database with Compose: `docker compose exec db createdb -U evidencedesk evidencedesk_test`. Tests guard the database name before clearing sandbox test rows. Browser tests need the local `.env` files and seeded database; Playwright starts API/UI servers if absent. CI uses standard Linux runners, a real pgvector service, pinned actions, no model or cloud database secrets, and short-lived failure artifacts.
 
 ## Evaluations
 
@@ -88,6 +90,27 @@ The [fixed dataset](apps/api/evals/cases.json) contains 40 grouped scenarios: 24
 Use a separate database named `evidencedesk_eval*`, set DATABASE_URL and MIGRATION_DATABASE_URL to it, then migrate and seed. Run `npm run eval:offline`. Never use a public production database for evaluations.
 
 For live checks, configure server-side Cloudflare credentials in development, run the provider smoke and idempotent live ingestion, then `npm run eval:smoke`. After inspecting that ten-case run and confirming free account capacity, an explicit maintainer run can evaluate all 40 cases. The support-v3 full live suite at clean `b1943513cef15e6f42335fbf2642bf094c09217c` processed all 40 cases: 30 real generation attempts/completions and ten engineering-control references. Twenty-eight outputs passed schema/citation checks, two failed structured validation, and five valid outputs disagreed with the expected answer/abstention status. Retrieval n=16: Recall@5 1.0 for all methods; MRR lexical 0.703125, vector 0.921875, hybrid 0.875. Latency n=30: p50 1.15 s, p95 2.44 s. Human semantic review remains pending. The held-out results were measured after prompt tuning and were not used to tune the released prompt. Historical reports and the ten-case smoke remain in [reports/history](reports/history). See the [method, budgets, and review rubric](docs/evaluation.md).
+
+### Fine-tuned Gemma 4 12B
+
+Generation can run on a self-hosted model through any OpenAI-compatible server
+(`GENERATION_PROVIDER=openai_compatible`), with grammar-constrained JSON limited to the retrieved
+source IDs and Cloudflare as fallback. A LoRA adapter distilled from Gemma 4 26B-A4B and trained
+on a 24 GB Mac with MLX ([pipeline](ml/README.md)) improves the QAT 4-bit Gemma 4 12B on every
+measured axis (prompt `support-v4`):
+
+| | Cloudflare Llama 3.1 8B | Gemma 4 12B QAT Q4_0 | Fine-tuned Q4_0 |
+| --- | --- | --- | --- |
+| RelayNest end-to-end pass (30 generations) | 0.800 | 0.867 | **0.900** |
+| RelayNest p50 / p95 | 1.7 s / 3.1 s (cloud GPU) | 7.1 s / 22.3 s | **2.6 s / 6.1 s** |
+| Held-out products, pass rate (104, EN + TR) | – | 0.942 | **0.971** |
+| Held-out without grammar-constrained decoding | – | 0.269 | **0.904** |
+| Mean output tokens (held-out) | – | 244 | **109** |
+
+Held-out products and RelayNest were never in the training data. Building the comparison
+also surfaced a production bug: non-ASCII evidence was JSON-escaped in the prompt, which hurt
+verbatim quoting in Turkish for every model. Details, failed iterations, and limits are in
+[the comparison report](reports/model-comparison.md).
 
 ### Legacy Real-Time Voice & Speech Evals
 
@@ -107,13 +130,18 @@ The voice pipeline includes an automated low-latency eval framework ([`apps/api/
 | Voice Evals & Low-Latency SLA | [Voice Evals Framework](apps/api/evidencedesk/voice/evals.py), [Automated Voice Test Suite](apps/api/tests/test_voice.py) |
 | Hosted voice recording | [Voice UI](apps/web/app/workspace/voice-copilot.tsx), [bounded transcription](apps/api/evidencedesk/voice/recording.py), HTTPS BFF, existing validated RAG |
 | Authorization and idempotency | [approval transaction](apps/api/evidencedesk/actions.py), [SQL invariants](apps/api/migrations/003_approvals.sql), [race tests](apps/api/tests/test_actions.py) |
-| Evaluation discipline | [evaluation runner](apps/api/evidencedesk/evaluation.py), [dataset checks](apps/api/tests/test_evaluations.py) |
+| Evaluation discipline | [evaluation runner](apps/api/evidencedesk/evaluation.py), [dataset checks](apps/api/tests/test_evaluations.py), [model comparison](reports/model-comparison.md) |
+| Distillation and fine-tuning | [teacher data pipeline](ml/evidencedesk_ml/dataset.py), [MLX LoRA training](ml/evidencedesk_ml/train_mlx.py), [adapter export and merge](ml/evidencedesk_ml/export_adapter.py), [held-out eval](ml/evidencedesk_ml/eval_heldout.py) |
+| Self-hosted generation | [OpenAI-compatible provider, constrained decoding, fallback](apps/api/evidencedesk/providers.py), [provider tests](apps/api/tests/test_providers.py) |
+| Free model hosting | [ZeroGPU Space](deploy/hf-space/app.py), [deploy](scripts/deploy_space.py) and [publish](scripts/publish_hf.py) scripts |
 | Cloud deployment and CI/CD | [GitHub Actions](.github/workflows/ci.yml), [Vercel/Neon runbook](docs/deployment.md) |
 | Full-stack behavior | [BFF](apps/web/app/api/[...path]/route.ts), [browser tests](tests/browser/workspace.spec.ts) |
 
 ## Deployment and limitations
 
-Use two Vercel Hobby projects, isolated Neon Free PostgreSQL/pgvector projects, and Cloudflare Workers AI Free. No paid services, email, CRM writes, registration, training, or GPUs. [Deployment instructions](docs/deployment.md) explain environment pairing, least-privilege runtime credentials, pooler settings, provider smoke, and exact remaining setup. [Verified versions](docs/versions.md) record runtime differences and compatibility findings.
+**Hugging Face.** Free accounts can only host static Spaces, so the public demo is a static page of real runs recorded by `scripts/record_demo.py` through the production retrieval, prompt, and validators (`scripts/publish_hf.py`). With PRO or a community GPU grant, `scripts/deploy_space.py` publishes the interactive ZeroGPU Gradio Space, which runs this Python package with PostgreSQL + pgvector from `pgserver`, bge-small embeddings on CPU (`EMBEDDING_PROVIDER=local`), and the fine-tuned Gemma 4 12B on a shared GPU slice; each visitor uses their own daily GPU quota and sandbox data resets on restart.
+
+**Vercel.** Use two Vercel Hobby projects, isolated Neon Free PostgreSQL/pgvector projects, and Cloudflare Workers AI Free. No paid services, email, CRM writes, registration, training, or GPUs. [Deployment instructions](docs/deployment.md) explain environment pairing, least-privilege runtime credentials, pooler settings, provider smoke, and exact remaining setup. [Verified versions](docs/versions.md) record runtime differences and compatibility findings.
 
 Citation integrity is not semantic correctness. Prompt injection cannot grant tools, but a plausible inaccurate answer remains possible and requires review. Expired or changed tickets need regeneration. Interrupted analysis does not resume at an arbitrary graph node. Live failures never become simulated successes. A missing database leaves the case descriptions and evaluation record available and reports session creation as unavailable. The protected dev Preview is paired with its own API and isolated Neon Free database; it never shares production state. Free services have quotas; Neon sleeps while idle and wakes automatically on connection. See the [migration and verification record](docs/neon-migration.md). Cleanup is a bounded explicit command: `npm run db:cleanup`.
 

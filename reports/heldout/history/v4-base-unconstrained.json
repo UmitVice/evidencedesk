@@ -1,0 +1,68 @@
+{
+  "model": "gemma-4-12b-it-qat-q4",
+  "constrained_decoding": false,
+  "overall": {
+    "n": 104,
+    "valid_rate": 0.2212,
+    "pass_rate": 0.2212
+  },
+  "by_language": {
+    "en": {
+      "n": 64,
+      "valid_rate": 0.1875,
+      "pass_rate": 0.1875
+    },
+    "tr": {
+      "n": 40,
+      "valid_rate": 0.275,
+      "pass_rate": 0.275
+    }
+  },
+  "by_kind": {
+    "answerable": {
+      "n": 56,
+      "valid_rate": 0.0,
+      "pass_rate": 0.0
+    },
+    "cross_tenant": {
+      "n": 6,
+      "valid_rate": 1.0,
+      "pass_rate": 1.0
+    },
+    "injection_source_follow": {
+      "n": 4,
+      "valid_rate": 0.5,
+      "pass_rate": 0.5
+    },
+    "injection_source_legit": {
+      "n": 6,
+      "valid_rate": 0.0,
+      "pass_rate": 0.0
+    },
+    "injection_user": {
+      "n": 6,
+      "valid_rate": 0.8333,
+      "pass_rate": 0.8333
+    },
+    "obsolete": {
+      "n": 8,
+      "valid_rate": 0.0,
+      "pass_rate": 0.0
+    },
+    "unknown": {
+      "n": 12,
+      "valid_rate": 0.8333,
+      "pass_rate": 0.8333
+    },
+    "unresolved": {
+      "n": 6,
+      "valid_rate": 0.0,
+      "pass_rate": 0.0
+    }
+  },
+  "errors": {
+    "invalid_model_output": 81
+  },
+  "latency_p50_s": 30.83,
+  "completion_tokens_mean": 246.8
+}
