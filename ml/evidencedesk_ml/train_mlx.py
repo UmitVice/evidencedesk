@@ -65,12 +65,15 @@ class RenderedDataset:
 
 
 class JsonlLogger(TrainingCallback):
-    def __init__(self, path: Path):
+    def __init__(self, path: Path, offset: int = 0):
         self.path = path
+        self.offset = offset
         self.started = time.time()
 
     def _write(self, record: dict) -> None:
         record["elapsed_s"] = round(time.time() - self.started, 1)
+        if "iteration" in record:
+            record["iteration"] += self.offset
         with self.path.open("a") as handle:
             handle.write(json.dumps(record) + "\n")
 
@@ -81,10 +84,12 @@ class JsonlLogger(TrainingCallback):
         self._write({"type": "val", **{k: float(v) for k, v in info.items()}})
 
 
-def schedule(lr: float, warmup: int, total: int):
+def schedule(lr: float, warmup: int, total: int, offset: int = 0):
     warm = optim.linear_schedule(lr * 0.01, lr, max(warmup, 1))
     decay = optim.cosine_decay(lr, max(total - warmup, 1), lr * 0.1)
-    return optim.join_schedules([warm, decay], [max(warmup, 1)])
+    full = optim.join_schedules([warm, decay], [max(warmup, 1)])
+    # A resumed run continues the original curve instead of warming up again.
+    return lambda step: full(step + offset)
 
 
 def main() -> None:
@@ -107,9 +112,16 @@ def main() -> None:
     parser.add_argument("--max-iters", type=int, default=0, help="Override for smoke tests")
     parser.add_argument("--no-grad-checkpoint", action="store_true")
     parser.add_argument("--seed", type=int, default=7)
+    parser.add_argument("--resume-adapter", type=Path, help="Checkpoint to continue from")
+    parser.add_argument("--start-iter", type=int, default=0, help="Iteration of the checkpoint")
+    parser.add_argument(
+        "--cache-limit-gb", type=float, default=2.0,
+        help="Cap the Metal buffer cache; long sequences otherwise exhaust a 24 GB machine",
+    )
     args = parser.parse_args()
 
     mx.random.seed(args.seed)
+    mx.set_cache_limit(int(args.cache_limit_gb * (1 << 30)))
     args.out.mkdir(parents=True, exist_ok=True)
     model, tokenizer = load(args.base)
     train_set = RenderedDataset(args.data / "train.jsonl", tokenizer, args.max_seq_length)
@@ -130,25 +142,38 @@ def main() -> None:
     }
     model.freeze()
     linear_to_lora_layers(model, num_layers, lora)
+    if args.resume_adapter:
+        model.load_weights(str(args.resume_adapter), strict=False)
+        print(f"Resumed LoRA weights from {args.resume_adapter} at iteration {args.start_iter}")
     print_trainable_parameters(model)
 
-    iters = args.max_iters or math.ceil(len(train_set) * args.epochs / args.batch_size)
-    optimizer_steps = max(iters // args.grad_accum, 1)
+    total_iters = args.max_iters or math.ceil(len(train_set) * args.epochs / args.batch_size)
+    optimizer_steps = max(total_iters // args.grad_accum, 1)
+    iters = total_iters - args.start_iter
     optimizer = optim.AdamW(
-        learning_rate=schedule(args.lr, args.warmup_steps, optimizer_steps), weight_decay=0.0
+        learning_rate=schedule(
+            args.lr, args.warmup_steps, optimizer_steps, args.start_iter // args.grad_accum
+        ),
+        weight_decay=0.0,
     )
+    config_path = args.out / "adapter_config.json"
+    previous = {}
+    if args.resume_adapter and config_path.exists():
+        previous = json.loads(config_path.read_text())
     config = {
         "fine_tune_type": "lora",
         "num_layers": num_layers,
         "lora_parameters": lora,
         "base_model": str(args.base),
         "recipe": {k: (str(v) if isinstance(v, Path) else v) for k, v in vars(args).items()},
-        "iters": iters,
+        "iters": total_iters,
         "optimizer_steps": optimizer_steps,
         "train_examples": len(train_set),
         "valid_examples": len(valid_set),
     }
-    (args.out / "adapter_config.json").write_text(json.dumps(config, indent=2) + "\n")
+    if previous:
+        config["resumed"] = previous.get("resumed", []) + [args.start_iter]
+    config_path.write_text(json.dumps(config, indent=2) + "\n")
     training_args = TrainingArgs(
         batch_size=args.batch_size,
         iters=iters,
@@ -160,6 +185,7 @@ def main() -> None:
         adapter_file=str(args.out / "adapters.safetensors"),
         grad_checkpoint=not args.no_grad_checkpoint,
         grad_accumulation_steps=args.grad_accum,
+        clear_cache_threshold=int(args.cache_limit_gb * (1 << 30)),
     )
     train(
         model=model,
@@ -167,7 +193,7 @@ def main() -> None:
         train_dataset=CacheDataset(train_set),
         val_dataset=CacheDataset(valid_set),
         args=training_args,
-        training_callback=JsonlLogger(args.out / "metrics.jsonl"),
+        training_callback=JsonlLogger(args.out / "metrics.jsonl", args.start_iter),
     )
     print(f"Adapters saved to {args.out}")
 
