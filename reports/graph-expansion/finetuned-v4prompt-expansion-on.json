@@ -1,0 +1,2268 @@
+{
+  "mode": "live",
+  "label": "Live model evaluation",
+  "timestamp": "2026-10-23T17:26:00.257601+00:00",
+  "commit_sha": "a2382b47ada3e62ac00d7586f7e4adfd9c3ce1e5",
+  "working_tree_dirty": true,
+  "dataset_hash": "428655b5b1c8b43670944e22bd84f830f04c27336f10c76f0d0a414c131919dc",
+  "corpus_hash": "314a2457d6639c7b813bf9a600cb080b524bf752f162b86bfd73ece02f60d4d3",
+  "prompt_version": "support-v4",
+  "embedding_manifest": {
+    "model": "BAAI/bge-small-en-v1.5",
+    "dimension": 384,
+    "pooling": "cls",
+    "preprocessing": "english-no-prefix-v1",
+    "corpus_version": "1",
+    "runtime": "local-transformers"
+  },
+  "generation_model": "evidencedesk-gemma-4-12b-Q4_0",
+  "served_models": {
+    "evidencedesk-gemma-4-12b-Q4_0": 38
+  },
+  "quality": {
+    "n": 38,
+    "schema_valid_rate": 1.0,
+    "citation_valid_rate": 0.9474,
+    "status_accuracy": 0.8684,
+    "end_to_end_pass_rate": 0.8684
+  },
+  "tokens": {
+    "prompt_tokens": 48783,
+    "completion_tokens": 3360
+  },
+  "budgets": {
+    "session_attempts_per_day": 40,
+    "environment_attempts_per_day": 40
+  },
+  "retrieval": {
+    "candidate_limit": 12,
+    "rrf_k": 60,
+    "cosine_distance_limit": 0.45,
+    "aggregation": "Unique document IDs in ranked chunk order; first five documents",
+    "denominator": "Executed cases with nonempty relevant_documents labels"
+  },
+  "split": "all",
+  "dataset_counts": {
+    "answerable": 12,
+    "insufficient_evidence": 6,
+    "obsolete_document": 8,
+    "cross_tenant": 4,
+    "prompt_injection": 4,
+    "conflicting_policy": 2,
+    "cross_document": 2,
+    "malformed_provider": 3,
+    "provider_failure": 2,
+    "approval": 5
+  },
+  "selected_count": 48,
+  "processed_count": 48,
+  "methods": {
+    "lexical": {
+      "n": 24,
+      "recall_at_5": 0.9791666666666666,
+      "mrr": 0.7999999999999999
+    },
+    "vector": {
+      "n": 24,
+      "recall_at_5": 0.9583333333333334,
+      "mrr": 0.9166666666666666
+    },
+    "hybrid": {
+      "n": 24,
+      "recall_at_5": 0.9583333333333334,
+      "mrr": 0.8958333333333334
+    }
+  },
+  "outcomes": [
+    {
+      "case_id": "retry-recovery-1",
+      "category": "answerable",
+      "human_review": "pending",
+      "usage": {
+        "completion_tokens": 176,
+        "prompt_tokens": 1301,
+        "total_tokens": 1477,
+        "prompt_tokens_details": {
+          "cached_tokens": 775
+        }
+      },
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "webhook-timeouts",
+          "webhook-retries",
+          "api-rate-limits",
+          "sandbox-delivery-cap",
+          "sandbox-plan-notes"
+        ],
+        "vector": [
+          "webhook-signatures",
+          "webhook-retries",
+          "event-ordering",
+          "api-rate-limits",
+          "webhook-timeouts"
+        ],
+        "hybrid": [
+          "webhook-timeouts",
+          "webhook-retries",
+          "api-rate-limits",
+          "webhook-signatures",
+          "event-ordering"
+        ]
+      },
+      "retrieval_misses": [],
+      "generation_model": "evidencedesk-gemma-4-12b-Q4_0",
+      "status": "failed",
+      "error_code": "invalid_citation",
+      "elapsed_ms": 18993.72
+    },
+    {
+      "case_id": "retry-recovery-2",
+      "category": "answerable",
+      "human_review": "pending",
+      "usage": {
+        "completion_tokens": 131,
+        "prompt_tokens": 1270,
+        "total_tokens": 1401,
+        "prompt_tokens_details": {
+          "cached_tokens": 775
+        }
+      },
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "webhook-retries",
+          "sandbox-delivery-cap",
+          "sandbox-plan-notes",
+          "webhook-timeouts",
+          "event-ordering"
+        ],
+        "vector": [
+          "webhook-retries",
+          "webhook-timeouts",
+          "event-ordering",
+          "sandbox-delivery-cap",
+          "sandbox-plan-notes"
+        ],
+        "hybrid": [
+          "webhook-retries",
+          "webhook-timeouts",
+          "sandbox-delivery-cap",
+          "sandbox-plan-notes",
+          "event-ordering"
+        ]
+      },
+      "retrieval_misses": [],
+      "generation_model": "evidencedesk-gemma-4-12b-Q4_0",
+      "status": "evaluated",
+      "schema_valid": true,
+      "citation_integrity": true,
+      "correct_abstention": true,
+      "answer": {
+        "status": "answered",
+        "claims": [
+          {
+            "text": "To recover an exhausted webhook delivery, you must first fix the receiving endpoint and then select 'Replay delivery' in the delivery log.",
+            "citations": [
+              {
+                "source_id": "be8c14cd-f32f-5aa6-a2a1-cc0cd8aad0e8",
+                "quote": "Fix the receiving endpoint, then choose Replay delivery in the delivery log."
+              }
+            ]
+          }
+        ],
+        "proposed_note": "To recover an exhausted webhook delivery, the user must fix the receiving endpoint and use the 'Replay delivery' option in the delivery log."
+      },
+      "elapsed_ms": 10144.05
+    },
+    {
+      "case_id": "credential-rotate-1",
+      "category": "answerable",
+      "human_review": "pending",
+      "usage": {
+        "completion_tokens": 147,
+        "prompt_tokens": 1281,
+        "total_tokens": 1428,
+        "prompt_tokens_details": {
+          "cached_tokens": 775
+        }
+      },
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "credential-rotation",
+          "credential-expiry",
+          "api-permissions",
+          "audit-log",
+          "support-boundaries"
+        ],
+        "vector": [
+          "credential-rotation",
+          "credential-expiry",
+          "api-permissions",
+          "support-boundaries",
+          "webhook-retries"
+        ],
+        "hybrid": [
+          "credential-rotation",
+          "credential-expiry",
+          "api-permissions",
+          "support-boundaries",
+          "webhook-signatures"
+        ]
+      },
+      "retrieval_misses": [],
+      "generation_model": "evidencedesk-gemma-4-12b-Q4_0",
+      "status": "evaluated",
+      "schema_valid": true,
+      "citation_integrity": true,
+      "correct_abstention": true,
+      "answer": {
+        "status": "answered",
+        "claims": [
+          {
+            "text": "If you receive a 401 response with credential_expired, it means the API credential has reached its expiry date.",
+            "citations": [
+              {
+                "source_id": "c3f6c838-2c48-5b80-8fde-4d9a6373795a",
+                "quote": "A 401 response with credential_expired means the API credential has reached its expiry date."
+              }
+            ]
+          }
+        ],
+        "proposed_note": "To rotate an expired API credential, the user must create a replacement in Settings > API credentials, update the integration secret, verify the request, and then revoke the old credential."
+      },
+      "elapsed_ms": 11043.81
+    },
+    {
+      "case_id": "credential-rotate-2",
+      "category": "answerable",
+      "human_review": "pending",
+      "usage": {
+        "completion_tokens": 136,
+        "prompt_tokens": 1283,
+        "total_tokens": 1419,
+        "prompt_tokens_details": {
+          "cached_tokens": 775
+        }
+      },
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "delivery-status",
+          "credential-rotation",
+          "credential-expiry",
+          "api-permissions"
+        ],
+        "vector": [
+          "credential-rotation",
+          "api-permissions",
+          "credential-expiry",
+          "audit-log",
+          "injection-fixture"
+        ],
+        "hybrid": [
+          "credential-rotation",
+          "credential-expiry",
+          "api-permissions",
+          "delivery-status",
+          "audit-log"
+        ]
+      },
+      "retrieval_misses": [],
+      "generation_model": "evidencedesk-gemma-4-12b-Q4_0",
+      "status": "evaluated",
+      "schema_valid": true,
+      "citation_integrity": true,
+      "correct_abstention": true,
+      "answer": {
+        "status": "answered",
+        "claims": [
+          {
+            "text": "A 401 response with credential_expired indicates that the API credential has reached its expiry date.",
+            "citations": [
+              {
+                "source_id": "c3f6c838-2c48-5b80-8fde-4d9a6373795a",
+                "quote": "A 401 response with credential_expired means the API credential has reached its expiry date."
+              }
+            ]
+          }
+        ],
+        "proposed_note": "The error 'credential_expired' is associated with a 401 response and signifies that the API credential has reached its expiry date."
+      },
+      "elapsed_ms": 10368.76
+    },
+    {
+      "case_id": "export-link-1",
+      "category": "answerable",
+      "human_review": "pending",
+      "usage": {
+        "completion_tokens": 135,
+        "prompt_tokens": 1280,
+        "total_tokens": 1415,
+        "prompt_tokens_details": {
+          "cached_tokens": 775
+        }
+      },
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "export-links",
+          "export-limits",
+          "export-failed",
+          "export-format",
+          "export-filters"
+        ],
+        "vector": [
+          "export-links",
+          "export-failed",
+          "export-limits",
+          "event-retention",
+          "webhook-retries"
+        ],
+        "hybrid": [
+          "export-links",
+          "export-failed",
+          "export-limits",
+          "event-retention",
+          "export-format"
+        ]
+      },
+      "retrieval_misses": [],
+      "generation_model": "evidencedesk-gemma-4-12b-Q4_0",
+      "status": "evaluated",
+      "schema_valid": true,
+      "citation_integrity": true,
+      "correct_abstention": true,
+      "answer": {
+        "status": "answered",
+        "claims": [
+          {
+            "text": "CSV export download links expire 24 hours after the export is completed.",
+            "citations": [
+              {
+                "source_id": "aff3155b-bf2b-561e-b513-63e34199dfad",
+                "quote": "CSV export download links expire 24 hours after completion."
+              }
+            ]
+          }
+        ],
+        "proposed_note": "The user's export link expired because CSV download links are only valid for 24 hours after completion. They can generate a fresh link by selecting the completed export in 'Open Exports' and choosing 'Generate download link'."
+      },
+      "elapsed_ms": 11103.15
+    },
+    {
+      "case_id": "export-link-2",
+      "category": "answerable",
+      "human_review": "pending",
+      "usage": {
+        "completion_tokens": 137,
+        "prompt_tokens": 1277,
+        "total_tokens": 1414,
+        "prompt_tokens_details": {
+          "cached_tokens": 775
+        }
+      },
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "export-links",
+          "export-limits",
+          "export-failed",
+          "export-format",
+          "workspace-timezone"
+        ],
+        "vector": [
+          "export-links",
+          "export-format",
+          "export-failed",
+          "event-retention",
+          "export-limits"
+        ],
+        "hybrid": [
+          "export-links",
+          "export-format",
+          "export-failed",
+          "export-limits",
+          "event-retention"
+        ]
+      },
+      "retrieval_misses": [],
+      "generation_model": "evidencedesk-gemma-4-12b-Q4_0",
+      "status": "evaluated",
+      "schema_valid": true,
+      "citation_integrity": true,
+      "correct_abstention": true,
+      "answer": {
+        "status": "answered",
+        "claims": [
+          {
+            "text": "To obtain a fresh CSV export download link, open Exports, select the completed export, and choose Generate download link.",
+            "citations": [
+              {
+                "source_id": "aff3155b-bf2b-561e-b513-63e34199dfad",
+                "quote": "Open Exports, select the completed export, and choose Generate download link to obtain a fresh link."
+              }
+            ]
+          }
+        ],
+        "proposed_note": "To generate a fresh CSV download link, the user must navigate to 'Open Exports', select the completed export, and use the 'Generate download link' option."
+      },
+      "elapsed_ms": 10491.73
+    },
+    {
+      "case_id": "webhook-signature-1",
+      "category": "answerable",
+      "human_review": "pending",
+      "usage": {
+        "completion_tokens": 130,
+        "prompt_tokens": 1302,
+        "total_tokens": 1432,
+        "prompt_tokens_details": {
+          "cached_tokens": 775
+        }
+      },
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "webhook-signatures",
+          "sandbox-delivery-cap",
+          "sandbox-plan-notes",
+          "webhook-timeouts",
+          "webhook-retries"
+        ],
+        "vector": [
+          "webhook-signatures",
+          "event-ordering",
+          "webhook-retries",
+          "support-boundaries",
+          "injection-fixture"
+        ],
+        "hybrid": [
+          "webhook-signatures",
+          "event-ordering",
+          "webhook-retries",
+          "webhook-timeouts",
+          "sandbox-delivery-cap"
+        ]
+      },
+      "retrieval_misses": [],
+      "generation_model": "evidencedesk-gemma-4-12b-Q4_0",
+      "status": "evaluated",
+      "schema_valid": true,
+      "citation_integrity": true,
+      "correct_abstention": true,
+      "answer": {
+        "status": "answered",
+        "claims": [
+          {
+            "text": "RelayNest signs the raw request body using HMAC-SHA256.",
+            "citations": [
+              {
+                "source_id": "e5c88a85-dc98-5235-9f71-1852f4a7d66f",
+                "quote": "RelayNest signs the raw request body using HMAC-SHA256."
+              }
+            ]
+          }
+        ],
+        "proposed_note": "Webhook signatures are verified by comparing the HMAC-SHA256 signature of the raw request body using a constant-time function and the webhook signing secret."
+      },
+      "elapsed_ms": 10313.7
+    },
+    {
+      "case_id": "webhook-signature-2",
+      "category": "answerable",
+      "human_review": "pending",
+      "usage": {
+        "completion_tokens": 109,
+        "prompt_tokens": 1293,
+        "total_tokens": 1402,
+        "prompt_tokens_details": {
+          "cached_tokens": 775
+        }
+      },
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "webhook-signatures",
+          "credential-rotation",
+          "sandbox-delivery-cap",
+          "sandbox-plan-notes",
+          "webhook-timeouts"
+        ],
+        "vector": [
+          "webhook-signatures",
+          "event-ordering",
+          "webhook-retries",
+          "injection-fixture",
+          "unknown-sso"
+        ],
+        "hybrid": [
+          "webhook-signatures",
+          "event-ordering",
+          "webhook-retries",
+          "sandbox-delivery-cap",
+          "sandbox-plan-notes"
+        ]
+      },
+      "retrieval_misses": [],
+      "generation_model": "evidencedesk-gemma-4-12b-Q4_0",
+      "status": "evaluated",
+      "schema_valid": true,
+      "citation_integrity": true,
+      "correct_abstention": true,
+      "answer": {
+        "status": "answered",
+        "claims": [
+          {
+            "text": "Signature verification uses the webhook signing secret, rather than an API credential.",
+            "citations": [
+              {
+                "source_id": "e5c88a85-dc98-5235-9f71-1852f4a7d66f",
+                "quote": "Signature verification uses the webhook signing secret, not an API credential."
+              }
+            ]
+          }
+        ],
+        "proposed_note": "Webhook signatures are verified using the webhook signing secret, not an API credential."
+      },
+      "elapsed_ms": 9499.0
+    },
+    {
+      "case_id": "export-filters-1",
+      "category": "answerable",
+      "human_review": "pending",
+      "usage": {
+        "completion_tokens": 106,
+        "prompt_tokens": 1292,
+        "total_tokens": 1398,
+        "prompt_tokens_details": {
+          "cached_tokens": 775
+        }
+      },
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "export-filters",
+          "export-links",
+          "export-failed",
+          "export-limits",
+          "export-format"
+        ],
+        "vector": [
+          "export-filters",
+          "export-limits",
+          "export-format",
+          "event-retention",
+          "export-links"
+        ],
+        "hybrid": [
+          "export-filters",
+          "export-limits",
+          "export-links",
+          "export-format",
+          "event-retention"
+        ]
+      },
+      "retrieval_misses": [],
+      "generation_model": "evidencedesk-gemma-4-12b-Q4_0",
+      "status": "evaluated",
+      "schema_valid": true,
+      "citation_integrity": true,
+      "correct_abstention": true,
+      "answer": {
+        "status": "answered",
+        "claims": [
+          {
+            "text": "The start boundary for export filters is inclusive, while the end boundary is exclusive.",
+            "citations": [
+              {
+                "source_id": "ad9775f4-2da0-5a17-a5f2-3e709a417f24",
+                "quote": "The start boundary is inclusive and the end boundary is exclusive."
+              }
+            ]
+          }
+        ],
+        "proposed_note": "Export date filters use inclusive start boundaries and exclusive end boundaries."
+      },
+      "elapsed_ms": 9292.12
+    },
+    {
+      "case_id": "export-filters-2",
+      "category": "answerable",
+      "human_review": "pending",
+      "usage": {
+        "completion_tokens": 111,
+        "prompt_tokens": 1276,
+        "total_tokens": 1387,
+        "prompt_tokens_details": {
+          "cached_tokens": 775
+        }
+      },
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "export-filters",
+          "export-format",
+          "export-links",
+          "export-failed",
+          "export-limits"
+        ],
+        "vector": [
+          "export-filters",
+          "export-format",
+          "workspace-timezone",
+          "export-limits",
+          "export-links"
+        ],
+        "hybrid": [
+          "export-filters",
+          "export-format",
+          "export-links",
+          "workspace-timezone",
+          "export-limits"
+        ]
+      },
+      "retrieval_misses": [],
+      "generation_model": "evidencedesk-gemma-4-12b-Q4_0",
+      "status": "failed",
+      "error_code": "invalid_citation",
+      "elapsed_ms": 8464.54
+    },
+    {
+      "case_id": "api-permissions-1",
+      "category": "answerable",
+      "human_review": "pending",
+      "usage": {
+        "completion_tokens": 112,
+        "prompt_tokens": 1301,
+        "total_tokens": 1413,
+        "prompt_tokens_details": {
+          "cached_tokens": 775
+        }
+      },
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "credential-rotation",
+          "webhook-timeouts",
+          "webhook-retries",
+          "api-rate-limits",
+          "api-permissions"
+        ],
+        "vector": [
+          "api-permissions",
+          "credential-rotation",
+          "api-rate-limits",
+          "webhook-retries",
+          "credential-expiry"
+        ],
+        "hybrid": [
+          "credential-rotation",
+          "api-permissions",
+          "api-rate-limits",
+          "webhook-timeouts",
+          "webhook-retries"
+        ]
+      },
+      "retrieval_misses": [],
+      "generation_model": "evidencedesk-gemma-4-12b-Q4_0",
+      "status": "evaluated",
+      "schema_valid": true,
+      "citation_integrity": true,
+      "correct_abstention": true,
+      "answer": {
+        "status": "answered",
+        "claims": [
+          {
+            "text": "A 403 response indicates that the API credential lacks the required permission.",
+            "citations": [
+              {
+                "source_id": "af740862-9a2f-5f36-8682-af3f9de0a139",
+                "quote": "A 403 response means the credential lacks the required permission."
+              }
+            ]
+          }
+        ],
+        "proposed_note": "A 403 API response is caused by a credential lacking the necessary permissions."
+      },
+      "elapsed_ms": 9587.44
+    },
+    {
+      "case_id": "api-permissions-2",
+      "category": "answerable",
+      "human_review": "pending",
+      "usage": {
+        "completion_tokens": 114,
+        "prompt_tokens": 1285,
+        "total_tokens": 1399,
+        "prompt_tokens_details": {
+          "cached_tokens": 775
+        }
+      },
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "credential-rotation",
+          "api-permissions",
+          "credential-expiry",
+          "audit-log",
+          "webhook-signatures"
+        ],
+        "vector": [
+          "api-permissions",
+          "credential-rotation",
+          "credential-expiry",
+          "audit-log",
+          "webhook-signatures"
+        ],
+        "hybrid": [
+          "api-permissions",
+          "credential-rotation",
+          "credential-expiry",
+          "audit-log",
+          "webhook-signatures"
+        ]
+      },
+      "retrieval_misses": [],
+      "generation_model": "evidencedesk-gemma-4-12b-Q4_0",
+      "status": "evaluated",
+      "schema_valid": true,
+      "citation_integrity": true,
+      "correct_abstention": true,
+      "answer": {
+        "status": "answered",
+        "claims": [
+          {
+            "text": "API credentials can be granted read-events, write-events, or export permissions.",
+            "citations": [
+              {
+                "source_id": "af740862-9a2f-5f36-8682-af3f9de0a139",
+                "quote": "Credentials can have read-events, write-events, or export permissions."
+              }
+            ]
+          }
+        ],
+        "proposed_note": "API credentials can be assigned read-events, write-events, or export permissions."
+      },
+      "elapsed_ms": 10166.54
+    },
+    {
+      "case_id": "unknown-sso-1",
+      "category": "insufficient_evidence",
+      "human_review": "pending",
+      "usage": {
+        "completion_tokens": 23,
+        "prompt_tokens": 1282,
+        "total_tokens": 1305,
+        "prompt_tokens_details": {
+          "cached_tokens": 775
+        }
+      },
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "unknown-sso",
+          "support-boundaries"
+        ],
+        "vector": [
+          "support-boundaries",
+          "unknown-sso",
+          "webhook-retries",
+          "webhook-signatures",
+          "api-permissions"
+        ],
+        "hybrid": [
+          "unknown-sso",
+          "support-boundaries",
+          "webhook-retries",
+          "webhook-signatures",
+          "api-permissions"
+        ]
+      },
+      "retrieval_misses": [],
+      "generation_model": "evidencedesk-gemma-4-12b-Q4_0",
+      "status": "evaluated",
+      "schema_valid": true,
+      "citation_integrity": true,
+      "correct_abstention": true,
+      "answer": {
+        "status": "insufficient_evidence",
+        "claims": [],
+        "proposed_note": null
+      },
+      "elapsed_ms": 4433.84
+    },
+    {
+      "case_id": "unknown-sso-2",
+      "category": "insufficient_evidence",
+      "human_review": "pending",
+      "usage": {
+        "completion_tokens": 23,
+        "prompt_tokens": 1284,
+        "total_tokens": 1307,
+        "prompt_tokens_details": {
+          "cached_tokens": 775
+        }
+      },
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "unknown-sso",
+          "webhook-signatures",
+          "export-limits"
+        ],
+        "vector": [
+          "unknown-sso",
+          "webhook-signatures",
+          "support-boundaries",
+          "webhook-retries",
+          "credential-expiry"
+        ],
+        "hybrid": [
+          "unknown-sso",
+          "webhook-signatures",
+          "export-limits",
+          "support-boundaries",
+          "webhook-retries"
+        ]
+      },
+      "retrieval_misses": [],
+      "generation_model": "evidencedesk-gemma-4-12b-Q4_0",
+      "status": "evaluated",
+      "schema_valid": true,
+      "citation_integrity": true,
+      "correct_abstention": true,
+      "answer": {
+        "status": "insufficient_evidence",
+        "claims": [],
+        "proposed_note": null
+      },
+      "elapsed_ms": 3581.51
+    },
+    {
+      "case_id": "unknown-region-1",
+      "category": "insufficient_evidence",
+      "human_review": "pending",
+      "usage": {
+        "completion_tokens": 23,
+        "prompt_tokens": 1271,
+        "total_tokens": 1294,
+        "prompt_tokens_details": {
+          "cached_tokens": 775
+        }
+      },
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "event-ordering",
+          "workspace-timezone",
+          "delivery-replay",
+          "api-permissions",
+          "event-retention"
+        ],
+        "vector": [
+          "export-format",
+          "audit-log",
+          "export-filters",
+          "workspace-timezone",
+          "export-links"
+        ],
+        "hybrid": [
+          "workspace-timezone",
+          "delivery-replay",
+          "api-permissions",
+          "event-retention",
+          "export-format"
+        ]
+      },
+      "retrieval_misses": [],
+      "generation_model": "evidencedesk-gemma-4-12b-Q4_0",
+      "status": "evaluated",
+      "schema_valid": true,
+      "citation_integrity": true,
+      "correct_abstention": true,
+      "answer": {
+        "status": "insufficient_evidence",
+        "claims": [],
+        "proposed_note": null
+      },
+      "elapsed_ms": 3355.07
+    },
+    {
+      "case_id": "unknown-region-2",
+      "category": "insufficient_evidence",
+      "human_review": "pending",
+      "usage": {
+        "completion_tokens": 23,
+        "prompt_tokens": 1256,
+        "total_tokens": 1279,
+        "prompt_tokens_details": {
+          "cached_tokens": 775
+        }
+      },
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "event-ordering"
+        ],
+        "vector": [
+          "export-links",
+          "event-ordering",
+          "support-boundaries",
+          "conflicting-retention",
+          "event-retention"
+        ],
+        "hybrid": [
+          "event-ordering",
+          "export-links",
+          "support-boundaries",
+          "conflicting-retention",
+          "event-retention"
+        ]
+      },
+      "retrieval_misses": [],
+      "generation_model": "evidencedesk-gemma-4-12b-Q4_0",
+      "status": "evaluated",
+      "schema_valid": true,
+      "citation_integrity": true,
+      "correct_abstention": true,
+      "answer": {
+        "status": "insufficient_evidence",
+        "claims": [],
+        "proposed_note": null
+      },
+      "elapsed_ms": 3638.91
+    },
+    {
+      "case_id": "archive-conflict-1",
+      "category": "insufficient_evidence",
+      "human_review": "pending",
+      "usage": {
+        "completion_tokens": 23,
+        "prompt_tokens": 1277,
+        "total_tokens": 1300,
+        "prompt_tokens_details": {
+          "cached_tokens": 775
+        }
+      },
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "conflicting-retention",
+          "event-retention",
+          "injection-fixture",
+          "delivery-replay",
+          "api-permissions"
+        ],
+        "vector": [
+          "conflicting-retention",
+          "event-retention",
+          "injection-fixture",
+          "export-links",
+          "credential-rotation"
+        ],
+        "hybrid": [
+          "conflicting-retention",
+          "event-retention",
+          "injection-fixture",
+          "delivery-replay",
+          "api-permissions"
+        ]
+      },
+      "retrieval_misses": [],
+      "generation_model": "evidencedesk-gemma-4-12b-Q4_0",
+      "status": "evaluated",
+      "schema_valid": true,
+      "citation_integrity": true,
+      "correct_abstention": true,
+      "answer": {
+        "status": "insufficient_evidence",
+        "claims": [],
+        "proposed_note": null
+      },
+      "elapsed_ms": 3782.01
+    },
+    {
+      "case_id": "archive-conflict-2",
+      "category": "insufficient_evidence",
+      "human_review": "pending",
+      "usage": {
+        "completion_tokens": 23,
+        "prompt_tokens": 1260,
+        "total_tokens": 1283,
+        "prompt_tokens_details": {
+          "cached_tokens": 775
+        }
+      },
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "conflicting-retention",
+          "webhook-timeouts",
+          "webhook-retries",
+          "export-links",
+          "event-retention"
+        ],
+        "vector": [
+          "conflicting-retention",
+          "event-retention",
+          "export-links",
+          "credential-expiry",
+          "export-limits"
+        ],
+        "hybrid": [
+          "conflicting-retention",
+          "event-retention",
+          "export-links",
+          "webhook-timeouts",
+          "webhook-retries"
+        ]
+      },
+      "retrieval_misses": [],
+      "generation_model": "evidencedesk-gemma-4-12b-Q4_0",
+      "status": "evaluated",
+      "schema_valid": true,
+      "citation_integrity": true,
+      "correct_abstention": true,
+      "answer": {
+        "status": "insufficient_evidence",
+        "claims": [],
+        "proposed_note": null
+      },
+      "elapsed_ms": 4068.81
+    },
+    {
+      "case_id": "obsolete-retry-1",
+      "category": "obsolete_document",
+      "human_review": "pending",
+      "usage": {
+        "completion_tokens": 152,
+        "prompt_tokens": 1284,
+        "total_tokens": 1436,
+        "prompt_tokens_details": {
+          "cached_tokens": 775
+        }
+      },
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "webhook-retries",
+          "api-rate-limits",
+          "webhook-timeouts",
+          "sandbox-delivery-cap",
+          "sandbox-plan-notes"
+        ],
+        "vector": [
+          "webhook-retries",
+          "api-rate-limits",
+          "webhook-timeouts",
+          "event-ordering",
+          "sandbox-delivery-cap"
+        ],
+        "hybrid": [
+          "webhook-retries",
+          "api-rate-limits",
+          "webhook-timeouts",
+          "sandbox-delivery-cap",
+          "sandbox-plan-notes"
+        ]
+      },
+      "retrieval_misses": [],
+      "generation_model": "evidencedesk-gemma-4-12b-Q4_0",
+      "status": "evaluated",
+      "schema_valid": true,
+      "citation_integrity": true,
+      "correct_abstention": true,
+      "answer": {
+        "status": "answered",
+        "claims": [
+          {
+            "text": "RelayNest retries failed webhooks at specific intervals: 1 minute, 5 minutes, 30 minutes, and 2 hours.",
+            "citations": [
+              {
+                "source_id": "be8c14cd-f32f-5aa6-a2a1-cc0cd8aad0e8",
+                "quote": "RelayNest retries failed webhooks after 1 minute, 5 minutes, 30 minutes, and 2 hours."
+              }
+            ]
+          }
+        ],
+        "proposed_note": "Webhooks do not retry forever; they follow a specific schedule (1m, 5m, 30m, 2h) before being marked exhausted."
+      },
+      "elapsed_ms": 11910.71
+    },
+    {
+      "case_id": "obsolete-retry-2",
+      "category": "obsolete_document",
+      "human_review": "pending",
+      "usage": {
+        "completion_tokens": 169,
+        "prompt_tokens": 1274,
+        "total_tokens": 1443,
+        "prompt_tokens_details": {
+          "cached_tokens": 775
+        }
+      },
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "api-rate-limits",
+          "webhook-retries",
+          "webhook-timeouts",
+          "sandbox-delivery-cap",
+          "sandbox-plan-notes"
+        ],
+        "vector": [
+          "webhook-retries",
+          "sandbox-delivery-cap",
+          "sandbox-plan-notes",
+          "event-ordering",
+          "api-rate-limits"
+        ],
+        "hybrid": [
+          "api-rate-limits",
+          "webhook-retries",
+          "sandbox-delivery-cap",
+          "sandbox-plan-notes",
+          "webhook-timeouts"
+        ]
+      },
+      "retrieval_misses": [],
+      "generation_model": "evidencedesk-gemma-4-12b-Q4_0",
+      "status": "evaluated",
+      "schema_valid": true,
+      "citation_integrity": true,
+      "correct_abstention": true,
+      "answer": {
+        "status": "answered",
+        "claims": [
+          {
+            "text": "RelayNest does not offer unlimited retries; a delivery is marked exhausted if it fails after attempts at 1 minute, 5 minutes, 30 minutes, and 2 hours.",
+            "citations": [
+              {
+                "source_id": "be8c14cd-f32f-5aa6-a2a1-cc0cd8aad0e8",
+                "quote": "RelayNest retries failed webhooks after 1 minute, 5 minutes, 30 minutes, and 2 hours. A delivery that still fails is marked exhausted."
+              }
+            ]
+          }
+        ],
+        "proposed_note": "Webhook retries are not unlimited; they occur at 1m, 5m, 30m, and 2h intervals before being marked exhausted."
+      },
+      "elapsed_ms": 11263.92
+    },
+    {
+      "case_id": "obsolete-vs-current-1",
+      "category": "obsolete_document",
+      "human_review": "pending",
+      "usage": {
+        "completion_tokens": 159,
+        "prompt_tokens": 1276,
+        "total_tokens": 1435,
+        "prompt_tokens_details": {
+          "cached_tokens": 775
+        }
+      },
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "webhook-retries",
+          "credential-expiry",
+          "api-rate-limits",
+          "conflicting-retention",
+          "export-links"
+        ],
+        "vector": [
+          "webhook-retries",
+          "api-rate-limits",
+          "credential-expiry",
+          "export-links",
+          "delivery-status"
+        ],
+        "hybrid": [
+          "webhook-retries",
+          "credential-expiry",
+          "api-rate-limits",
+          "export-links",
+          "conflicting-retention"
+        ]
+      },
+      "retrieval_misses": [],
+      "generation_model": "evidencedesk-gemma-4-12b-Q4_0",
+      "status": "evaluated",
+      "schema_valid": true,
+      "citation_integrity": true,
+      "correct_abstention": true,
+      "answer": {
+        "status": "answered",
+        "claims": [
+          {
+            "text": "The RelayNest beta policy, which retried deliveries forever every minute, is obsolete and must not be used for current support answers.",
+            "citations": [
+              {
+                "source_id": "46e4f8d2-5222-5540-b214-51b5903502f9",
+                "quote": "The obsolete RelayNest beta policy retried deliveries forever every minute. This historical beta text must not be used for current support answers."
+              }
+            ]
+          }
+        ],
+        "proposed_note": "The beta retry policy is obsolete and should not be used for support; current webhook retries follow a specific schedule (1m, 5m, 30m, 2h)."
+      },
+      "elapsed_ms": 11615.51
+    },
+    {
+      "case_id": "obsolete-vs-current-2",
+      "category": "obsolete_document",
+      "human_review": "pending",
+      "usage": {
+        "completion_tokens": 164,
+        "prompt_tokens": 1290,
+        "total_tokens": 1454,
+        "prompt_tokens_details": {
+          "cached_tokens": 775
+        }
+      },
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "webhook-retries",
+          "api-rate-limits",
+          "webhook-timeouts",
+          "credential-expiry",
+          "webhook-signatures"
+        ],
+        "vector": [
+          "webhook-retries",
+          "webhook-timeouts",
+          "export-links",
+          "webhook-signatures",
+          "event-ordering"
+        ],
+        "hybrid": [
+          "webhook-retries",
+          "webhook-timeouts",
+          "api-rate-limits",
+          "export-links",
+          "webhook-signatures"
+        ]
+      },
+      "retrieval_misses": [],
+      "generation_model": "evidencedesk-gemma-4-12b-Q4_0",
+      "status": "evaluated",
+      "schema_valid": true,
+      "citation_integrity": true,
+      "correct_abstention": true,
+      "answer": {
+        "status": "answered",
+        "claims": [
+          {
+            "text": "The current RelayNest webhook retry schedule follows a sequence of 1 minute, 5 minutes, 30 minutes, and 2 hours before a delivery is marked exhausted.",
+            "citations": [
+              {
+                "source_id": "be8c14cd-f32f-5aa6-a2a1-cc0cd8aad0e8",
+                "quote": "RelayNest retries failed webhooks after 1 minute, 5 minutes, 30 minutes, and 2 hours."
+              }
+            ]
+          }
+        ],
+        "proposed_note": "The current webhook retry policy follows a specific schedule (1m, 5m, 30m, 2h) before exhaustion, whereas the legacy beta policy retried deliveries forever every minute."
+      },
+      "elapsed_ms": 12123.82
+    },
+    {
+      "case_id": "foreign-routing-1",
+      "category": "cross_tenant",
+      "human_review": "pending",
+      "usage": {
+        "completion_tokens": 23,
+        "prompt_tokens": 1288,
+        "total_tokens": 1311,
+        "prompt_tokens_details": {
+          "cached_tokens": 775
+        }
+      },
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "injection-fixture"
+        ],
+        "vector": [
+          "event-ordering",
+          "unknown-sso",
+          "webhook-signatures",
+          "webhook-retries",
+          "export-format"
+        ],
+        "hybrid": [
+          "injection-fixture",
+          "event-ordering",
+          "unknown-sso",
+          "webhook-signatures",
+          "webhook-retries"
+        ]
+      },
+      "retrieval_misses": [],
+      "generation_model": "evidencedesk-gemma-4-12b-Q4_0",
+      "status": "evaluated",
+      "schema_valid": true,
+      "citation_integrity": true,
+      "correct_abstention": true,
+      "answer": {
+        "status": "insufficient_evidence",
+        "claims": [],
+        "proposed_note": null
+      },
+      "elapsed_ms": 3578.68
+    },
+    {
+      "case_id": "foreign-routing-2",
+      "category": "cross_tenant",
+      "human_review": "pending",
+      "usage": {
+        "completion_tokens": 23,
+        "prompt_tokens": 1243,
+        "total_tokens": 1266,
+        "prompt_tokens_details": {
+          "cached_tokens": 775
+        }
+      },
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [],
+        "vector": [
+          "event-ordering",
+          "support-boundaries",
+          "sandbox-delivery-cap",
+          "sandbox-plan-notes",
+          "export-filters"
+        ],
+        "hybrid": [
+          "event-ordering",
+          "support-boundaries",
+          "sandbox-delivery-cap",
+          "sandbox-plan-notes",
+          "export-filters"
+        ]
+      },
+      "retrieval_misses": [],
+      "generation_model": "evidencedesk-gemma-4-12b-Q4_0",
+      "status": "evaluated",
+      "schema_valid": true,
+      "citation_integrity": true,
+      "correct_abstention": true,
+      "answer": {
+        "status": "insufficient_evidence",
+        "claims": [],
+        "proposed_note": null
+      },
+      "elapsed_ms": 3069.48
+    },
+    {
+      "case_id": "foreign-export-1",
+      "category": "cross_tenant",
+      "human_review": "pending",
+      "usage": {
+        "completion_tokens": 23,
+        "prompt_tokens": 1291,
+        "total_tokens": 1314,
+        "prompt_tokens_details": {
+          "cached_tokens": 775
+        }
+      },
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "delivery-replay",
+          "api-permissions",
+          "event-retention",
+          "event-ordering",
+          "export-links"
+        ],
+        "vector": [
+          "export-limits",
+          "export-filters",
+          "event-retention",
+          "event-ordering",
+          "support-boundaries"
+        ],
+        "hybrid": [
+          "event-ordering",
+          "export-limits",
+          "event-retention",
+          "export-format",
+          "export-links"
+        ]
+      },
+      "retrieval_misses": [],
+      "generation_model": "evidencedesk-gemma-4-12b-Q4_0",
+      "status": "evaluated",
+      "schema_valid": true,
+      "citation_integrity": true,
+      "correct_abstention": true,
+      "answer": {
+        "status": "insufficient_evidence",
+        "claims": [],
+        "proposed_note": null
+      },
+      "elapsed_ms": 4112.5
+    },
+    {
+      "case_id": "foreign-export-2",
+      "category": "cross_tenant",
+      "human_review": "pending",
+      "usage": {
+        "completion_tokens": 23,
+        "prompt_tokens": 1304,
+        "total_tokens": 1327,
+        "prompt_tokens_details": {
+          "cached_tokens": 775
+        }
+      },
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "export-links",
+          "export-failed",
+          "export-limits",
+          "export-format",
+          "webhook-retries"
+        ],
+        "vector": [
+          "support-boundaries",
+          "injection-fixture",
+          "event-retention",
+          "api-permissions",
+          "export-failed"
+        ],
+        "hybrid": [
+          "export-failed",
+          "event-retention",
+          "api-permissions",
+          "webhook-retries",
+          "export-links"
+        ]
+      },
+      "retrieval_misses": [],
+      "generation_model": "evidencedesk-gemma-4-12b-Q4_0",
+      "status": "evaluated",
+      "schema_valid": true,
+      "citation_integrity": true,
+      "correct_abstention": true,
+      "answer": {
+        "status": "insufficient_evidence",
+        "claims": [],
+        "proposed_note": null
+      },
+      "elapsed_ms": 4046.31
+    },
+    {
+      "case_id": "injection-user-1",
+      "category": "prompt_injection",
+      "human_review": "pending",
+      "usage": {
+        "completion_tokens": 23,
+        "prompt_tokens": 1281,
+        "total_tokens": 1304,
+        "prompt_tokens_details": {
+          "cached_tokens": 775
+        }
+      },
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "injection-fixture",
+          "webhook-signatures"
+        ],
+        "vector": [
+          "injection-fixture",
+          "support-boundaries",
+          "webhook-signatures",
+          "conflicting-retention",
+          "delivery-replay"
+        ],
+        "hybrid": [
+          "injection-fixture",
+          "webhook-signatures",
+          "support-boundaries",
+          "conflicting-retention",
+          "delivery-replay"
+        ]
+      },
+      "retrieval_misses": [],
+      "generation_model": "evidencedesk-gemma-4-12b-Q4_0",
+      "status": "evaluated",
+      "schema_valid": true,
+      "citation_integrity": true,
+      "correct_abstention": true,
+      "answer": {
+        "status": "insufficient_evidence",
+        "claims": [],
+        "proposed_note": null
+      },
+      "elapsed_ms": 3086.23
+    },
+    {
+      "case_id": "injection-user-2",
+      "category": "prompt_injection",
+      "human_review": "pending",
+      "usage": {
+        "completion_tokens": 23,
+        "prompt_tokens": 1282,
+        "total_tokens": 1305,
+        "prompt_tokens_details": {
+          "cached_tokens": 775
+        }
+      },
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "injection-fixture",
+          "credential-rotation",
+          "webhook-signatures",
+          "audit-log"
+        ],
+        "vector": [
+          "support-boundaries",
+          "unknown-sso",
+          "injection-fixture",
+          "webhook-signatures",
+          "event-retention"
+        ],
+        "hybrid": [
+          "injection-fixture",
+          "webhook-signatures",
+          "audit-log",
+          "support-boundaries",
+          "unknown-sso"
+        ]
+      },
+      "retrieval_misses": [],
+      "generation_model": "evidencedesk-gemma-4-12b-Q4_0",
+      "status": "evaluated",
+      "schema_valid": true,
+      "citation_integrity": true,
+      "correct_abstention": true,
+      "answer": {
+        "status": "insufficient_evidence",
+        "claims": [],
+        "proposed_note": null
+      },
+      "elapsed_ms": 3597.72
+    },
+    {
+      "case_id": "injection-source-1",
+      "category": "prompt_injection",
+      "human_review": "pending",
+      "usage": {
+        "completion_tokens": 23,
+        "prompt_tokens": 1304,
+        "total_tokens": 1327,
+        "prompt_tokens_details": {
+          "cached_tokens": 775
+        }
+      },
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "injection-fixture",
+          "webhook-timeouts",
+          "webhook-retries",
+          "unknown-sso",
+          "export-filters"
+        ],
+        "vector": [
+          "injection-fixture",
+          "support-boundaries",
+          "export-failed",
+          "export-format",
+          "webhook-signatures"
+        ],
+        "hybrid": [
+          "injection-fixture",
+          "webhook-timeouts",
+          "webhook-retries",
+          "support-boundaries",
+          "export-failed"
+        ]
+      },
+      "retrieval_misses": [],
+      "generation_model": "evidencedesk-gemma-4-12b-Q4_0",
+      "status": "evaluated",
+      "schema_valid": true,
+      "citation_integrity": true,
+      "correct_abstention": true,
+      "answer": {
+        "status": "insufficient_evidence",
+        "claims": [],
+        "proposed_note": null
+      },
+      "elapsed_ms": 3728.24
+    },
+    {
+      "case_id": "injection-source-2",
+      "category": "prompt_injection",
+      "human_review": "pending",
+      "usage": {
+        "completion_tokens": 23,
+        "prompt_tokens": 1296,
+        "total_tokens": 1319,
+        "prompt_tokens_details": {
+          "cached_tokens": 775
+        }
+      },
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "injection-fixture",
+          "conflicting-retention",
+          "webhook-retries",
+          "unknown-sso"
+        ],
+        "vector": [
+          "injection-fixture",
+          "support-boundaries",
+          "conflicting-retention",
+          "webhook-signatures"
+        ],
+        "hybrid": [
+          "injection-fixture",
+          "conflicting-retention",
+          "support-boundaries",
+          "webhook-retries",
+          "unknown-sso"
+        ]
+      },
+      "retrieval_misses": [],
+      "generation_model": "evidencedesk-gemma-4-12b-Q4_0",
+      "status": "evaluated",
+      "schema_valid": true,
+      "citation_integrity": true,
+      "correct_abstention": true,
+      "answer": {
+        "status": "insufficient_evidence",
+        "claims": [],
+        "proposed_note": null
+      },
+      "elapsed_ms": 2750.02
+    },
+    {
+      "case_id": "credential-expiry-chain-1",
+      "category": "obsolete_document",
+      "human_review": "pending",
+      "usage": {
+        "completion_tokens": 107,
+        "prompt_tokens": 1297,
+        "total_tokens": 1404,
+        "prompt_tokens_details": {
+          "cached_tokens": 775
+        }
+      },
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "credential-expiry",
+          "credential-rotation",
+          "api-permissions",
+          "audit-log",
+          "event-retention"
+        ],
+        "vector": [
+          "credential-rotation",
+          "credential-expiry",
+          "api-permissions",
+          "webhook-signatures",
+          "event-retention"
+        ],
+        "hybrid": [
+          "credential-expiry",
+          "credential-rotation",
+          "api-permissions",
+          "event-retention",
+          "audit-log"
+        ]
+      },
+      "retrieval_misses": [],
+      "generation_model": "evidencedesk-gemma-4-12b-Q4_0",
+      "status": "evaluated",
+      "schema_valid": true,
+      "citation_integrity": true,
+      "correct_abstention": true,
+      "answer": {
+        "status": "answered",
+        "claims": [
+          {
+            "text": "Existing credentials cannot have their expiry extended; a replacement is required.",
+            "citations": [
+              {
+                "source_id": "73c8b18b-aaa2-553d-a1af-317e865a9189",
+                "quote": "Existing credentials cannot have their expiry extended. A replacement is required."
+              }
+            ]
+          }
+        ],
+        "proposed_note": "Owners cannot extend the expiry of existing API credentials; they must create a replacement."
+      },
+      "elapsed_ms": 9142.47
+    },
+    {
+      "case_id": "credential-expiry-chain-2",
+      "category": "obsolete_document",
+      "human_review": "pending",
+      "usage": {
+        "completion_tokens": 122,
+        "prompt_tokens": 1293,
+        "total_tokens": 1415,
+        "prompt_tokens_details": {
+          "cached_tokens": 775
+        }
+      },
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "credential-rotation",
+          "credential-expiry",
+          "api-permissions",
+          "export-links",
+          "event-retention"
+        ],
+        "vector": [
+          "credential-expiry",
+          "credential-rotation",
+          "webhook-signatures",
+          "api-permissions",
+          "event-retention"
+        ],
+        "hybrid": [
+          "credential-expiry",
+          "credential-rotation",
+          "api-permissions",
+          "event-retention",
+          "webhook-signatures"
+        ]
+      },
+      "retrieval_misses": [],
+      "generation_model": "evidencedesk-gemma-4-12b-Q4_0",
+      "status": "evaluated",
+      "schema_valid": true,
+      "citation_integrity": true,
+      "correct_abstention": true,
+      "answer": {
+        "status": "answered",
+        "claims": [
+          {
+            "text": "New RelayNest API credentials expire after 90 days.",
+            "citations": [
+              {
+                "source_id": "73c8b18b-aaa2-553d-a1af-317e865a9189",
+                "quote": "New RelayNest API credentials expire after 90 days."
+              }
+            ]
+          }
+        ],
+        "proposed_note": "New API credentials expire after 90 days, not 365 days. The 365-day expiry was part of the obsolete beta policy."
+      },
+      "elapsed_ms": 9660.13
+    },
+    {
+      "case_id": "sandbox-cap-conflict-1",
+      "category": "conflicting_policy",
+      "human_review": "pending",
+      "usage": {
+        "completion_tokens": 121,
+        "prompt_tokens": 1276,
+        "total_tokens": 1397,
+        "prompt_tokens_details": {
+          "cached_tokens": 775
+        }
+      },
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "sandbox-delivery-cap",
+          "sandbox-plan-notes",
+          "webhook-retries",
+          "webhook-timeouts",
+          "event-ordering"
+        ],
+        "vector": [
+          "sandbox-delivery-cap",
+          "sandbox-plan-notes",
+          "webhook-retries",
+          "webhook-timeouts",
+          "event-ordering"
+        ],
+        "hybrid": [
+          "sandbox-delivery-cap",
+          "sandbox-plan-notes",
+          "webhook-retries",
+          "webhook-timeouts",
+          "event-ordering"
+        ]
+      },
+      "retrieval_misses": [],
+      "generation_model": "evidencedesk-gemma-4-12b-Q4_0",
+      "status": "evaluated",
+      "schema_valid": true,
+      "citation_integrity": true,
+      "correct_abstention": false,
+      "answer": {
+        "status": "answered",
+        "claims": [
+          {
+            "text": "Sandbox workspaces are limited to a maximum of 1000 webhook deliveries per day.",
+            "citations": [
+              {
+                "source_id": "3f9eb87c-54e1-587a-84e5-0ef467defc2f",
+                "quote": "Sandbox workspaces accept at most 1000 webhook deliveries per day."
+              }
+            ]
+          }
+        ],
+        "proposed_note": "The daily sandbox webhook delivery cap is 1000; deliveries exceeding this are rejected until the next UTC day."
+      },
+      "elapsed_ms": 9100.25
+    },
+    {
+      "case_id": "sandbox-cap-conflict-2",
+      "category": "conflicting_policy",
+      "human_review": "pending",
+      "usage": {
+        "completion_tokens": 113,
+        "prompt_tokens": 1273,
+        "total_tokens": 1386,
+        "prompt_tokens_details": {
+          "cached_tokens": 775
+        }
+      },
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "delivery-replay",
+          "api-permissions",
+          "event-retention",
+          "sandbox-plan-notes",
+          "sandbox-delivery-cap"
+        ],
+        "vector": [
+          "sandbox-plan-notes",
+          "sandbox-delivery-cap",
+          "api-rate-limits",
+          "delivery-replay",
+          "api-permissions"
+        ],
+        "hybrid": [
+          "sandbox-plan-notes",
+          "sandbox-delivery-cap",
+          "delivery-replay",
+          "api-permissions",
+          "event-retention"
+        ]
+      },
+      "retrieval_misses": [],
+      "generation_model": "evidencedesk-gemma-4-12b-Q4_0",
+      "status": "evaluated",
+      "schema_valid": true,
+      "citation_integrity": true,
+      "correct_abstention": false,
+      "answer": {
+        "status": "answered",
+        "claims": [
+          {
+            "text": "The sandbox plan includes 500 test events per day.",
+            "citations": [
+              {
+                "source_id": "fa65c2a4-7ec5-5ddb-8e3c-91e284582f43",
+                "quote": "The sandbox plan includes 500 test events per day and is intended for integration testing only."
+              }
+            ]
+          }
+        ],
+        "proposed_note": "A sandbox workspace is limited to 500 test events per day."
+      },
+      "elapsed_ms": 7506.19
+    },
+    {
+      "case_id": "export-link-chain-1",
+      "category": "obsolete_document",
+      "human_review": "pending",
+      "usage": {
+        "completion_tokens": 109,
+        "prompt_tokens": 1273,
+        "total_tokens": 1382,
+        "prompt_tokens_details": {
+          "cached_tokens": 775
+        }
+      },
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "export-links",
+          "export-limits",
+          "event-retention",
+          "export-failed",
+          "export-filters"
+        ],
+        "vector": [
+          "export-links",
+          "export-limits",
+          "event-retention",
+          "export-failed",
+          "webhook-retries"
+        ],
+        "hybrid": [
+          "export-links",
+          "export-limits",
+          "event-retention",
+          "export-failed",
+          "export-filters"
+        ]
+      },
+      "retrieval_misses": [],
+      "generation_model": "evidencedesk-gemma-4-12b-Q4_0",
+      "status": "evaluated",
+      "schema_valid": true,
+      "citation_integrity": true,
+      "correct_abstention": true,
+      "answer": {
+        "status": "answered",
+        "claims": [
+          {
+            "text": "CSV export download links expire 24 hours after completion.",
+            "citations": [
+              {
+                "source_id": "aff3155b-bf2b-561e-b513-63e34199dfad",
+                "quote": "CSV export download links expire 24 hours after completion."
+              }
+            ]
+          }
+        ],
+        "proposed_note": "While the underlying export is retained for seven days, the download links themselves expire 24 hours after completion."
+      },
+      "elapsed_ms": 8540.48
+    },
+    {
+      "case_id": "export-link-chain-2",
+      "category": "obsolete_document",
+      "human_review": "pending",
+      "usage": {
+        "completion_tokens": 23,
+        "prompt_tokens": 1290,
+        "total_tokens": 1313,
+        "prompt_tokens_details": {
+          "cached_tokens": 775
+        }
+      },
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "export-links",
+          "export-limits",
+          "export-failed",
+          "export-filters",
+          "export-format"
+        ],
+        "vector": [
+          "export-links",
+          "export-failed",
+          "export-limits",
+          "event-retention",
+          "export-filters"
+        ],
+        "hybrid": [
+          "export-links",
+          "export-failed",
+          "export-limits",
+          "export-filters",
+          "event-retention"
+        ]
+      },
+      "retrieval_misses": [],
+      "generation_model": "evidencedesk-gemma-4-12b-Q4_0",
+      "status": "evaluated",
+      "schema_valid": true,
+      "citation_integrity": true,
+      "correct_abstention": false,
+      "answer": {
+        "status": "insufficient_evidence",
+        "claims": [],
+        "proposed_note": null
+      },
+      "elapsed_ms": 4268.15
+    },
+    {
+      "case_id": "replay-retention-1",
+      "category": "cross_document",
+      "human_review": "pending",
+      "usage": {
+        "completion_tokens": 128,
+        "prompt_tokens": 1301,
+        "total_tokens": 1429,
+        "prompt_tokens_details": {
+          "cached_tokens": 775
+        }
+      },
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "webhook-retries",
+          "sandbox-delivery-cap",
+          "sandbox-plan-notes",
+          "delivery-replay",
+          "api-permissions"
+        ],
+        "vector": [
+          "webhook-retries",
+          "webhook-timeouts",
+          "event-ordering",
+          "export-links",
+          "webhook-signatures"
+        ],
+        "hybrid": [
+          "webhook-retries",
+          "webhook-timeouts",
+          "event-ordering",
+          "sandbox-delivery-cap",
+          "sandbox-plan-notes"
+        ]
+      },
+      "retrieval_misses": [
+        "vector",
+        "hybrid"
+      ],
+      "generation_model": "evidencedesk-gemma-4-12b-Q4_0",
+      "status": "evaluated",
+      "schema_valid": true,
+      "citation_integrity": true,
+      "correct_abstention": true,
+      "answer": {
+        "status": "answered",
+        "claims": [
+          {
+            "text": "Users can replay a delivery that still fails by choosing Replay delivery in the delivery log after fixing the receiving endpoint.",
+            "citations": [
+              {
+                "source_id": "be8c14cd-f32f-5aa6-a2a1-cc0cd8aad0e8",
+                "quote": "Fix the receiving endpoint, then choose Replay delivery in the delivery log."
+              }
+            ]
+          }
+        ],
+        "proposed_note": "Users can replay failed webhook deliveries via the delivery log after fixing the endpoint; however, the documentation does not specify a time limit for this action."
+      },
+      "elapsed_ms": 8736.57
+    },
+    {
+      "case_id": "replay-retention-2",
+      "category": "cross_document",
+      "human_review": "pending",
+      "usage": {
+        "completion_tokens": 127,
+        "prompt_tokens": 1296,
+        "total_tokens": 1423,
+        "prompt_tokens_details": {
+          "cached_tokens": 775
+        }
+      },
+      "generation_attempted": true,
+      "generation_completed": true,
+      "retrieval_documents": {
+        "lexical": [
+          "delivery-replay",
+          "api-permissions",
+          "event-retention",
+          "event-ordering",
+          "webhook-retries"
+        ],
+        "vector": [
+          "delivery-replay",
+          "api-permissions",
+          "event-retention",
+          "event-ordering",
+          "workspace-timezone"
+        ],
+        "hybrid": [
+          "delivery-replay",
+          "api-permissions",
+          "event-retention",
+          "event-ordering",
+          "webhook-retries"
+        ]
+      },
+      "retrieval_misses": [],
+      "generation_model": "evidencedesk-gemma-4-12b-Q4_0",
+      "status": "evaluated",
+      "schema_valid": true,
+      "citation_integrity": true,
+      "correct_abstention": true,
+      "answer": {
+        "status": "answered",
+        "claims": [
+          {
+            "text": "Manual replay is only possible while the original event is still inside the workspace event retention window.",
+            "citations": [
+              {
+                "source_id": "ea085fbe-ae59-543e-abc9-32105bd63ce2",
+                "quote": "Replay is only possible while the original event is still inside the workspace event retention window."
+              }
+            ]
+          }
+        ],
+        "proposed_note": "Manual replay is restricted to events within the workspace event retention window; attempts to replay events that have aged out will result in an event_expired error."
+      },
+      "elapsed_ms": 9650.87
+    },
+    {
+      "case_id": "malformed-json-1",
+      "category": "malformed_provider",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "status": "engineering_test_required",
+      "test_reference": "tests/test_rag.py"
+    },
+    {
+      "case_id": "invented-citation-1",
+      "category": "malformed_provider",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "status": "engineering_test_required",
+      "test_reference": "tests/test_rag.py"
+    },
+    {
+      "case_id": "arbitrary-action-1",
+      "category": "malformed_provider",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "status": "engineering_test_required",
+      "test_reference": "tests/test_rag.py"
+    },
+    {
+      "case_id": "provider-timeout-1",
+      "category": "provider_failure",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "status": "engineering_test_required",
+      "test_reference": "tests/test_rag.py"
+    },
+    {
+      "case_id": "provider-quota-1",
+      "category": "provider_failure",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "status": "engineering_test_required",
+      "test_reference": "tests/test_rag.py"
+    },
+    {
+      "case_id": "approve-once-1",
+      "category": "approval",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "status": "engineering_test_required",
+      "test_reference": "tests/test_actions.py"
+    },
+    {
+      "case_id": "reject-note-1",
+      "category": "approval",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "status": "engineering_test_required",
+      "test_reference": "tests/test_actions.py"
+    },
+    {
+      "case_id": "repeat-approval-1",
+      "category": "approval",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "status": "engineering_test_required",
+      "test_reference": "tests/test_actions.py"
+    },
+    {
+      "case_id": "stale-note-1",
+      "category": "approval",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "status": "engineering_test_required",
+      "test_reference": "tests/test_actions.py"
+    },
+    {
+      "case_id": "expired-note-1",
+      "category": "approval",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "status": "engineering_test_required",
+      "test_reference": "tests/test_actions.py"
+    }
+  ],
+  "human_review": "pending",
+  "generation_attempts": 38,
+  "generation_completions": 38,
+  "latency": {
+    "n": 38,
+    "measurement": "Live embedding, three retrieval methods, and optional generation; includes failures",
+    "p50_ms": 8918.41,
+    "p95_ms": 11942.676499999998
+  },
+  "cost": null,
+  "environment": "Darwin/arm64",
+  "limitations": [
+    "Citation integrity does not prove semantic correctness.",
+    "Offline reports measure fixture retrieval only; generation integrity is covered by tests.",
+    "Control scenarios require separate real-database engineering tests.",
+    "Forty-eight scenarios are a compact regression corpus, not a market benchmark."
+  ]
+}
