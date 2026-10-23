@@ -5,7 +5,10 @@
   "title": "Webhook timeout handling",
   "version": 2,
   "status": "active",
-  "product": "RelayNest"
+  "product": "RelayNest",
+  "related": [
+    {"source_id": "webhook-retries", "relation": "depends_on"}
+  ]
 }
 ---
 ## Response deadline

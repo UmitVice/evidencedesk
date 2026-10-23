@@ -5,7 +5,10 @@
   "title": "Rotate an expired API credential",
   "version": 2,
   "status": "active",
-  "product": "RelayNest"
+  "product": "RelayNest",
+  "related": [
+    {"source_id": "credential-expiry", "relation": "see_also"}
+  ]
 }
 ---
 ## Safe rotation

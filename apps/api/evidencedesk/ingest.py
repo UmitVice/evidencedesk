@@ -1,9 +1,10 @@
 import hashlib
 import json
 import re
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Literal
-from uuid import NAMESPACE_URL, uuid5
+from typing import Literal, NamedTuple
+from uuid import NAMESPACE_URL, UUID, uuid5
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -20,6 +21,18 @@ FIXTURE_MANIFEST = {
 }
 
 
+Relation = Literal["supersedes", "conflicts_with", "depends_on", "see_also"]
+SYMMETRIC: frozenset[str] = frozenset({"conflicts_with", "see_also"})
+
+
+class Related(BaseModel):
+    """An explicit document relation declared in front matter, resolved within the tenant."""
+
+    model_config = ConfigDict(extra="forbid", strict=True)
+    source_id: str = Field(pattern=r"^[a-z0-9-]+$")
+    relation: Relation
+
+
 class Metadata(BaseModel):
     model_config = ConfigDict(extra="forbid", strict=True)
     tenant: Literal["harbor", "summit"]
@@ -28,6 +41,68 @@ class Metadata(BaseModel):
     version: int = Field(ge=1)
     status: Literal["active", "obsolete"]
     product: Literal["RelayNest"]
+    related: list[Related] = Field(default_factory=list, max_length=8)
+
+
+Origin = Literal["version", "front_matter"]
+
+
+class Edge(NamedTuple):
+    tenant: str
+    from_document: UUID
+    to_document: UUID
+    relation: Relation
+    origin: Origin
+
+
+def document_id(meta: Metadata) -> UUID:
+    return uuid5(NAMESPACE_URL, f"relaynest:{meta.tenant}:{meta.source_id}:{meta.version}")
+
+
+def derive_edges(documents: Iterable[Metadata]) -> list[Edge]:
+    """Derive the tenant-scoped document graph from metadata alone.
+
+    A higher version of a source supersedes every lower version, so one hop always reaches the
+    current text. Front-matter targets resolve to the active version of a source in the same
+    tenant; symmetric relations are stored in both directions.
+    """
+    versions: dict[tuple[str, str], list[Metadata]] = {}
+    for meta in documents:
+        versions.setdefault((meta.tenant, meta.source_id), []).append(meta)
+    edges: dict[tuple[str, UUID, UUID, str], Edge] = {}
+
+    def add(tenant: str, start: UUID, end: UUID, relation: Relation, origin: Origin) -> None:
+        if start == end:
+            raise ValueError("A document cannot relate to itself")
+        edges.setdefault((tenant, start, end, relation), Edge(tenant, start, end, relation, origin))
+
+    for (tenant, source_id), group in versions.items():
+        group.sort(key=lambda meta: meta.version)
+        if len({meta.version for meta in group}) != len(group):
+            raise ValueError(f"Duplicate version for {source_id}")
+        active = [meta for meta in group if meta.status == "active"]
+        if len(active) > 1:
+            raise ValueError(f"More than one active version for {source_id}")
+        if active and active[0] is not group[-1]:
+            raise ValueError(f"An obsolete version of {source_id} is newer than the active one")
+        for index, newer in enumerate(group):
+            for older in group[:index]:
+                add(tenant, document_id(newer), document_id(older), "supersedes", "version")
+    for group in versions.values():
+        for meta in group:
+            for related in meta.related:
+                targets = versions.get((meta.tenant, related.source_id))
+                if not targets:
+                    raise ValueError(
+                        f"{meta.source_id} relates to unknown source {related.source_id} "
+                        f"in tenant {meta.tenant}"
+                    )
+                target = next((x for x in targets if x.status == "active"), targets[-1])
+                start, end = document_id(meta), document_id(target)
+                add(meta.tenant, start, end, related.relation, "front_matter")
+                if related.relation in SYMMETRIC:
+                    add(meta.tenant, end, start, related.relation, "front_matter")
+    return sorted(edges.values(), key=lambda edge: (edge.tenant, str(edge.from_document)))
 
 
 def digest(text: str) -> str:
@@ -74,13 +149,12 @@ def chunks(body: str) -> list[tuple[str, str]]:
 
 def seed(*, for_live: bool = False) -> int:
     count = 0
+    documents = [read_document(path) for path in sorted(DATA.glob("*.md"))]
+    edges = derive_edges(meta for meta, _ in documents)
     with connection(migration=True) as conn:
         conn.execute("SELECT pg_advisory_xact_lock(1002)")
-        for path in sorted(DATA.glob("*.md")):
-            meta, body = read_document(path)
-            doc_id = uuid5(
-                NAMESPACE_URL, f"relaynest:{meta.tenant}:{meta.source_id}:{meta.version}"
-            )
+        for meta, body in documents:
+            doc_id = document_id(meta)
             conn.execute(
                 "INSERT INTO evidence.documents VALUES(%s,%s,%s,%s,%s,%s,%s) "
                 "ON CONFLICT(id) DO UPDATE SET title=EXCLUDED.title, "
@@ -130,5 +204,13 @@ def seed(*, for_live: bool = False) -> int:
             conn.execute(
                 "DELETE FROM evidence.chunks WHERE document_id=%s AND NOT(id=ANY(%s))",
                 (doc_id, keep),
+            )
+        # The graph is fully derived from the corpus, so it is rebuilt in the same transaction.
+        conn.execute("DELETE FROM evidence.document_edges")
+        with conn.cursor() as cursor:
+            cursor.executemany(
+                "INSERT INTO evidence.document_edges"
+                "(tenant,from_document,to_document,relation,origin) VALUES(%s,%s,%s,%s,%s)",
+                edges,
             )
     return count

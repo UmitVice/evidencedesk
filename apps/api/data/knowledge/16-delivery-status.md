@@ -5,7 +5,10 @@
   "title": "Delivery log statuses",
   "version": 2,
   "status": "active",
-  "product": "RelayNest"
+  "product": "RelayNest",
+  "related": [
+    {"source_id": "webhook-retries", "relation": "see_also"}
+  ]
 }
 ---
 ## Status definitions

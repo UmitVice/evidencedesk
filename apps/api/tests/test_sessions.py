@@ -41,7 +41,7 @@ def test_sources_exclude_foreign_and_obsolete(client, owner):
 def test_ingestion_is_idempotent(db):
     assert seed() == 0
     with connection() as conn:
-        assert conn.execute("SELECT count(*) n FROM evidence.documents").fetchone()["n"] == 24
+        assert conn.execute("SELECT count(*) n FROM evidence.documents").fetchone()["n"] == 29
 
 
 def test_body_limit(client):
@@ -54,7 +54,7 @@ def test_runtime_database_and_public_privileges(db):
             "SELECT has_schema_privilege('public','evidence','USAGE') ok"
         ).fetchone()["ok"]
         conn.execute("SET LOCAL ROLE evidencedesk_runtime")
-        assert conn.execute("SELECT count(*) n FROM evidence.documents").fetchone()["n"] == 24
+        assert conn.execute("SELECT count(*) n FROM evidence.documents").fetchone()["n"] == 29
 
 
 def test_expired_sessions_do_not_consume_capacity(client, monkeypatch):
