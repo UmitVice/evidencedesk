@@ -1,0 +1,1311 @@
+{
+  "mode": "offline",
+  "label": "Mocked behavior checks; no live model called",
+  "timestamp": "2026-10-23T10:48:51.447072+00:00",
+  "commit_sha": "3fdfaef1a5d029df29d74ece59463a2447c1d07c",
+  "working_tree_dirty": false,
+  "dataset_hash": "428655b5b1c8b43670944e22bd84f830f04c27336f10c76f0d0a414c131919dc",
+  "corpus_hash": "314a2457d6639c7b813bf9a600cb080b524bf752f162b86bfd73ece02f60d4d3",
+  "prompt_version": "support-v4",
+  "embedding_manifest": {
+    "model": "fixture-hash-v1",
+    "dimension": 384,
+    "pooling": "none",
+    "preprocessing": "english-word-hash-v1",
+    "corpus_version": "1"
+  },
+  "generation_model": "fixture-v1",
+  "served_models": {},
+  "quality": {
+    "n": 0
+  },
+  "tokens": {
+    "prompt_tokens": 0,
+    "completion_tokens": 0
+  },
+  "budgets": {
+    "session_attempts_per_day": 10,
+    "environment_attempts_per_day": 40
+  },
+  "retrieval": {
+    "candidate_limit": 12,
+    "rrf_k": 60,
+    "cosine_distance_limit": 0.45,
+    "aggregation": "Unique document IDs in ranked chunk order; first five documents",
+    "denominator": "Executed cases with nonempty relevant_documents labels"
+  },
+  "split": "all",
+  "dataset_counts": {
+    "answerable": 12,
+    "insufficient_evidence": 6,
+    "obsolete_document": 8,
+    "cross_tenant": 4,
+    "prompt_injection": 4,
+    "conflicting_policy": 2,
+    "cross_document": 2,
+    "malformed_provider": 3,
+    "provider_failure": 2,
+    "approval": 5
+  },
+  "selected_count": 48,
+  "processed_count": 48,
+  "methods": {
+    "lexical": {
+      "n": 24,
+      "recall_at_5": 0.9583333333333334,
+      "mrr": 0.7326388888888888
+    },
+    "vector": {
+      "n": 24,
+      "recall_at_5": 0.0,
+      "mrr": 0.0
+    },
+    "hybrid": {
+      "n": 24,
+      "recall_at_5": 0.9583333333333334,
+      "mrr": 0.7326388888888888
+    }
+  },
+  "outcomes": [
+    {
+      "case_id": "retry-recovery-1",
+      "category": "answerable",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "retrieval_documents": {
+        "lexical": [
+          "webhook-timeouts",
+          "api-rate-limits",
+          "webhook-retries",
+          "sandbox-delivery-cap",
+          "event-ordering"
+        ],
+        "vector": [],
+        "hybrid": [
+          "webhook-timeouts",
+          "api-rate-limits",
+          "webhook-retries",
+          "sandbox-delivery-cap",
+          "event-ordering"
+        ]
+      },
+      "retrieval_misses": [
+        "vector"
+      ],
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
+    },
+    {
+      "case_id": "retry-recovery-2",
+      "category": "answerable",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "retrieval_documents": {
+        "lexical": [
+          "webhook-retries",
+          "sandbox-delivery-cap",
+          "webhook-timeouts",
+          "event-ordering",
+          "delivery-status"
+        ],
+        "vector": [],
+        "hybrid": [
+          "webhook-retries",
+          "sandbox-delivery-cap",
+          "webhook-timeouts",
+          "event-ordering",
+          "delivery-status"
+        ]
+      },
+      "retrieval_misses": [
+        "vector"
+      ],
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
+    },
+    {
+      "case_id": "credential-rotate-1",
+      "category": "answerable",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "retrieval_documents": {
+        "lexical": [
+          "credential-rotation",
+          "credential-expiry",
+          "api-permissions",
+          "audit-log",
+          "support-boundaries"
+        ],
+        "vector": [],
+        "hybrid": [
+          "credential-rotation",
+          "credential-expiry",
+          "api-permissions",
+          "audit-log",
+          "support-boundaries"
+        ]
+      },
+      "retrieval_misses": [
+        "vector"
+      ],
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
+    },
+    {
+      "case_id": "credential-rotate-2",
+      "category": "answerable",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "retrieval_documents": {
+        "lexical": [
+          "delivery-status",
+          "credential-rotation",
+          "credential-expiry",
+          "api-permissions"
+        ],
+        "vector": [],
+        "hybrid": [
+          "delivery-status",
+          "credential-rotation",
+          "credential-expiry",
+          "api-permissions"
+        ]
+      },
+      "retrieval_misses": [
+        "vector"
+      ],
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
+    },
+    {
+      "case_id": "export-link-1",
+      "category": "answerable",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "retrieval_documents": {
+        "lexical": [
+          "export-links",
+          "export-limits",
+          "export-failed",
+          "export-format",
+          "export-filters"
+        ],
+        "vector": [],
+        "hybrid": [
+          "export-links",
+          "export-limits",
+          "export-failed",
+          "export-format",
+          "export-filters"
+        ]
+      },
+      "retrieval_misses": [
+        "vector"
+      ],
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
+    },
+    {
+      "case_id": "export-link-2",
+      "category": "answerable",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "retrieval_documents": {
+        "lexical": [
+          "export-links",
+          "export-limits",
+          "export-failed",
+          "export-format",
+          "workspace-timezone"
+        ],
+        "vector": [],
+        "hybrid": [
+          "export-links",
+          "export-limits",
+          "export-failed",
+          "export-format",
+          "workspace-timezone"
+        ]
+      },
+      "retrieval_misses": [
+        "vector"
+      ],
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
+    },
+    {
+      "case_id": "webhook-signature-1",
+      "category": "answerable",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "retrieval_documents": {
+        "lexical": [
+          "webhook-signatures",
+          "sandbox-delivery-cap",
+          "webhook-timeouts",
+          "event-ordering",
+          "webhook-retries"
+        ],
+        "vector": [],
+        "hybrid": [
+          "webhook-signatures",
+          "sandbox-delivery-cap",
+          "webhook-timeouts",
+          "event-ordering",
+          "webhook-retries"
+        ]
+      },
+      "retrieval_misses": [
+        "vector"
+      ],
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
+    },
+    {
+      "case_id": "webhook-signature-2",
+      "category": "answerable",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "retrieval_documents": {
+        "lexical": [
+          "webhook-signatures",
+          "credential-rotation",
+          "sandbox-delivery-cap",
+          "webhook-timeouts",
+          "event-ordering"
+        ],
+        "vector": [],
+        "hybrid": [
+          "webhook-signatures",
+          "credential-rotation",
+          "sandbox-delivery-cap",
+          "webhook-timeouts",
+          "event-ordering"
+        ]
+      },
+      "retrieval_misses": [
+        "vector"
+      ],
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
+    },
+    {
+      "case_id": "export-filters-1",
+      "category": "answerable",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "retrieval_documents": {
+        "lexical": [
+          "export-filters",
+          "export-links",
+          "export-failed",
+          "export-limits",
+          "export-format"
+        ],
+        "vector": [],
+        "hybrid": [
+          "export-filters",
+          "export-links",
+          "export-failed",
+          "export-limits",
+          "export-format"
+        ]
+      },
+      "retrieval_misses": [
+        "vector"
+      ],
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
+    },
+    {
+      "case_id": "export-filters-2",
+      "category": "answerable",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "retrieval_documents": {
+        "lexical": [
+          "export-filters",
+          "export-format",
+          "export-links",
+          "export-failed",
+          "export-limits"
+        ],
+        "vector": [],
+        "hybrid": [
+          "export-filters",
+          "export-format",
+          "export-links",
+          "export-failed",
+          "export-limits"
+        ]
+      },
+      "retrieval_misses": [
+        "vector"
+      ],
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
+    },
+    {
+      "case_id": "api-permissions-1",
+      "category": "answerable",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "retrieval_documents": {
+        "lexical": [
+          "credential-rotation",
+          "webhook-timeouts",
+          "api-rate-limits",
+          "api-permissions",
+          "credential-expiry"
+        ],
+        "vector": [],
+        "hybrid": [
+          "credential-rotation",
+          "webhook-timeouts",
+          "api-rate-limits",
+          "api-permissions",
+          "credential-expiry"
+        ]
+      },
+      "retrieval_misses": [
+        "vector"
+      ],
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
+    },
+    {
+      "case_id": "api-permissions-2",
+      "category": "answerable",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "retrieval_documents": {
+        "lexical": [
+          "credential-rotation",
+          "api-permissions",
+          "credential-expiry",
+          "audit-log",
+          "webhook-signatures"
+        ],
+        "vector": [],
+        "hybrid": [
+          "credential-rotation",
+          "api-permissions",
+          "credential-expiry",
+          "audit-log",
+          "webhook-signatures"
+        ]
+      },
+      "retrieval_misses": [
+        "vector"
+      ],
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
+    },
+    {
+      "case_id": "unknown-sso-1",
+      "category": "insufficient_evidence",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "retrieval_documents": {
+        "lexical": [
+          "unknown-sso",
+          "support-boundaries"
+        ],
+        "vector": [],
+        "hybrid": [
+          "unknown-sso",
+          "support-boundaries"
+        ]
+      },
+      "retrieval_misses": [],
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
+    },
+    {
+      "case_id": "unknown-sso-2",
+      "category": "insufficient_evidence",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "retrieval_documents": {
+        "lexical": [
+          "unknown-sso",
+          "webhook-signatures",
+          "export-limits"
+        ],
+        "vector": [],
+        "hybrid": [
+          "unknown-sso",
+          "webhook-signatures",
+          "export-limits"
+        ]
+      },
+      "retrieval_misses": [],
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
+    },
+    {
+      "case_id": "unknown-region-1",
+      "category": "insufficient_evidence",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "retrieval_documents": {
+        "lexical": [
+          "event-ordering",
+          "workspace-timezone",
+          "delivery-replay"
+        ],
+        "vector": [],
+        "hybrid": [
+          "event-ordering",
+          "workspace-timezone",
+          "delivery-replay"
+        ]
+      },
+      "retrieval_misses": [],
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
+    },
+    {
+      "case_id": "unknown-region-2",
+      "category": "insufficient_evidence",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "retrieval_documents": {
+        "lexical": [
+          "event-ordering"
+        ],
+        "vector": [],
+        "hybrid": [
+          "event-ordering"
+        ]
+      },
+      "retrieval_misses": [],
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
+    },
+    {
+      "case_id": "archive-conflict-1",
+      "category": "insufficient_evidence",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "retrieval_documents": {
+        "lexical": [
+          "conflicting-retention",
+          "event-retention",
+          "injection-fixture",
+          "delivery-replay"
+        ],
+        "vector": [],
+        "hybrid": [
+          "conflicting-retention",
+          "event-retention",
+          "injection-fixture",
+          "delivery-replay"
+        ]
+      },
+      "retrieval_misses": [],
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
+    },
+    {
+      "case_id": "archive-conflict-2",
+      "category": "insufficient_evidence",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "retrieval_documents": {
+        "lexical": [
+          "conflicting-retention",
+          "webhook-timeouts",
+          "export-links",
+          "event-retention",
+          "audit-log"
+        ],
+        "vector": [],
+        "hybrid": [
+          "conflicting-retention",
+          "webhook-timeouts",
+          "export-links",
+          "event-retention",
+          "audit-log"
+        ]
+      },
+      "retrieval_misses": [],
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
+    },
+    {
+      "case_id": "obsolete-retry-1",
+      "category": "obsolete_document",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "retrieval_documents": {
+        "lexical": [
+          "api-rate-limits",
+          "webhook-timeouts",
+          "webhook-retries",
+          "sandbox-delivery-cap",
+          "event-ordering"
+        ],
+        "vector": [],
+        "hybrid": [
+          "api-rate-limits",
+          "webhook-timeouts",
+          "webhook-retries",
+          "sandbox-delivery-cap",
+          "event-ordering"
+        ]
+      },
+      "retrieval_misses": [
+        "vector"
+      ],
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
+    },
+    {
+      "case_id": "obsolete-retry-2",
+      "category": "obsolete_document",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "retrieval_documents": {
+        "lexical": [
+          "api-rate-limits",
+          "webhook-timeouts",
+          "webhook-retries",
+          "sandbox-delivery-cap",
+          "event-ordering"
+        ],
+        "vector": [],
+        "hybrid": [
+          "api-rate-limits",
+          "webhook-timeouts",
+          "webhook-retries",
+          "sandbox-delivery-cap",
+          "event-ordering"
+        ]
+      },
+      "retrieval_misses": [
+        "vector"
+      ],
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
+    },
+    {
+      "case_id": "obsolete-vs-current-1",
+      "category": "obsolete_document",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "retrieval_documents": {
+        "lexical": [
+          "api-rate-limits",
+          "webhook-retries",
+          "conflicting-retention",
+          "webhook-timeouts",
+          "injection-fixture"
+        ],
+        "vector": [],
+        "hybrid": [
+          "api-rate-limits",
+          "webhook-retries",
+          "conflicting-retention",
+          "webhook-timeouts",
+          "injection-fixture"
+        ]
+      },
+      "retrieval_misses": [
+        "vector"
+      ],
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
+    },
+    {
+      "case_id": "obsolete-vs-current-2",
+      "category": "obsolete_document",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "retrieval_documents": {
+        "lexical": [
+          "api-rate-limits",
+          "webhook-retries",
+          "webhook-timeouts",
+          "webhook-signatures",
+          "export-failed"
+        ],
+        "vector": [],
+        "hybrid": [
+          "api-rate-limits",
+          "webhook-retries",
+          "webhook-timeouts",
+          "webhook-signatures",
+          "export-failed"
+        ]
+      },
+      "retrieval_misses": [
+        "vector"
+      ],
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
+    },
+    {
+      "case_id": "foreign-routing-1",
+      "category": "cross_tenant",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "retrieval_documents": {
+        "lexical": [
+          "injection-fixture"
+        ],
+        "vector": [],
+        "hybrid": [
+          "injection-fixture"
+        ]
+      },
+      "retrieval_misses": [],
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
+    },
+    {
+      "case_id": "foreign-routing-2",
+      "category": "cross_tenant",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "retrieval_documents": {
+        "lexical": [],
+        "vector": [],
+        "hybrid": []
+      },
+      "retrieval_misses": [],
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
+    },
+    {
+      "case_id": "foreign-export-1",
+      "category": "cross_tenant",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "retrieval_documents": {
+        "lexical": [
+          "delivery-replay",
+          "event-ordering",
+          "export-links",
+          "event-retention",
+          "export-format"
+        ],
+        "vector": [],
+        "hybrid": [
+          "delivery-replay",
+          "event-ordering",
+          "export-links",
+          "event-retention",
+          "export-format"
+        ]
+      },
+      "retrieval_misses": [],
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
+    },
+    {
+      "case_id": "foreign-export-2",
+      "category": "cross_tenant",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "retrieval_documents": {
+        "lexical": [
+          "export-links",
+          "export-failed",
+          "export-limits",
+          "export-format",
+          "export-filters"
+        ],
+        "vector": [],
+        "hybrid": [
+          "export-links",
+          "export-failed",
+          "export-limits",
+          "export-format",
+          "export-filters"
+        ]
+      },
+      "retrieval_misses": [],
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
+    },
+    {
+      "case_id": "injection-user-1",
+      "category": "prompt_injection",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "retrieval_documents": {
+        "lexical": [
+          "injection-fixture",
+          "webhook-signatures"
+        ],
+        "vector": [],
+        "hybrid": [
+          "injection-fixture",
+          "webhook-signatures"
+        ]
+      },
+      "retrieval_misses": [],
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
+    },
+    {
+      "case_id": "injection-user-2",
+      "category": "prompt_injection",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "retrieval_documents": {
+        "lexical": [
+          "injection-fixture",
+          "credential-rotation",
+          "webhook-signatures",
+          "audit-log"
+        ],
+        "vector": [],
+        "hybrid": [
+          "injection-fixture",
+          "credential-rotation",
+          "webhook-signatures",
+          "audit-log"
+        ]
+      },
+      "retrieval_misses": [],
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
+    },
+    {
+      "case_id": "injection-source-1",
+      "category": "prompt_injection",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "retrieval_documents": {
+        "lexical": [
+          "injection-fixture",
+          "webhook-timeouts",
+          "unknown-sso",
+          "export-filters"
+        ],
+        "vector": [],
+        "hybrid": [
+          "injection-fixture",
+          "webhook-timeouts",
+          "unknown-sso",
+          "export-filters"
+        ]
+      },
+      "retrieval_misses": [],
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
+    },
+    {
+      "case_id": "injection-source-2",
+      "category": "prompt_injection",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "retrieval_documents": {
+        "lexical": [
+          "injection-fixture",
+          "conflicting-retention",
+          "unknown-sso"
+        ],
+        "vector": [],
+        "hybrid": [
+          "injection-fixture",
+          "conflicting-retention",
+          "unknown-sso"
+        ]
+      },
+      "retrieval_misses": [],
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
+    },
+    {
+      "case_id": "credential-expiry-chain-1",
+      "category": "obsolete_document",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "retrieval_documents": {
+        "lexical": [
+          "credential-expiry",
+          "credential-rotation",
+          "api-permissions",
+          "audit-log",
+          "event-retention"
+        ],
+        "vector": [],
+        "hybrid": [
+          "credential-expiry",
+          "credential-rotation",
+          "api-permissions",
+          "audit-log",
+          "event-retention"
+        ]
+      },
+      "retrieval_misses": [
+        "vector"
+      ],
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
+    },
+    {
+      "case_id": "credential-expiry-chain-2",
+      "category": "obsolete_document",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "retrieval_documents": {
+        "lexical": [
+          "credential-rotation",
+          "credential-expiry",
+          "api-permissions",
+          "export-links",
+          "event-retention"
+        ],
+        "vector": [],
+        "hybrid": [
+          "credential-rotation",
+          "credential-expiry",
+          "api-permissions",
+          "export-links",
+          "event-retention"
+        ]
+      },
+      "retrieval_misses": [
+        "vector"
+      ],
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
+    },
+    {
+      "case_id": "sandbox-cap-conflict-1",
+      "category": "conflicting_policy",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "retrieval_documents": {
+        "lexical": [
+          "sandbox-delivery-cap",
+          "webhook-retries",
+          "webhook-timeouts",
+          "event-ordering",
+          "support-boundaries"
+        ],
+        "vector": [],
+        "hybrid": [
+          "sandbox-delivery-cap",
+          "webhook-retries",
+          "webhook-timeouts",
+          "event-ordering",
+          "support-boundaries"
+        ]
+      },
+      "retrieval_misses": [
+        "vector"
+      ],
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
+    },
+    {
+      "case_id": "sandbox-cap-conflict-2",
+      "category": "conflicting_policy",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "retrieval_documents": {
+        "lexical": [
+          "delivery-replay",
+          "sandbox-plan-notes",
+          "sandbox-delivery-cap",
+          "event-retention",
+          "event-ordering"
+        ],
+        "vector": [],
+        "hybrid": [
+          "delivery-replay",
+          "sandbox-plan-notes",
+          "sandbox-delivery-cap",
+          "event-retention",
+          "event-ordering"
+        ]
+      },
+      "retrieval_misses": [
+        "vector"
+      ],
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
+    },
+    {
+      "case_id": "export-link-chain-1",
+      "category": "obsolete_document",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "retrieval_documents": {
+        "lexical": [
+          "export-links",
+          "export-limits",
+          "event-retention",
+          "export-failed",
+          "export-filters"
+        ],
+        "vector": [],
+        "hybrid": [
+          "export-links",
+          "export-limits",
+          "event-retention",
+          "export-failed",
+          "export-filters"
+        ]
+      },
+      "retrieval_misses": [
+        "vector"
+      ],
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
+    },
+    {
+      "case_id": "export-link-chain-2",
+      "category": "obsolete_document",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "retrieval_documents": {
+        "lexical": [
+          "export-links",
+          "export-limits",
+          "export-failed",
+          "export-filters",
+          "export-format"
+        ],
+        "vector": [],
+        "hybrid": [
+          "export-links",
+          "export-limits",
+          "export-failed",
+          "export-filters",
+          "export-format"
+        ]
+      },
+      "retrieval_misses": [
+        "vector"
+      ],
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
+    },
+    {
+      "case_id": "replay-retention-1",
+      "category": "cross_document",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "retrieval_documents": {
+        "lexical": [
+          "webhook-retries",
+          "sandbox-delivery-cap",
+          "delivery-replay",
+          "webhook-timeouts",
+          "event-ordering"
+        ],
+        "vector": [],
+        "hybrid": [
+          "webhook-retries",
+          "sandbox-delivery-cap",
+          "delivery-replay",
+          "webhook-timeouts",
+          "event-ordering"
+        ]
+      },
+      "retrieval_misses": [
+        "vector"
+      ],
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
+    },
+    {
+      "case_id": "replay-retention-2",
+      "category": "cross_document",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "retrieval_documents": {
+        "lexical": [
+          "delivery-replay",
+          "event-ordering",
+          "webhook-retries",
+          "event-retention",
+          "export-format"
+        ],
+        "vector": [],
+        "hybrid": [
+          "delivery-replay",
+          "event-ordering",
+          "webhook-retries",
+          "event-retention",
+          "export-format"
+        ]
+      },
+      "retrieval_misses": [
+        "vector"
+      ],
+      "status": "retrieval_fixture_only",
+      "schema_valid": null,
+      "citation_integrity": null,
+      "correct_abstention": null
+    },
+    {
+      "case_id": "malformed-json-1",
+      "category": "malformed_provider",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "status": "engineering_test_required",
+      "test_reference": "tests/test_rag.py"
+    },
+    {
+      "case_id": "invented-citation-1",
+      "category": "malformed_provider",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "status": "engineering_test_required",
+      "test_reference": "tests/test_rag.py"
+    },
+    {
+      "case_id": "arbitrary-action-1",
+      "category": "malformed_provider",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "status": "engineering_test_required",
+      "test_reference": "tests/test_rag.py"
+    },
+    {
+      "case_id": "provider-timeout-1",
+      "category": "provider_failure",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "status": "engineering_test_required",
+      "test_reference": "tests/test_rag.py"
+    },
+    {
+      "case_id": "provider-quota-1",
+      "category": "provider_failure",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "status": "engineering_test_required",
+      "test_reference": "tests/test_rag.py"
+    },
+    {
+      "case_id": "approve-once-1",
+      "category": "approval",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "status": "engineering_test_required",
+      "test_reference": "tests/test_actions.py"
+    },
+    {
+      "case_id": "reject-note-1",
+      "category": "approval",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "status": "engineering_test_required",
+      "test_reference": "tests/test_actions.py"
+    },
+    {
+      "case_id": "repeat-approval-1",
+      "category": "approval",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "status": "engineering_test_required",
+      "test_reference": "tests/test_actions.py"
+    },
+    {
+      "case_id": "stale-note-1",
+      "category": "approval",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "status": "engineering_test_required",
+      "test_reference": "tests/test_actions.py"
+    },
+    {
+      "case_id": "expired-note-1",
+      "category": "approval",
+      "human_review": "pending",
+      "usage": null,
+      "generation_attempted": false,
+      "generation_completed": false,
+      "status": "engineering_test_required",
+      "test_reference": "tests/test_actions.py"
+    }
+  ],
+  "human_review": "pending",
+  "generation_attempts": 0,
+  "generation_completions": 0,
+  "latency": null,
+  "cost": null,
+  "environment": "Darwin/arm64",
+  "limitations": [
+    "Citation integrity does not prove semantic correctness.",
+    "Offline reports measure fixture retrieval only; generation integrity is covered by tests.",
+    "Control scenarios require separate real-database engineering tests.",
+    "Forty-eight scenarios are a compact regression corpus, not a market benchmark."
+  ]
+}
