@@ -37,6 +37,8 @@ class Settings(BaseSettings):
     candidate_limit: int = Field(default=12, ge=5, le=30)
     context_limit: int = Field(default=4, ge=1, le=4)
     cosine_distance_limit: float = Field(default=0.45, ge=0, le=1)
+    # One-hop document graph expansion after rank fusion (see evidencedesk.graph).
+    graph_expansion: bool = False
 
 
 @lru_cache
