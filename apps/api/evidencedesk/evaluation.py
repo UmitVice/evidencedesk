@@ -158,7 +158,8 @@ def run_evaluation(mode: str, split: str, limit: int) -> dict[str, Any]:
         outcome
         for outcome in outcomes
         if outcome.get("status") == "evaluated"
-        or outcome.get("error_code") in ("invalid_model_output", "invalid_citation")
+        or outcome.get("error_code")
+        in ("invalid_model_output", "invalid_citation", "generation_truncated")
     ]
     return {
         "mode": mode,

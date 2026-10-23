@@ -58,8 +58,10 @@ outdated: answer from the current passage and never present outdated text as cur
 conflicts_with means the passages disagree: abstain on that policy unless a passage resolves it.
 depends_on means the other passage states a condition the answer must include."""
 PROMPT_RELATIONS = frozenset({"superseded_by", "supersedes", "conflicts_with", "depends_on"})
+MAX_ANSWER_TOKENS = 700
 FALLBACK_CODES = frozenset(
     {
+        "generation_truncated",
         "provider_transient",
         "provider_timeout",
         "provider_unavailable",
@@ -200,6 +202,16 @@ async def post_json(
             return response.status_code, json.loads(body)
 
 
+def raise_if_truncated(usage: Any, finish_reason: Any = None) -> None:
+    """A generation that hit the token cap is cut-off JSON; retry it instead of validating.
+
+    Workers AI is not fully deterministic at temperature 0: a rare run repeats until the cap.
+    """
+    tokens = usage.get("completion_tokens") if isinstance(usage, dict) else None
+    if finish_reason == "length" or (isinstance(tokens, int) and tokens >= MAX_ANSWER_TOKENS):
+        raise DomainError("generation_truncated", "The AI answer was cut off; retrying.", 503)
+
+
 def raise_for_status(status: int) -> None:
     if status == 429:
         raise DomainError("provider_quota", "Live AI quota is exhausted.", 429)
@@ -331,7 +343,7 @@ class CloudflareProvider:
         payload = {
             "messages": build_messages(ticket, question, evidence),
             "response_format": {"type": "json_object"},
-            "max_tokens": 700,
+            "max_tokens": MAX_ANSWER_TOKENS,
             "temperature": 0,
             "stream": False,
         }
@@ -340,6 +352,7 @@ class CloudflareProvider:
         if not isinstance(response, (str, dict)):
             raise DomainError("provider_invalid", "Live AI returned no structured answer.", 502)
         usage = result.get("usage")
+        raise_if_truncated(usage)
         return (
             response if isinstance(response, str) else json.dumps(response),
             usage if isinstance(usage, dict) else None,
@@ -441,7 +454,7 @@ class OpenAICompatibleGenerator:
         payload: dict[str, Any] = {
             "model": self.model,
             "messages": build_messages(ticket, question, evidence),
-            "max_tokens": 700,
+            "max_tokens": MAX_ANSWER_TOKENS,
             "temperature": 0,
             "stream": False,
         }
@@ -485,6 +498,7 @@ class OpenAICompatibleGenerator:
         if isinstance(served, str) and served:
             self.served_model = served[:200]
         usage = data.get("usage")
+        raise_if_truncated(usage, data["choices"][0].get("finish_reason"))
         return content, usage if isinstance(usage, dict) else None
 
 

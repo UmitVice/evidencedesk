@@ -166,7 +166,8 @@ def test_injection_cannot_create_an_applied_note(client, owner):
 
 
 @pytest.mark.integration
-def test_controlled_retry_reserves_each_attempt(client, owner):
+@pytest.mark.parametrize("code", ["provider_transient", "generation_truncated"])
+def test_controlled_retry_reserves_each_attempt(client, owner, code):
     from evidencedesk.providers import FixtureProvider
     from evidencedesk.workflow import analyze
 
@@ -176,7 +177,7 @@ def test_controlled_retry_reserves_each_attempt(client, owner):
         def generate(self, ticket, question, evidence):
             self.calls += 1
             if self.calls == 1:
-                raise DomainError("provider_transient", "Unavailable", 503)
+                raise DomainError(code, "Unavailable", 503)
             return super().generate(ticket, question, evidence)
 
     with connection() as conn:

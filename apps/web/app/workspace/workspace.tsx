@@ -62,6 +62,8 @@ function issueFor(error: unknown, operation: Operation): Issue {
       "AI analysis is temporarily unavailable. Please try again later.",
     provider_timeout:
       "The AI service took too long to respond. You can try analyzing again.",
+    generation_truncated:
+      "The AI answer was cut off twice, so no note was proposed. You can try analyzing again.",
     request_timeout:
       "The request took too long. Refresh the ticket to check its latest state.",
     analysis_failed:

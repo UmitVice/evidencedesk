@@ -228,3 +228,44 @@ def test_prompt_lists_relations_only_between_passages_in_context():
     context = json.loads(build_messages(TICKET, "", evidence)[1]["content"])["evidence"]
     assert "relations" not in context[0]
     assert context[1]["relations"] == [{"relation": "superseded_by", "source_id": current}]
+
+
+def test_truncated_generations_are_retryable_not_validated():
+    capped = completion(ANSWER.model_dump_json()[:40])
+    capped["usage"]["completion_tokens"] = 700
+    transport = httpx.MockTransport(lambda _: httpx.Response(200, json=capped))
+    generator = OpenAICompatibleGenerator("http://127.0.0.1:8080/v1", "m", transport=transport)
+    with pytest.raises(DomainError) as error:
+        generator.generate(TICKET, "", [SOURCE])
+    assert error.value.code == "generation_truncated"
+
+    stopped = completion(ANSWER.model_dump_json())
+    stopped["choices"][0]["finish_reason"] = "length"
+    transport = httpx.MockTransport(lambda _: httpx.Response(200, json=stopped))
+    generator = OpenAICompatibleGenerator("http://127.0.0.1:8080/v1", "m", transport=transport)
+    with pytest.raises(DomainError) as error:
+        generator.generate(TICKET, "", [SOURCE])
+    assert error.value.code == "generation_truncated"
+
+
+def test_cloudflare_truncation_is_retryable(monkeypatch):
+    from evidencedesk.providers import CloudflareProvider
+
+    monkeypatch.setenv("CLOUDFLARE_ACCOUNT_ID", "a" * 32)
+    monkeypatch.setenv("CLOUDFLARE_API_TOKEN", "test-token")
+    settings.cache_clear()
+    body = {"success": True, "result": {"response": '{"status":"answered","claims":[',
+                                        "usage": {"completion_tokens": 700}}}
+    adapter = CloudflareProvider(httpx.MockTransport(lambda _: httpx.Response(200, json=body)))
+    try:
+        with pytest.raises(DomainError) as error:
+            adapter.generate(TICKET, "", [SOURCE])
+        assert error.value.code == "generation_truncated"
+    finally:
+        settings.cache_clear()
+
+
+def test_fallback_covers_truncation():
+    generator = FallbackGenerator(Failing("generation_truncated"), Fixed())
+    generator.generate(TICKET, "", [SOURCE])
+    assert generator.model_id == "fallback"

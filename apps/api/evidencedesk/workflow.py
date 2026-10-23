@@ -129,7 +129,7 @@ def analyze(
             except DomainError as exc:
                 if (
                     attempt
-                    or exc.code != "provider_transient"
+                    or exc.code not in ("provider_transient", "generation_truncated")
                     or time.monotonic() - started > deadline - 26
                 ):
                     raise
