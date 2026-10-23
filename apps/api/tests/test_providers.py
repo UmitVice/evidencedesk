@@ -61,6 +61,7 @@ def test_openai_compatible_generator_sends_constrained_schema():
 
     assert Answer.model_validate_json(raw) == ANSWER
     assert usage == {"prompt_tokens": 900, "completion_tokens": 120}
+    assert generator.model_id == "evidencedesk-gemma"
     assert seen["url"] == "http://127.0.0.1:8080/v1/chat/completions"
     assert seen["auth"] == "Bearer local-key"
     assert seen["body"]["messages"] == build_messages(TICKET, "", [SOURCE])
@@ -196,3 +197,14 @@ def test_prompt_keeps_non_ascii_text_literal():
     user = build_messages({"body": "Çekim ne zaman onaylanır?"}, "", [source])[1]["content"]
     assert "Çekim işlemleri 24 saat içinde onaylanır." in user
     assert "\\u" not in user
+
+
+def test_openai_compatible_generator_reports_the_served_model():
+    def respond(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, json={**completion(ANSWER.model_dump_json()), "model": "base"})
+
+    generator = OpenAICompatibleGenerator(
+        "http://127.0.0.1:8080/v1", "requested-lora", transport=httpx.MockTransport(respond)
+    )
+    generator.generate(TICKET, "", [SOURCE])
+    assert generator.model_id == "base"

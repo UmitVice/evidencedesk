@@ -399,6 +399,9 @@ class OpenAICompatibleGenerator:
         self.json_schema = json_schema
         self.disable_thinking = disable_thinking
         self.transport = transport
+        # The model the server reports having used. Servers such as llama.cpp ignore the
+        # requested model name, so reports must not trust the configured one.
+        self.served_model = ""
 
     @classmethod
     def from_settings(cls) -> "OpenAICompatibleGenerator":
@@ -414,7 +417,7 @@ class OpenAICompatibleGenerator:
 
     @property
     def model_id(self) -> str:
-        return self.model or "openai-compatible"
+        return self.served_model or self.model or "openai-compatible"
 
     def generate(
         self, ticket: dict[str, Any], question: str, evidence: list[dict[str, Any]]
@@ -464,6 +467,9 @@ class OpenAICompatibleGenerator:
             raise DomainError(
                 "provider_invalid", "Self-hosted AI returned an unusable response.", 502
             ) from exc
+        served = data.get("model")
+        if isinstance(served, str) and served:
+            self.served_model = served[:200]
         usage = data.get("usage")
         return content, usage if isinstance(usage, dict) else None
 
