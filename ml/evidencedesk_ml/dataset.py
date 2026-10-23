@@ -221,6 +221,27 @@ def stage_answers(teacher: Teacher, out: Path, products: list[Product], workers:
                 print(f"answers {count}/{len(jobs)} usage={teacher.usage}", flush=True)
 
 
+def rerender(example: dict) -> dict:
+    """Re-render a cached example with the current build_messages() (prompt-only changes)."""
+    payload = json.loads(example["messages"][1]["content"])
+    evidence = [
+        {
+            "id": row["source_id"],
+            "title": row["title"],
+            "heading": row["heading"],
+            "version": row["version"],
+            "status": row["status"],
+            "body": row["passage"],
+        }
+        for row in payload["evidence"]
+    ]
+    messages = build_messages({"body": payload["ticket"]}, payload["question"], evidence)
+    return {
+        "messages": [*messages, example["messages"][-1]],
+        "meta": {**example["meta"], "prompt_version": PROMPT_VERSION},
+    }
+
+
 def stage_export(out: Path) -> dict:
     split = {p.slug: p.split for p in PRODUCTS}
     rows = [json.loads(line) for line in (out / "answers.jsonl").read_text().splitlines() if line]
@@ -228,7 +249,7 @@ def stage_export(out: Path) -> dict:
     rejected: Counter[str] = Counter()
     for row in rows:
         if "example" in row:
-            buckets[split[row["product"]]].append(row["example"])
+            buckets[split[row["product"]]].append(rerender(row["example"]))
         else:
             rejected[row["rejected"]] += 1
     sft = out / "sft"

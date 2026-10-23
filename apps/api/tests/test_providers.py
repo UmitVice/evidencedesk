@@ -189,3 +189,10 @@ def test_local_embedder_has_its_own_manifest(monkeypatch):
         assert composite.model_id == CloudflareProvider.model_id
     finally:
         settings.cache_clear()
+
+
+def test_prompt_keeps_non_ascii_text_literal():
+    source = {"id": str(uuid4()), "body": "Çekim işlemleri 24 saat içinde onaylanır."}
+    user = build_messages({"body": "Çekim ne zaman onaylanır?"}, "", [source])[1]["content"]
+    assert "Çekim işlemleri 24 saat içinde onaylanır." in user
+    assert "\\u" not in user
