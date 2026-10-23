@@ -208,3 +208,23 @@ def test_openai_compatible_generator_reports_the_served_model():
     )
     generator.generate(TICKET, "", [SOURCE])
     assert generator.model_id == "base"
+
+
+def test_prompt_lists_relations_only_between_passages_in_context():
+    current, legacy = str(uuid4()), str(uuid4())
+    relation = {"document_id": "d", "source_id": "limits", "title": "Limits", "version": 2}
+    evidence = [
+        {"id": current, "body": "Current text.", "relations": []},
+        {
+            "id": legacy,
+            "body": "Legacy text.",
+            "relations": [
+                {**relation, "relation": "superseded_by", "evidence_id": current},
+                {**relation, "relation": "see_also", "evidence_id": current},
+                {**relation, "relation": "conflicts_with", "evidence_id": None},
+            ],
+        },
+    ]
+    context = json.loads(build_messages(TICKET, "", evidence)[1]["content"])["evidence"]
+    assert "relations" not in context[0]
+    assert context[1]["relations"] == [{"relation": "superseded_by", "source_id": current}]
