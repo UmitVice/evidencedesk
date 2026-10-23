@@ -32,7 +32,7 @@ A LoRA adapter that teaches Gemma 4 12B the EvidenceDesk answer contract:
 
 The base is Google's QAT checkpoint, so the merged model stays accurate at 4-bit.
 
-- Demo: [UmitVice/evidencedesk Space](https://huggingface.co/spaces/UmitVice/evidencedesk) (free ZeroGPU)
+- Demo: [UmitVice/evidencedesk Space](https://huggingface.co/spaces/UmitVice/evidencedesk) (recorded runs with cited evidence)
 - Merged 4-bit GGUF for llama.cpp, Ollama, LM Studio: [UmitVice/evidencedesk-gemma-4-12b-GGUF](https://huggingface.co/UmitVice/evidencedesk-gemma-4-12b-GGUF)
 - Training data: [UmitVice/evidencedesk-grounded-support](https://huggingface.co/datasets/UmitVice/evidencedesk-grounded-support)
 - Code, prompt, validators, and evaluation: [github.com/UmitVice/evidencedesk](https://github.com/UmitVice/evidencedesk)
@@ -101,4 +101,5 @@ question, evidence) and `apply_chat_template(..., add_generation_prompt=True)`.
 - A valid citation does not prove the answer is semantically correct.
 - The two RelayNest "compare current with legacy" cases still fail.
 - The model is tuned for the EvidenceDesk prompt and schema; it is not a general chat model.
+- Proposed notes for Turkish tickets can come out in English.
 - A human approves every proposed note before anything is saved.

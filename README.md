@@ -4,7 +4,7 @@
 
 EvidenceDesk is a support copilot for the fictional SaaS product RelayNest. It retrieves authorized product documentation, returns structured claims with original excerpts, and proposes an internal ticket note. Only an explicit human decision can save that note.
 
-[Free demo on Hugging Face (ZeroGPU)](https://huggingface.co/spaces/UmitVice/evidencedesk) · [Fine-tuned model](https://huggingface.co/UmitVice/evidencedesk-gemma-4-12b-lora) · [GGUF](https://huggingface.co/UmitVice/evidencedesk-gemma-4-12b-GGUF) · [Training data](https://huggingface.co/datasets/UmitVice/evidencedesk-grounded-support) · [Model comparison](reports/model-comparison.md)
+[Recorded demo on Hugging Face](https://huggingface.co/spaces/UmitVice/evidencedesk) · [Fine-tuned model](https://huggingface.co/UmitVice/evidencedesk-gemma-4-12b-lora) · [GGUF](https://huggingface.co/UmitVice/evidencedesk-gemma-4-12b-GGUF) · [Training data](https://huggingface.co/datasets/UmitVice/evidencedesk-grounded-support) · [Model comparison](reports/model-comparison.md)
 
 Previous Vercel deployment: [web](https://evidencedesk-web.vercel.app) · [evaluation record](https://evidencedesk-web.vercel.app/evaluations)
 
@@ -139,7 +139,7 @@ The voice pipeline includes an automated low-latency eval framework ([`apps/api/
 
 ## Deployment and limitations
 
-**Hugging Face (free).** `scripts/deploy_space.py` publishes a ZeroGPU Gradio Space that runs this Python package with PostgreSQL + pgvector from `pgserver`, bge-small embeddings on CPU (`EMBEDDING_PROVIDER=local`), and the fine-tuned Gemma 4 12B on a shared GPU slice; each visitor uses their own daily GPU quota and sandbox data resets on restart.
+**Hugging Face.** Free accounts can only host static Spaces, so the public demo is a static page of real runs recorded by `scripts/record_demo.py` through the production retrieval, prompt, and validators (`scripts/publish_hf.py`). With PRO or a community GPU grant, `scripts/deploy_space.py` publishes the interactive ZeroGPU Gradio Space, which runs this Python package with PostgreSQL + pgvector from `pgserver`, bge-small embeddings on CPU (`EMBEDDING_PROVIDER=local`), and the fine-tuned Gemma 4 12B on a shared GPU slice; each visitor uses their own daily GPU quota and sandbox data resets on restart.
 
 **Vercel.** Use two Vercel Hobby projects, isolated Neon Free PostgreSQL/pgvector projects, and Cloudflare Workers AI Free. No paid services, email, CRM writes, registration, training, or GPUs. [Deployment instructions](docs/deployment.md) explain environment pairing, least-privilege runtime credentials, pooler settings, provider smoke, and exact remaining setup. [Verified versions](docs/versions.md) record runtime differences and compatibility findings.
 

@@ -20,6 +20,7 @@ from huggingface_hub import HfApi
 ROOT = Path(__file__).resolve().parents[1]
 ML = ROOT / "ml"
 CARDS = ML / "cards"
+STATIC = ROOT / "deploy" / "hf-static"
 DATASET = "evidencedesk-grounded-support"
 MODEL = "evidencedesk-gemma-4-12b-lora"
 GGUF = "evidencedesk-gemma-4-12b-GGUF"
@@ -63,6 +64,12 @@ def main() -> None:
     parser.add_argument("--checkpoint", default="v4")
     parser.add_argument("--skip-gguf", action="store_true")
     parser.add_argument("--skip-space", action="store_true")
+    parser.add_argument("--skip-dataset", action="store_true")
+    parser.add_argument("--skip-model", action="store_true")
+    parser.add_argument(
+        "--space-mode", choices=["static", "zerogpu"], default="static",
+        help="Free accounts can only host static Spaces; zerogpu needs PRO or a GPU grant",
+    )
     args = parser.parse_args()
 
     api = HfApi()
@@ -72,19 +79,21 @@ def main() -> None:
     )
 
     with tempfile.TemporaryDirectory() as tmp:
-        staged = Path(tmp) / "dataset"
-        stage_dataset(staged)
-        api.create_repo(dataset_id, repo_type="dataset", exist_ok=True)
-        api.upload_folder(repo_id=dataset_id, repo_type="dataset", folder_path=str(staged),
-                          commit_message="Publish EvidenceDesk grounded-support SFT data")
-        print("dataset:", f"https://huggingface.co/datasets/{dataset_id}")
+        if not args.skip_dataset:
+            staged = Path(tmp) / "dataset"
+            stage_dataset(staged)
+            api.create_repo(dataset_id, repo_type="dataset", exist_ok=True)
+            api.upload_folder(repo_id=dataset_id, repo_type="dataset", folder_path=str(staged),
+                              commit_message="Publish EvidenceDesk grounded-support SFT data")
+            print("dataset:", f"https://huggingface.co/datasets/{dataset_id}")
 
-        staged = Path(tmp) / "model"
-        stage_model(staged, args.checkpoint)
-        api.create_repo(model_id, exist_ok=True)
-        api.upload_folder(repo_id=model_id, folder_path=str(staged),
-                          commit_message=f"Publish LoRA checkpoint {args.checkpoint}")
-        print("model:", f"https://huggingface.co/{model_id}")
+        if not args.skip_model:
+            staged = Path(tmp) / "model"
+            stage_model(staged, args.checkpoint)
+            api.create_repo(model_id, exist_ok=True)
+            api.upload_folder(repo_id=model_id, folder_path=str(staged),
+                              commit_message=f"Publish LoRA checkpoint {args.checkpoint}")
+            print("model:", f"https://huggingface.co/{model_id}")
 
         if not args.skip_gguf:
             staged = Path(tmp) / "gguf"
@@ -100,7 +109,12 @@ def main() -> None:
             )
             print("gguf:", f"https://huggingface.co/{gguf_id}")
 
-    if not args.skip_space:
+    if not args.skip_space and args.space_mode == "static":
+        api.create_repo(space_id, repo_type="space", space_sdk="static", exist_ok=True)
+        api.upload_folder(repo_id=space_id, repo_type="space", folder_path=str(STATIC),
+                          commit_message="Publish recorded EvidenceDesk runs")
+        print("space:", f"https://huggingface.co/spaces/{space_id}")
+    elif not args.skip_space:
         subprocess.run(
             [sys.executable, str(ROOT / "scripts" / "deploy_space.py"), "--repo", space_id,
              "--adapter-repo", model_id],
