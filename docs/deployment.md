@@ -2,11 +2,11 @@
 
 ## Existing resources
 
-Reuse public GitHub `UmitVice/evidencedesk`, Vercel Hobby projects `evidencedesk-web` (root `apps/web`) and `evidencedesk-api` (root `apps/api`). Both have Git integration, master as Production, and Ohio `cle1` functions. Keep dev previews protected and paired only with the dev API.
+Reuse public GitHub `UmitVice/evidencedesk`, Vercel Hobby projects `evidencedesk-web` (root `apps/web`) and `evidencedesk-api` (root `apps/api`). Both have Git integration, master as Production, and Ohio `cle1` functions. Only master builds: `ignoreCommand` in each `vercel.json` skips every other branch, so there are no dev or preview deployments.
 
 The account is `umitvice@gmail.com`. EvidenceDesk uses the separate console-managed Neon Free organization `org-divine-wind-27513562`, name `EvidenceDesk`. Production project: `flat-frost-26354813` (`evidencedesk-production`). Development project: `cold-mode-47834829` (`evidencedesk-dev`). Both are AWS Ohio, PostgreSQL 17.11, pgvector 0.8.0, fixed 0.25 CU, with automatic idle suspension. Never add these databases to the existing Vercel-managed Neon Launch installation or change that installation's billing plan.
 
-Production: https://evidencedesk-web.vercel.app and https://evidencedesk-api.vercel.app. Development: https://evidencedesk-web-git-dev-umitvices-projects.vercel.app and https://evidencedesk-api-git-dev-umitvices-projects.vercel.app. Keep development and production data/credentials separate.
+Production: https://evidencedesk-web.vercel.app and https://evidencedesk-api.vercel.app. The former dev deployments and the `evidencedesk-dev` Neon project are retired; testing happens locally.
 
 ## Credentials and database
 
@@ -22,7 +22,7 @@ Former Supabase sources `xjizbcmayuojydvwykfu` and `vgeyikjybphzrrarcwaj` are ma
 
 API server-only: DATABASE_URL, SERVICE_KEY, ENVIRONMENT, AI_MODE, AI_ENABLED, CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_API_TOKEN, and the existing voice-provider configuration. Production uses `production` / `live`; dev uses `development` / `live` with branch-specific Preview values. This migration changes only each environment's DATABASE_URL. Missing configuration remains a clear error, not a fallback.
 
-Web server-only: API_ORIGIN, matching SERVICE_KEY, APP_ORIGIN. Production origins use the public aliases above. The dev branch uses its exact stable web alias for Origin checks. Task previews use their own VERCEL_URL. The protected dev API uses its existing automation bypass credential through the explicit dev-only server variable `API_PROTECTION_BYPASS_SECRET`. Do not use the platform's web-project `VERCEL_AUTOMATION_BYPASS_SECRET` as the upstream API credential. Never disable deployment protection globally or introduce NEXT_PUBLIC secrets.
+Web server-only: API_ORIGIN, matching SERVICE_KEY, APP_ORIGIN. Production origins use the public aliases above. `API_PROTECTION_BYPASS_SECRET` is only needed if a protected API is ever deployed again; production does not use it. Do not use the platform's web-project `VERCEL_AUTOMATION_BYPASS_SECRET` as the upstream API credential. Never disable deployment protection globally or introduce NEXT_PUBLIC secrets.
 
 After changing scoped values, redeploy. Verify actual Git SHA, aliases, function region, BFF session creation, real retrieval/generation, citations, note decisions, and persistence. Keep production and preview service credentials distinct. A READY result alone does not prove the application is functional. The Python deployment includes its tokenizer/public CA assets and certifi dependency; it excludes private files and migration tooling. The web build requires no cloud credentials.
 
@@ -36,8 +36,18 @@ The account's shared free allowance is 10,000 Neurons/day. Application limits ar
 
 ## Development and release
 
-The isolated Neon development and production projects each contain the original five migrations, separate restricted runtime credentials, and 24 real BGE chunks. API database secrets are scoped to their own environment; dev never receives production credentials/state. Other task previews receive neither development database access nor the dev-only API automation secret.
+There is one permanent branch, master, and it is production. For each task:
 
-For each task: inspect Git state and reconcile divergence safely. When master/dev are synchronized, create one work branch from master. Use incremental English Conventional Commits and scan staged content before each commit and publication. Merge/push to dev, verify CI and the paired dev deployments, then fast-forward master and verify production. Keep the work branch locally and remotely. Never force push, discard unrelated work, move existing tags, or delete deployment history.
+1. Inspect Git state, then create one work branch from master.
+2. Commit incrementally with English Conventional Commits, scanning staged content before each commit and publication.
+3. Verify locally:
+   - lint, type checks, unit tests, and real PostgreSQL integration tests. Run `uv run --python 3.12 --with pgserver==0.1.4 scripts/local-pgserver.py` when Docker is not available;
+   - the web build and browser checks against the local app;
+   - when generation or retrieval changes, a live evaluation on a local `evidencedesk_eval*` database.
+4. Before merging code that needs them, run the pending checksum-verified migrations and live ingestion against production from the trusted local maintenance configuration. Use `--allow-production` and the provider smoke receipt.
+5. Merge into master and push. Vercel then deploys production; no other branch builds.
+6. Verify production: Git SHA, aliases, region, health, a real analysis with citations, a note decision, and persistence.
 
-The bounded hosted browser check in `playwright.hosted.config.ts` uses exactly two explicit live analyses per run, with no retries. Set `HOSTED_URL` to the existing dev or production web origin and run `npx playwright test --config playwright.hosted.config.ts`. For protected dev, `HOSTED_AUTH_FILE` may point to an ignored mode-0600 JSON file with `origin` and existing automation `headers`; the test scopes headers to that exact origin, never page JavaScript or URLs. Traces/videos are disabled to avoid recording access credentials. Check existing daily capacity first; never change quota counters or deployment protection. This is functional verification, not a new model-quality evaluation.
+Keep the work branch locally and remotely. Never force push, discard unrelated work, move existing tags, or delete deployment history.
+
+The bounded hosted browser check in `playwright.hosted.config.ts` uses exactly two explicit live analyses per run, with no retries. Set `HOSTED_URL` to the production web origin and run `npx playwright test --config playwright.hosted.config.ts`. For protected dev, `HOSTED_AUTH_FILE` may point to an ignored mode-0600 JSON file with `origin` and existing automation `headers`; the test scopes headers to that exact origin, never page JavaScript or URLs. Traces/videos are disabled to avoid recording access credentials. Check existing daily capacity first; never change quota counters or deployment protection. This is functional verification, not a new model-quality evaluation.

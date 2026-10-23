@@ -2,7 +2,7 @@
 
 - Build only the three-page support copilot and bounded Python RAG workflow. English everywhere.
 - Follow `docs/implementation.md` and inspect Git state before resuming. Preserve unrelated work.
-- Permanent branches: master and dev. Create one work branch from master when dev/master are synchronized; inspect and reconcile divergence without discarding work. Make incremental commits, merge/push to dev and verify tests/deployment before promoting to master and verifying production. Keep the work branch locally and remotely. No parallel writers, force pushes, or fabricated results.
+- One permanent branch: master, which is production. There is no dev branch and no dev or preview deployment; Vercel builds only master. Create one work branch from master, make incremental commits, and verify everything locally (real PostgreSQL via `scripts/local-pgserver.py`, local or live model evaluation, browser checks against the local app). Then merge into master, which deploys production, and verify production. Run pending migrations and corpus ingestion against production before merging code that needs them. Keep the work branch locally and remotely. No parallel writers, force pushes, or fabricated results.
 - Use Conventional Commits. Inspect staged files and scan secrets before commits and publication.
 - Keep credentials server-only. Authorize every record by session and tenant. Model output cannot execute mutations.
 - Approvals apply immutable persisted content in a short, concurrency-safe database transaction. No database transaction during provider calls.

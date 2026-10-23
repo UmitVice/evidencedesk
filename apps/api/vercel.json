@@ -8,5 +8,6 @@
   },
   "regions": [
     "cle1"
-  ]
+  ],
+  "ignoreCommand": "[ \"$VERCEL_GIT_COMMIT_REF\" != \"master\" ]"
 }
