@@ -15,7 +15,6 @@ import shutil
 from pathlib import Path
 
 import mlx.core as mx
-from safetensors import safe_open
 
 MLX_PREFIX = "language_model.model."
 HF_PREFIX = "model.language_model."
@@ -91,20 +90,21 @@ def fuse(adapter_dir: Path, base_dir: Path, out: Path, shard_bytes: int = 4 << 3
         shard, size, index = {}, 0, index + 1
 
     for source in sources:
-        with safe_open(str(source), framework="mlx") as handle:
-            for key in handle.keys():
-                tensor = handle.get_tensor(key)
-                module = key.removesuffix(".weight")
-                if key.endswith(".weight") and module in modules:
-                    a, b = modules[module]
-                    delta = (scale * (a.astype(mx.float32) @ b.astype(mx.float32))).T
-                    tensor = (tensor.astype(mx.float32) + delta).astype(tensor.dtype)
-                    fused += 1
-                mx.eval(tensor)
-                shard[key] = tensor
-                size += tensor.nbytes
-                if size >= shard_bytes:
-                    flush()
+        # mx.load maps safetensors lazily and, unlike safe_open, understands bfloat16.
+        weights = mx.load(str(source))
+        for key in list(weights):
+            tensor = weights.pop(key)
+            module = key.removesuffix(".weight")
+            if key.endswith(".weight") and module in modules:
+                a, b = modules[module]
+                delta = (scale * (a.astype(mx.float32) @ b.astype(mx.float32))).T
+                tensor = (tensor.astype(mx.float32) + delta).astype(tensor.dtype)
+                fused += 1
+            mx.eval(tensor)
+            shard[key] = tensor
+            size += tensor.nbytes
+            if size >= shard_bytes:
+                flush()
     flush()
     if fused != len(modules):
         raise ValueError(f"Fused {fused} of {len(modules)} adapter modules")
