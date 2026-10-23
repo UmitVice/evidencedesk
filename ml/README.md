@@ -16,7 +16,7 @@ synthetic help centers ──► tickets ──► BM25 context ──► teache
 student (Gemma 4 12B QAT, MLX 4-bit) ◄── LoRA r16, answer-only loss ────────┘
    │
    ├─► PEFT adapter ─► ZeroGPU Space (transformers, bf16 QAT base)
-   └─► LoRA GGUF / merged GGUF ─► llama.cpp ─► EvidenceDesk API (OpenAI-compatible provider)
+   └─► merge into QAT bf16 ─► GGUF ─► Q4_0 ─► llama.cpp ─► EvidenceDesk API
 ```
 
 ## Why these choices
@@ -51,18 +51,26 @@ PYTHONPATH=ml apps/api/.venv/bin/python -m evidencedesk_ml.dataset all --teacher
 uv run --project ml mlx_lm.convert --hf-path ~/models/gemma-4-12b-it-qat-unquantized \
   --mlx-path ~/models/gemma-4-12b-it-qat-mlx-q4 -q --q-bits 4 --q-group-size 32
 
-# 4. Train
+# 4. Train (1 epoch; validation loss plateaued after epoch 1 in the first run)
 uv run --project ml python -m evidencedesk_ml.train_mlx --base ~/models/gemma-4-12b-it-qat-mlx-q4 \
-  --data ml/data/sft --out ml/artifacts/lora
+  --data ml/data/sft --out ml/artifacts/lora --epochs 1 --max-seq-length 4096
 
-# 5. Export for transformers (PEFT) and llama.cpp (LoRA GGUF)
+# 5. Export: PEFT for transformers, and a merged Q4_0 GGUF for llama.cpp
 uv run --project ml python -m evidencedesk_ml.export_adapter peft --adapter ml/artifacts/lora --out ml/artifacts/peft
-python ~/src/llama.cpp/convert_lora_to_gguf.py ml/artifacts/peft --base ~/models/gemma-4-12b-it-qat-unquantized \
-  --outfile ml/artifacts/evidencedesk-lora-f16.gguf
+uv run --project ml python -m evidencedesk_ml.export_adapter fuse --adapter ml/artifacts/lora \
+  --base-dir ~/models/gemma-4-12b-it-qat-unquantized --out ml/artifacts/fused
+python ml/scripts/convert_gemma4_gguf.py ~/src/llama.cpp ml/artifacts/fused --outfile fused-bf16.gguf --outtype bf16
+llama-quantize fused-bf16.gguf ml/artifacts/evidencedesk-gemma-4-12b-Q4_0.gguf Q4_0
 
 # 6. Serve and evaluate
-llama-server -m gemma-4-12B-it-qat-UD-Q4_K_XL.gguf --lora ml/artifacts/evidencedesk-lora-f16.gguf --port 8080 --jinja --cache-ram 0
+llama-server -m ml/artifacts/evidencedesk-gemma-4-12b-Q4_0.gguf --port 8080 --jinja --cache-ram 0
+PYTHONPATH=ml apps/api/.venv/bin/python -m evidencedesk_ml.eval_heldout --model local --out reports/heldout/run.json
 ```
+
+Do not apply the adapter as a runtime LoRA on a different 4-bit quant (for example Unsloth's
+UD-Q4_K_XL): it was trained against MLX 4-bit weights of the QAT checkpoint, and on another
+quant it switched to prose answers. Merging into bf16 and quantizing to Q4_0 matches what QAT
+was trained for. See [the comparison report](../reports/model-comparison.md).
 
 Run the API against it with `GENERATION_PROVIDER=openai_compatible` and
 `GENERATION_BASE_URL=http://127.0.0.1:8080/v1` (see `.env.example`). `train_unsloth.py` holds
