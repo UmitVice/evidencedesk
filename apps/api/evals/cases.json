@@ -332,6 +332,106 @@
     "relevant_documents": []
   },
   {
+    "id": "credential-expiry-chain-1",
+    "group": "credential-expiry-chain",
+    "category": "obsolete_document",
+    "split": "development",
+    "question": "Can an owner extend an API credential expiry by 30 days?",
+    "sample": "credential",
+    "expected_status": "answered",
+    "relevant_documents": [
+      "credential-expiry"
+    ]
+  },
+  {
+    "id": "credential-expiry-chain-2",
+    "group": "credential-expiry-chain",
+    "category": "obsolete_document",
+    "split": "development",
+    "question": "Do new API credentials still last 365 days?",
+    "sample": "credential",
+    "expected_status": "answered",
+    "relevant_documents": [
+      "credential-expiry"
+    ]
+  },
+  {
+    "id": "sandbox-cap-conflict-1",
+    "group": "sandbox-cap-conflict",
+    "category": "conflicting_policy",
+    "split": "development",
+    "question": "What is the daily sandbox webhook delivery cap?",
+    "sample": "webhook",
+    "expected_status": "insufficient_evidence",
+    "relevant_documents": [
+      "sandbox-delivery-cap",
+      "sandbox-plan-notes"
+    ]
+  },
+  {
+    "id": "sandbox-cap-conflict-2",
+    "group": "sandbox-cap-conflict",
+    "category": "conflicting_policy",
+    "split": "development",
+    "question": "How many test events can a sandbox workspace send per day?",
+    "sample": "webhook",
+    "expected_status": "insufficient_evidence",
+    "relevant_documents": [
+      "sandbox-delivery-cap",
+      "sandbox-plan-notes"
+    ]
+  },
+  {
+    "id": "export-link-chain-1",
+    "group": "export-link-chain",
+    "category": "obsolete_document",
+    "split": "holdout",
+    "question": "Are export download links still valid for seven days?",
+    "sample": "export",
+    "expected_status": "answered",
+    "relevant_documents": [
+      "export-links"
+    ]
+  },
+  {
+    "id": "export-link-chain-2",
+    "group": "export-link-chain",
+    "category": "obsolete_document",
+    "split": "holdout",
+    "question": "Does reopening a completed export reuse the original download link?",
+    "sample": "export",
+    "expected_status": "answered",
+    "relevant_documents": [
+      "export-links"
+    ]
+  },
+  {
+    "id": "replay-retention-1",
+    "group": "replay-retention",
+    "category": "cross_document",
+    "split": "holdout",
+    "question": "Can we replay a webhook delivery from 45 days ago?",
+    "sample": "webhook",
+    "expected_status": "answered",
+    "relevant_documents": [
+      "delivery-replay",
+      "event-retention"
+    ]
+  },
+  {
+    "id": "replay-retention-2",
+    "group": "replay-retention",
+    "category": "cross_document",
+    "split": "holdout",
+    "question": "How old can an event be and still be replayed manually?",
+    "sample": "webhook",
+    "expected_status": "answered",
+    "relevant_documents": [
+      "delivery-replay",
+      "event-retention"
+    ]
+  },
+  {
     "id": "malformed-json-1",
     "group": "malformed-json",
     "category": "malformed_provider",

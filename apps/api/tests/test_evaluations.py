@@ -13,8 +13,8 @@ from evidencedesk.quotas import reserve
 
 def test_dataset_split_integrity():
     cases = json.loads(DATASET.read_text())
-    assert len(cases) == 40
-    assert Counter(c["split"] for c in cases) == {"development": 24, "holdout": 16}
+    assert len(cases) == 48
+    assert Counter(c["split"] for c in cases) == {"development": 28, "holdout": 20}
     groups = {}
     for case in cases:
         groups.setdefault(case["group"], set()).add(case["split"])

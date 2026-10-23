@@ -217,7 +217,7 @@ def run_evaluation(mode: str, split: str, limit: int) -> dict[str, Any]:
             "Offline reports measure fixture retrieval only; "
             "generation integrity is covered by tests.",
             "Control scenarios require separate real-database engineering tests.",
-            "Forty scenarios are a compact regression corpus, not a market benchmark.",
+            "Forty-eight scenarios are a compact regression corpus, not a market benchmark.",
         ],
     }
 
@@ -332,7 +332,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--mode", choices=["offline", "live"], default="offline")
     parser.add_argument("--split", choices=["development", "holdout", "all"], default="development")
-    parser.add_argument("--limit", type=int, choices=range(1, 41), default=10)
+    parser.add_argument("--limit", type=int, choices=range(1, 49), default=10)
     parser.add_argument(
         "--name", default=None, help="Report file stem, for example compare-gemma-finetuned"
     )
