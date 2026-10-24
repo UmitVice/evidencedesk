@@ -2,7 +2,7 @@
 
 ## Existing resources
 
-Reuse public GitHub `UmitVice/evidencedesk`. The web BFF is the Netlify Free site `evidencedesk-web` (workspace `apps/web`, config `apps/web/netlify.toml`), published from a local master checkout with `npx netlify-cli deploy --build --prod --filter @evidencedesk/web`. The API is the Render Free web service `evidencedesk-api` in Ohio (blueprint `render.yaml`, root `apps/api`), built from master. Free Render instances sleep after 15 idle minutes, so the first request afterwards waits for a cold start. There are no dev or preview deployments. The former Vercel projects only redirect their `*.vercel.app` aliases to the domains below.
+Reuse public GitHub `UmitVice/evidencedesk`. The web BFF is the Netlify Free site `evidencedesk-web` (workspace `apps/web`, config `apps/web/netlify.toml`), published from a local master checkout with `npx netlify-cli deploy --build --prod --filter @evidencedesk/web`. The API is the Render Free web service `evidencedesk-api` in Ohio (blueprint `render.yaml`, root `apps/api`), deployed from master on demand. Free Render instances sleep after 15 idle minutes, so the first request afterwards waits for a cold start. There are no dev or preview deployments. The former Vercel projects only redirect their `*.vercel.app` aliases to the domains below.
 
 The account is `umitvice@gmail.com`. EvidenceDesk uses the separate console-managed Neon Free organization `org-divine-wind-27513562`, name `EvidenceDesk`. Production project: `flat-frost-26354813` (`evidencedesk-production`). Development project: `cold-mode-47834829` (`evidencedesk-dev`). Both are AWS Ohio, PostgreSQL 17.11, pgvector 0.8.0, fixed 0.25 CU, with automatic idle suspension. Never add these databases to the existing Vercel-managed Neon Launch installation or change that installation's billing plan.
 
@@ -45,7 +45,7 @@ There is one permanent branch, master, and it is production. For each task:
    - the web build and browser checks against the local app;
    - when generation or retrieval changes, a live evaluation on a local `evidencedesk_eval*` database.
 4. Before merging code that needs them, run the pending checksum-verified migrations and live ingestion against production from the trusted local maintenance configuration. Use `--allow-production` and the provider smoke receipt.
-5. Merge into master and push. Render then deploys the API; publish the web from master with the Netlify command above.
+5. Merge into master and push. Deploy the API with `render deploys create srv-dbehconavr4c73aucb8g` (the service uses the public repository URL, so pushes do not deploy it), then publish the web from master with the Netlify command above.
 6. Verify production: Git SHA, aliases, region, health, a real analysis with citations, a note decision, and persistence.
 
 Keep the work branch locally and remotely. Never force push, discard unrelated work, move existing tags, or delete deployment history.
