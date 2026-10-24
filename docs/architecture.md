@@ -122,4 +122,4 @@ The evaluation engine ([`apps/api/evidencedesk/voice/evals.py`](../apps/api/evid
 
 ## Economical deployment
 
-Two Vercel projects, one Python app, one Next.js BFF, one database per available environment, and one AI provider. No queue, Redis, hosted LangGraph service, external tracing account, browser Supabase client or auth product. LangGraph pulls several libraries transitively (including LangSmith/SDK packages); this app does not use those hosted services or tracing credentials.
+A Netlify site and a Render web service, one Python app, one Next.js BFF, one database per available environment, and one AI provider. No queue, Redis, hosted LangGraph service, external tracing account, browser Supabase client or auth product. LangGraph pulls several libraries transitively (including LangSmith/SDK packages); this app does not use those hosted services or tracing credentials.

@@ -6,7 +6,7 @@ EvidenceDesk is a support copilot for the fictional SaaS product RelayNest. It r
 
 [Recorded demo on Hugging Face](https://huggingface.co/spaces/UmitVice/evidencedesk) · [Fine-tuned model](https://huggingface.co/UmitVice/evidencedesk-gemma-4-12b-lora) · [GGUF](https://huggingface.co/UmitVice/evidencedesk-gemma-4-12b-GGUF) · [Training data](https://huggingface.co/datasets/UmitVice/evidencedesk-grounded-support) · [Model comparison](reports/model-comparison.md)
 
-Previous Vercel deployment: [web](https://evidencedesk-web.vercel.app) · [evaluation record](https://evidencedesk-web.vercel.app/evaluations)
+Live demo: [web](https://evidencedesk.umitvice.com) · [evaluation record](https://evidencedesk.umitvice.com/evaluations)
 
 ![Ticket-first sample cases](docs/screenshots/landing-1440.png)
 
@@ -134,16 +134,16 @@ The voice pipeline includes an automated low-latency eval framework ([`apps/api/
 | Distillation and fine-tuning | [teacher data pipeline](ml/evidencedesk_ml/dataset.py), [MLX LoRA training](ml/evidencedesk_ml/train_mlx.py), [adapter export and merge](ml/evidencedesk_ml/export_adapter.py), [held-out eval](ml/evidencedesk_ml/eval_heldout.py) |
 | Self-hosted generation | [OpenAI-compatible provider, constrained decoding, fallback](apps/api/evidencedesk/providers.py), [provider tests](apps/api/tests/test_providers.py) |
 | Free model hosting | [ZeroGPU Space](deploy/hf-space/app.py), [deploy](scripts/deploy_space.py) and [publish](scripts/publish_hf.py) scripts |
-| Cloud deployment and CI/CD | [GitHub Actions](.github/workflows/ci.yml), [Vercel/Neon runbook](docs/deployment.md) |
+| Cloud deployment and CI/CD | [GitHub Actions](.github/workflows/ci.yml), [Netlify/Render/Neon runbook](docs/deployment.md) |
 | Full-stack behavior | [BFF](apps/web/app/api/[...path]/route.ts), [browser tests](tests/browser/workspace.spec.ts) |
 
 ## Deployment and limitations
 
 **Hugging Face.** Free accounts can only host static Spaces, so the public demo is a static page of real runs recorded by `scripts/record_demo.py` through the production retrieval, prompt, and validators (`scripts/publish_hf.py`). With PRO or a community GPU grant, `scripts/deploy_space.py` publishes the interactive ZeroGPU Gradio Space, which runs this Python package with PostgreSQL + pgvector from `pgserver`, bge-small embeddings on CPU (`EMBEDDING_PROVIDER=local`), and the fine-tuned Gemma 4 12B on a shared GPU slice; each visitor uses their own daily GPU quota and sandbox data resets on restart.
 
-**Vercel.** Use two Vercel Hobby projects, isolated Neon Free PostgreSQL/pgvector projects, and Cloudflare Workers AI Free. No paid services, email, CRM writes, registration, training, or GPUs. [Deployment instructions](docs/deployment.md) explain environment pairing, least-privilege runtime credentials, pooler settings, provider smoke, and exact remaining setup. [Verified versions](docs/versions.md) record runtime differences and compatibility findings.
+**Netlify and Render.** The Next.js BFF runs on Netlify Free and the FastAPI service on Render Free, with isolated Neon Free PostgreSQL/pgvector projects, and Cloudflare Workers AI Free. No paid services, email, CRM writes, registration, training, or GPUs. [Deployment instructions](docs/deployment.md) explain environment pairing, least-privilege runtime credentials, pooler settings, provider smoke, and exact remaining setup. [Verified versions](docs/versions.md) record runtime differences and compatibility findings.
 
-Citation integrity is not semantic correctness. Prompt injection cannot grant tools, but a plausible inaccurate answer remains possible and requires review. Expired or changed tickets need regeneration. Interrupted analysis does not resume at an arbitrary graph node. Live failures never become simulated successes. A missing database leaves the case descriptions and evaluation record available and reports session creation as unavailable. There is no dev deployment: only master builds on Vercel, and changes are verified locally (including real PostgreSQL via `scripts/local-pgserver.py`) before release. Free services have quotas; Neon sleeps while idle and wakes automatically on connection. See the [migration and verification record](docs/neon-migration.md). Cleanup is a bounded explicit command: `npm run db:cleanup`.
+Citation integrity is not semantic correctness. Prompt injection cannot grant tools, but a plausible inaccurate answer remains possible and requires review. Expired or changed tickets need regeneration. Interrupted analysis does not resume at an arbitrary graph node. Live failures never become simulated successes. A missing database leaves the case descriptions and evaluation record available and reports session creation as unavailable. There is no dev deployment: only master is published, and changes are verified locally (including real PostgreSQL via `scripts/local-pgserver.py`) before release. Free services have quotas; the Render API and Neon sleep while idle and wakes automatically on connection. See the [migration and verification record](docs/neon-migration.md). Cleanup is a bounded explicit command: `npm run db:cleanup`.
 
 A [demo script](docs/demo-script.md) covers answer/source inspection, abstention, rejection, approval retries, and evaluation limitations. Screenshots are from the running local fixture app, verified at 375, 768, and 1440 px; no recording is claimed. [Before/after UX record](docs/ux-improvements.md) · [Mobile investigation](docs/screenshots/workspace-375.png) · [Claim-associated evidence](docs/screenshots/evidence-1440.png). Potential future work includes stronger semantic review and real identity integration, beyond this deliberately small scope.
 
