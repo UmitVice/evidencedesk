@@ -5,3 +5,10 @@
 
 [build.environment]
   NODE_VERSION = "24"
+
+# The custom domain is canonical; the BFF only accepts POSTs from APP_ORIGIN.
+[[redirects]]
+  from = "https://evidencedesk-web.netlify.app/*"
+  to = "https://evidencedesk.umitvice.com/:splat"
+  status = 301
+  force = true
