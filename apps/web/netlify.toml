@@ -1,0 +1,7 @@
+# Netlify builds this workspace from the repository root (npm workspaces).
+[build]
+  command = "npm run build"
+  publish = "apps/web/.next"
+
+[build.environment]
+  NODE_VERSION = "24"

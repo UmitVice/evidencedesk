@@ -1,0 +1,30 @@
+# Render Free web service for the FastAPI backend (apps/api). Free instances sleep
+# after 15 idle minutes; the first request afterwards waits for a cold start.
+# Python comes from apps/api/.python-version. Secret values live only in the
+# Render dashboard (sync: false).
+services:
+  - type: web
+    name: evidencedesk-api
+    runtime: python
+    plan: free
+    region: ohio
+    rootDir: apps/api
+    branch: master
+    buildCommand: pip install uv==0.11.21 && uv sync --frozen --no-dev
+    startCommand: .venv/bin/uvicorn main:app --host 0.0.0.0 --port $PORT --proxy-headers
+    healthCheckPath: /health
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: AI_MODE
+        value: live
+      - key: AI_ENABLED
+        value: "true"
+      - key: DATABASE_URL
+        sync: false
+      - key: SERVICE_KEY
+        sync: false
+      - key: CLOUDFLARE_ACCOUNT_ID
+        sync: false
+      - key: CLOUDFLARE_API_TOKEN
+        sync: false
