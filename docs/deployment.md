@@ -34,6 +34,25 @@ The support-v3 generation contract uses JSON-object mode and the schema in the s
 
 The account's shared free allowance is 10,000 Neurons/day. Application limits are two analyses/minute, ten daily attempts/session, forty/environment by default. Maintenance and retries reserve budget before calls. Stop on quota errors; do not reset counters or change identities to extend live evaluation. AI_ENABLED=false is the kill switch. Cleanup is a bounded explicit maintenance command, not keepalive traffic.
 
+## OpenAI generation (optional, paid)
+
+The always-on production path can generate with OpenAI GPT-6 Luna while retrieval stays unchanged: Cloudflare embeddings, pgvector, hybrid ranking, the same `support-v5` prompt, and the same schema/citation validators. This is the one deliberate exception to the free-services rule. It is paid per token from a prepaid OpenAI balance:
+
+- A dedicated OpenAI project (`evidence-desk`) holds the key and has a hard monthly spend limit of $5. Auto-reload stays off, so the balance is never topped up automatically.
+- At about 1,300 input and 100 output tokens per analysis, the forty-per-day environment cap bounds spend to cents per day.
+- Requests use strict structured outputs with an OpenAI-compatible schema (a single root object, source IDs limited to the retrieved passages) and `store: false`.
+- A 429 from the spend limit, a timeout, or an outage falls back to Cloudflare Llama 3.1 8B when `GENERATION_FALLBACK=true`. The answer badge and run trace name the model that actually answered.
+
+Add to the Render secret file `evidencedesk.env`, then redeploy:
+
+```sh
+GENERATION_PROVIDER=openai
+GENERATION_API_KEY=<key from the evidence-desk OpenAI project>
+GENERATION_FALLBACK=true
+```
+
+Leave `GENERATION_BASE_URL` and `GENERATION_MODEL` unset to use `https://api.openai.com/v1` and `gpt-6-luna`. Locally, `python3 scripts/enter-openai-key.py` stores the key in the ignored `.env` without echoing it. Setting `GENERATION_PROVIDER=cloudflare` returns to the free path.
+
 ## Development and release
 
 There is one permanent branch, master, and it is production. For each task:

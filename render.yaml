@@ -2,7 +2,8 @@
 # after 15 idle minutes; the first request afterwards waits for a cold start.
 # Python comes from apps/api/.python-version. Runtime configuration (DATABASE_URL,
 # SERVICE_KEY, ENVIRONMENT, AI_MODE, AI_ENABLED, CLOUDFLARE_ACCOUNT_ID,
-# CLOUDFLARE_API_TOKEN) lives only in the Render secret file evidencedesk.env.
+# CLOUDFLARE_API_TOKEN, and for OpenAI generation GENERATION_PROVIDER and
+# GENERATION_API_KEY) lives only in the Render secret file evidencedesk.env.
 services:
   - type: web
     name: evidencedesk-api

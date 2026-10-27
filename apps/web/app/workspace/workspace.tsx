@@ -43,6 +43,15 @@ async function api<T>(path: string, body?: unknown): Promise<T> {
     );
   return data as T;
 }
+// Readable names for the generation models a live run can report in its trace.
+function modelName(id: unknown): string | null {
+  if (typeof id !== "string" || !id || id === "fixture-v1") return null;
+  if (id.startsWith("gpt-6-luna")) return "OpenAI GPT-6 Luna";
+  if (id.startsWith("@cf/meta/llama-3.1-8b"))
+    return "Llama 3.1 8B · Cloudflare";
+  if (id.startsWith("evidencedesk-gemma")) return "Fine-tuned Gemma 4 12B";
+  return id.slice(0, 40);
+}
 function issueFor(error: unknown, operation: Operation): Issue {
   const code = error instanceof ApiError ? error.code : "connection_failed";
   if (operation === "source" && code === "connection_failed") {
@@ -479,9 +488,15 @@ export default function Workspace() {
                   AI suggestion
                 </h2>
                 {answerReady && (
-                  <span className="badge ai-badge">
+                  <span
+                    className="badge ai-badge"
+                    data-testid="generation-model"
+                  >
                     {run.mode === "live"
-                      ? "AI generated"
+                      ? Number(run.trace.attempts) > 0 &&
+                        modelName(run.trace.generation_model)
+                        ? `AI generated · ${modelName(run.trace.generation_model)}`
+                        : "AI generated"
                       : "Suggested resolution"}
                   </span>
                 )}

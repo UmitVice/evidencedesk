@@ -15,6 +15,10 @@ from evidencedesk.tokenization import check_embedding_input
 
 EMBEDDING_MODEL = "@cf/baai/bge-small-en-v1.5"
 GENERATION_MODEL = "@cf/meta/llama-3.1-8b-instruct-fast"
+OPENAI_MODEL = "gpt-6-luna"
+OPENAI_BASE_URL = "https://api.openai.com/v1"
+OPENAI_REASONING_EFFORT = "medium"
+OPENAI_MAX_COMPLETION_TOKENS = 4000
 LIVE_MANIFEST = {
     "model": EMBEDDING_MODEL,
     "dimension": 384,
@@ -167,6 +171,42 @@ def answer_json_schema(source_ids: list[str]) -> dict[str, Any]:
     }
 
 
+def openai_answer_schema(source_ids: list[str]) -> dict[str, Any]:
+    """`answer_json_schema` in the subset OpenAI strict mode accepts.
+
+    OpenAI rejects a root `anyOf` and `minLength`, so the two response shapes become one
+    object. The status/claims/note consistency rule is enforced by `Answer` validation.
+    """
+    citation = {
+        "type": "object",
+        "properties": {
+            "source_id": {"type": "string", "enum": source_ids},
+            "quote": {"type": "string"},
+        },
+        "required": ["source_id", "quote"],
+        "additionalProperties": False,
+    }
+    claim = {
+        "type": "object",
+        "properties": {
+            "text": {"type": "string"},
+            "citations": {"type": "array", "items": citation, "minItems": 1, "maxItems": 3},
+        },
+        "required": ["text", "citations"],
+        "additionalProperties": False,
+    }
+    return {
+        "type": "object",
+        "properties": {
+            "status": {"type": "string", "enum": ["answered", "insufficient_evidence"]},
+            "claims": {"type": "array", "items": claim, "maxItems": 4},
+            "proposed_note": {"type": ["string", "null"]},
+        },
+        "required": ["status", "claims", "proposed_note"],
+        "additionalProperties": False,
+    }
+
+
 def run_sync[T](coroutine: Coroutine[Any, Any, T]) -> T:
     """Run a coroutine from sync code, including code called inside a running event loop."""
     try:
@@ -206,8 +246,13 @@ def raise_if_truncated(usage: Any, finish_reason: Any = None) -> None:
     """A generation that hit the token cap is cut-off JSON; retry it instead of validating.
 
     Workers AI is not fully deterministic at temperature 0: a rare run repeats until the cap.
+    Hidden reasoning tokens (OpenAI) are not part of the answer and are not counted.
     """
     tokens = usage.get("completion_tokens") if isinstance(usage, dict) else None
+    details = usage.get("completion_tokens_details") if isinstance(usage, dict) else None
+    reasoning = details.get("reasoning_tokens") if isinstance(details, dict) else None
+    if isinstance(tokens, int) and isinstance(reasoning, int):
+        tokens -= reasoning
     if finish_reason == "length" or (isinstance(tokens, int) and tokens >= MAX_ANSWER_TOKENS):
         raise DomainError("generation_truncated", "The AI answer was cut off; retrying.", 503)
 
@@ -407,6 +452,8 @@ class OpenAICompatibleGenerator:
     asks the server for grammar-constrained decoding limited to the retrieved source IDs.
     """
 
+    label = "Self-hosted AI"
+
     def __init__(
         self,
         base_url: str,
@@ -446,11 +493,9 @@ class OpenAICompatibleGenerator:
     def model_id(self) -> str:
         return self.served_model or self.model or "openai-compatible"
 
-    def generate(
+    def request_payload(
         self, ticket: dict[str, Any], question: str, evidence: list[dict[str, Any]]
-    ) -> tuple[str, dict[str, Any] | None]:
-        if not settings().ai_enabled:
-            raise DomainError("ai_disabled", "AI analysis is temporarily disabled.", 503)
+    ) -> dict[str, Any]:
         payload: dict[str, Any] = {
             "model": self.model,
             "messages": build_messages(ticket, question, evidence),
@@ -473,6 +518,14 @@ class OpenAICompatibleGenerator:
             }
         else:
             payload["response_format"] = {"type": "json_object"}
+        return payload
+
+    def generate(
+        self, ticket: dict[str, Any], question: str, evidence: list[dict[str, Any]]
+    ) -> tuple[str, dict[str, Any] | None]:
+        if not settings().ai_enabled:
+            raise DomainError("ai_disabled", "AI analysis is temporarily disabled.", 503)
+        payload = self.request_payload(ticket, question, evidence)
         headers = {"Authorization": "Bearer " + self.api_key} if self.api_key else {}
         try:
             status, data = run_sync(
@@ -489,10 +542,10 @@ class OpenAICompatibleGenerator:
             if not isinstance(content, str) or not content.strip():
                 raise ValueError("Empty completion")
         except (TimeoutError, httpx.TimeoutException) as exc:
-            raise DomainError("provider_timeout", "Self-hosted AI timed out.", 504) from exc
+            raise DomainError("provider_timeout", f"{self.label} timed out.", 504) from exc
         except (ValueError, KeyError, IndexError, TypeError, httpx.HTTPError) as exc:
             raise DomainError(
-                "provider_invalid", "Self-hosted AI returned an unusable response.", 502
+                "provider_invalid", f"{self.label} returned an unusable response.", 502
             ) from exc
         served = data.get("model")
         if isinstance(served, str) and served:
@@ -500,6 +553,62 @@ class OpenAICompatibleGenerator:
         usage = data.get("usage")
         raise_if_truncated(usage, data["choices"][0].get("finish_reason"))
         return content, usage if isinstance(usage, dict) else None
+
+
+class OpenAIGenerator(OpenAICompatibleGenerator):
+    """Generator for the hosted OpenAI Chat Completions API (default model GPT-6 Luna).
+
+    Same prompt and validators as every other generator; only the request dialect differs:
+    strict structured outputs with the OpenAI schema subset, medium reasoning effort, a token
+    cap that leaves room for hidden reasoning, the model's default temperature (Luna rejects
+    0), and no llama.cpp chat-template switches, which OpenAI rejects.
+    """
+
+    label = "OpenAI"
+
+    def __init__(
+        self,
+        api_key: str,
+        model: str = OPENAI_MODEL,
+        base_url: str = OPENAI_BASE_URL,
+        timeout: float = 30,
+        transport: httpx.MockTransport | None = None,
+    ):
+        if not base_url.startswith("https://") or not api_key:
+            raise DomainError("provider_unavailable", "OpenAI is not configured.", 503)
+        super().__init__(base_url, model, api_key, timeout, True, False, transport)
+
+    @classmethod
+    def from_settings(cls) -> "OpenAIGenerator":
+        config = settings()
+        return cls(
+            config.generation_api_key.get_secret_value(),
+            config.generation_model or OPENAI_MODEL,
+            config.generation_base_url or OPENAI_BASE_URL,
+            config.generation_timeout_seconds,
+        )
+
+    def request_payload(
+        self, ticket: dict[str, Any], question: str, evidence: list[dict[str, Any]]
+    ) -> dict[str, Any]:
+        return {
+            "model": self.model,
+            "messages": build_messages(ticket, question, evidence),
+            # Reasoning tokens count toward this cap; `raise_if_truncated` still holds the
+            # visible answer to MAX_ANSWER_TOKENS.
+            "max_completion_tokens": OPENAI_MAX_COMPLETION_TOKENS,
+            "reasoning_effort": OPENAI_REASONING_EFFORT,
+            "stream": False,
+            "store": False,
+            "response_format": {
+                "type": "json_schema",
+                "json_schema": {
+                    "name": "evidencedesk_answer",
+                    "strict": True,
+                    "schema": openai_answer_schema([str(x["id"]) for x in evidence]),
+                },
+            },
+        }
 
 
 class FallbackGenerator:
@@ -566,8 +675,12 @@ def provider() -> Provider:
     if config.generation_provider == "cloudflare" and config.embedding_provider == "cloudflare":
         return cloudflare
     generator: Generator = cloudflare
-    if config.generation_provider == "openai_compatible":
-        primary = OpenAICompatibleGenerator.from_settings()
+    if config.generation_provider in ("openai", "openai_compatible"):
+        primary = (
+            OpenAIGenerator.from_settings()
+            if config.generation_provider == "openai"
+            else OpenAICompatibleGenerator.from_settings()
+        )
         generator = (
             FallbackGenerator(primary, cloudflare) if config.generation_fallback else primary
         )

@@ -13,8 +13,11 @@ from evidencedesk.providers import (
     FallbackGenerator,
     FixtureProvider,
     OpenAICompatibleGenerator,
+    OpenAIGenerator,
     answer_json_schema,
     build_messages,
+    openai_answer_schema,
+    provider,
     run_sync,
 )
 from evidencedesk.voice.gateway import _authenticate_ws
@@ -269,3 +272,111 @@ def test_fallback_covers_truncation():
     generator = FallbackGenerator(Failing("generation_truncated"), Fixed())
     generator.generate(TICKET, "", [SOURCE])
     assert generator.model_id == "fallback"
+
+
+def test_openai_generator_sends_strict_schema_without_llama_switches():
+    seen: dict = {}
+
+    def respond(request: httpx.Request) -> httpx.Response:
+        seen["url"] = str(request.url)
+        seen["auth"] = request.headers.get("authorization")
+        seen["body"] = json.loads(request.content)
+        return httpx.Response(
+            200, json={**completion(ANSWER.model_dump_json()), "model": "gpt-6-luna-2026-09-22"}
+        )
+
+    generator = OpenAIGenerator("sk-test", transport=httpx.MockTransport(respond))
+    raw, _ = generator.generate(TICKET, "", [SOURCE])
+
+    assert Answer.model_validate_json(raw) == ANSWER
+    assert generator.model_id == "gpt-6-luna-2026-09-22"
+    assert seen["url"] == "https://api.openai.com/v1/chat/completions"
+    assert seen["auth"] == "Bearer sk-test"
+    body = seen["body"]
+    assert body["model"] == "gpt-6-luna"
+    assert body["messages"] == build_messages(TICKET, "", [SOURCE])
+    assert body["max_completion_tokens"] == 4000
+    assert body["reasoning_effort"] == "medium"
+    assert body["store"] is False
+    # GPT-6 Luna only accepts the default temperature; llama.cpp switches are rejected too.
+    for rejected in ("max_tokens", "temperature", "chat_template_kwargs"):
+        assert rejected not in body
+    response_format = body["response_format"]
+    assert response_format["type"] == "json_schema"
+    assert response_format["json_schema"]["strict"] is True
+    assert response_format["json_schema"]["schema"] == openai_answer_schema([SOURCE["id"]])
+
+
+def test_openai_schema_uses_only_strict_mode_keywords():
+    allowed = {
+        "type", "properties", "required", "additionalProperties", "items", "enum",
+        "minItems", "maxItems",
+    }
+
+    def keys(node):
+        if isinstance(node, dict):
+            for key, value in node.items():
+                yield key
+                if key == "properties":
+                    for child in value.values():
+                        yield from keys(child)
+                elif key != "enum":
+                    yield from keys(value)
+
+    schema = openai_answer_schema(["a", "b"])
+    assert schema["type"] == "object"
+    assert set(keys(schema)) <= allowed
+    claim = schema["properties"]["claims"]["items"]
+    citation = claim["properties"]["citations"]["items"]
+    assert citation["properties"]["source_id"]["enum"] == ["a", "b"]
+
+
+def test_openai_generator_requires_https_and_a_key():
+    for args in [("",), ("sk-test", "gpt-6-luna", "http://api.openai.com/v1")]:
+        with pytest.raises(DomainError) as error:
+            OpenAIGenerator(*args)
+        assert error.value.code == "provider_unavailable"
+
+
+def test_openai_quota_errors_fall_back():
+    generator = OpenAIGenerator(
+        "sk-test", transport=httpx.MockTransport(lambda _: httpx.Response(429, text="limit"))
+    )
+    fallback = FallbackGenerator(generator, Fixed())
+    fallback.generate(TICKET, "", [SOURCE])
+    assert fallback.model_id == "fallback"
+
+
+def test_reasoning_tokens_do_not_count_as_truncation():
+    body = completion(ANSWER.model_dump_json())
+    body["usage"] = {
+        "completion_tokens": 900,
+        "completion_tokens_details": {"reasoning_tokens": 800},
+    }
+    body["choices"][0]["finish_reason"] = "stop"
+    generator = OpenAIGenerator(
+        "sk-test", transport=httpx.MockTransport(lambda _: httpx.Response(200, json=body))
+    )
+    raw, _ = generator.generate(TICKET, "", [SOURCE])
+    assert Answer.model_validate_json(raw) == ANSWER
+
+
+def test_openai_provider_is_selected_with_cloudflare_fallback(monkeypatch):
+    for name, value in {
+        "AI_MODE": "live",
+        "GENERATION_PROVIDER": "openai",
+        "GENERATION_API_KEY": "sk-test",
+        "GENERATION_BASE_URL": "",
+        "GENERATION_MODEL": "",
+        "GENERATION_FALLBACK": "true",
+    }.items():
+        monkeypatch.setenv(name, value)
+    settings.cache_clear()
+    try:
+        adapter = provider()
+        assert isinstance(adapter, CompositeProvider)
+        assert isinstance(adapter.generator, FallbackGenerator)
+        assert isinstance(adapter.generator.primary, OpenAIGenerator)
+        assert adapter.model_id == "gpt-6-luna"
+    finally:
+        settings.cache_clear()
