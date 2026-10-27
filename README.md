@@ -12,7 +12,7 @@ Live demo: [web](https://evidencedesk.umitvice.com) · [evaluation record](https
 
 ![Investigation, saved note, and audit timeline in the local fixture demo](docs/screenshots/workspace.png)
 
-This personal portfolio/reference project makes AI-assisted support decisions inspectable. The hosted production path uses real retrieval and Workers AI; explicit approval persists the exact reviewed note. **Human answer review remains pending.** The complete 40-case live evaluation includes validation and abstention failures. Current resources and limitations are in [implementation status](docs/implementation.md).
+This personal portfolio/reference project makes AI-assisted support decisions inspectable. The hosted production path runs 24/7 with real retrieval and OpenAI GPT-6 Luna generation, with free Cloudflare Workers AI as fallback; each answer names the model that produced it. Explicit approval persists the exact reviewed note. **Human answer review remains pending.** The complete 40-case live evaluation includes validation and abstention failures. Current resources and limitations are in [implementation status](docs/implementation.md).
 
 ## Try it locally
 
@@ -112,6 +112,40 @@ also surfaced a production bug: non-ASCII evidence was JSON-escaped in the promp
 verbatim quoting in Turkish for every model. Details, failed iterations, and limits are in
 [the comparison report](reports/model-comparison.md).
 
+### Generation models
+
+Retrieval, the prompt, the validators, and the approval flow are the same for every model; only
+the generator changes (`GENERATION_PROVIDER`).
+
+| Provider | Model | Where it runs | Role |
+| --- | --- | --- | --- |
+| `openai` | GPT-6 Luna, medium reasoning | OpenAI API, paid per token | Hosted production, 24/7 |
+| `cloudflare` | Llama 3.1 8B Instruct (fast) | Workers AI Free | Free default and automatic fallback |
+| `openai_compatible` | Fine-tuned Gemma 4 12B (GGUF) | Self-hosted llama.cpp, vLLM, or Ollama | Local and research path |
+
+OpenAI requests use strict structured outputs limited to the retrieved source IDs and
+`store: false`. The OpenAI project has a $5 hard monthly limit; when it is reached, a timeout
+or outage occurs, or the key is removed, analysis falls back to Cloudflare and the answer badge
+shows which model answered.
+
+Pilot measurement on the same 48 cases (38 generations), prompt `support-v5`, graph expansion
+off, one run each:
+
+| Generator | End-to-end | Development split | Schema valid | Citations valid | p50 / p95 |
+| --- | --- | --- | --- | --- | --- |
+| Cloudflare Llama 3.1 8B | 0.763 | 15/20 | 0.921 | 0.921 | 1.8 s / 4.7 s |
+| Fine-tuned Gemma 4 12B Q4_0 (laptop) | 0.868 | 18/20 | 1.000 | 0.974 | 7.4 s / 10.4 s |
+| **OpenAI GPT-6 Luna** | **0.816** | **18/20** | **1.000** | **1.000** | **3.1 s / 6.2 s** |
+
+The Luna run used local `bge-small` embeddings instead of Cloudflare's, so retrieval is close
+but not identical, and the local evaluation database ran with an environment budget of 100
+per day (production limits are unchanged). It cost about one cent (56k input, 9k output
+tokens); the working tree flag in the report is the ignored Netlify build output. Luna still fails both
+obsolete-vs-current cases, both sandbox conflicts, and both source-injection cases. Production
+runs with graph expansion on, which was not measured with Luna. See the
+[report](reports/compare-openai-gpt-6-luna-graph-false.md) and
+[setup](docs/deployment.md#openai-generation-optional-paid).
+
 ### Legacy Real-Time Voice & Speech Evals
 
 The voice pipeline includes an automated low-latency eval framework ([`apps/api/evidencedesk/voice/evals.py`](apps/api/evidencedesk/voice/evals.py)) executed against deterministic offline scenarios and live S2S streams:
@@ -141,7 +175,7 @@ The voice pipeline includes an automated low-latency eval framework ([`apps/api/
 
 **Hugging Face.** Free accounts can only host static Spaces, so the public demo is a static page of real runs recorded by `scripts/record_demo.py` through the production retrieval, prompt, and validators (`scripts/publish_hf.py`). With PRO or a community GPU grant, `scripts/deploy_space.py` publishes the interactive ZeroGPU Gradio Space, which runs this Python package with PostgreSQL + pgvector from `pgserver`, bge-small embeddings on CPU (`EMBEDDING_PROVIDER=local`), and the fine-tuned Gemma 4 12B on a shared GPU slice; each visitor uses their own daily GPU quota and sandbox data resets on restart.
 
-**Netlify and Render.** The Next.js BFF runs on Netlify Free and the FastAPI service on Render Free, with isolated Neon Free PostgreSQL/pgvector projects, and Cloudflare Workers AI Free. No paid services, email, CRM writes, registration, training, or GPUs. [Deployment instructions](docs/deployment.md) explain environment pairing, least-privilege runtime credentials, pooler settings, provider smoke, and exact remaining setup. [Verified versions](docs/versions.md) record runtime differences and compatibility findings.
+**Netlify and Render.** The Next.js BFF runs on Netlify Free and the FastAPI service on Render Free, with isolated Neon Free PostgreSQL/pgvector projects, Cloudflare Workers AI Free, and OpenAI GPT-6 Luna as the one paid service (prepaid balance, $5 hard monthly limit on its own project). No email, CRM writes, registration, training, or GPUs. [Deployment instructions](docs/deployment.md) explain environment pairing, least-privilege runtime credentials, pooler settings, provider smoke, and exact remaining setup. [Verified versions](docs/versions.md) record runtime differences and compatibility findings.
 
 Citation integrity is not semantic correctness. Prompt injection cannot grant tools, but a plausible inaccurate answer remains possible and requires review. Expired or changed tickets need regeneration. Interrupted analysis does not resume at an arbitrary graph node. Live failures never become simulated successes. A missing database leaves the case descriptions and evaluation record available and reports session creation as unavailable. There is no dev deployment: only master is published, and changes are verified locally (including real PostgreSQL via `scripts/local-pgserver.py`) before release. Free services have quotas; the Render API and Neon sleep while idle and wakes automatically on connection. See the [migration and verification record](docs/neon-migration.md). Cleanup is a bounded explicit command: `npm run db:cleanup`.
 
