@@ -6,5 +6,5 @@
 - Use Conventional Commits. Inspect staged files and scan secrets before commits and publication.
 - Keep credentials server-only. Authorize every record by session and tenant. Model output cannot execute mutations.
 - Approvals apply immutable persisted content in a short, concurrency-safe database transaction. No database transaction during provider calls.
-- Use genuinely free project-specific cloud resources only. Never change billing or unrelated resources.
+- Use genuinely free project-specific cloud resources only, except OpenAI generation, which runs from the dedicated `evidence-desk` OpenAI project under its $5 hard monthly limit. Never change billing or unrelated resources.
 - Run lint, type checks, unit and real PostgreSQL tests, build, browser checks, and security checks before release. Distinguish fixture checks from live model evaluation.
