@@ -12,7 +12,7 @@ dependencies = [
     "langgraph==1.2.11",
     "tokenizers==0.23.2",
     "uvicorn==0.52.4",
-    "certifi==2026.7.22",
+    "certifi==2026.10.19",
 ]
 [project.optional-dependencies]
 # In-process bge-small embeddings for hosts without an embedding API (Hugging Face Space).
