@@ -59,8 +59,9 @@ Live answers get deterministic review flags (method and calibration in
 [answer checks](../reports/answer-checks.md)). The evaluation page shows seven-day counts from
 `GET /quality/summary`, which returns no ticket or answer content. To read the flagged answers
 themselves, store the production runtime connection string once with
-`python3 scripts/enter-local-secret.py review-database` (input hidden, written to the ignored
-`.env`), then run `npm run review:flags`; it writes `.local/review/flagged.html` and opens it in the browser when anything is flagged. Without
+`python3 scripts/enter-local-secret.py review-database --from-render` (copies `DATABASE_URL` from
+the Render secret file with the logged-in Render CLI, shows nothing, writes the ignored `.env`;
+without `--from-render` it asks for the value with hidden input), then run `npm run review:flags`; it writes `.local/review/flagged.html` and opens it in the browser when anything is flagged. Without
 `REVIEW_DATABASE_URL` the command reads the local database. Never set `REVIEW_DATABASE_URL` on
 the hosted API.
 
