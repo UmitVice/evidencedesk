@@ -20,7 +20,7 @@ Former Supabase sources `xjizbcmayuojydvwykfu` and `vgeyikjybphzrrarcwaj` are ma
 
 ## Environment scopes
 
-API server-only: DATABASE_URL, SERVICE_KEY, ENVIRONMENT, AI_MODE, AI_ENABLED, CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_API_TOKEN, and the existing voice-provider configuration. Production uses `production` / `live`; dev uses `development` / `live` with branch-specific Preview values. This migration changes only each environment's DATABASE_URL. Missing configuration remains a clear error, not a fallback.
+API server-only: DATABASE_URL, SERVICE_KEY, ENVIRONMENT, AI_MODE, AI_ENABLED, CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_API_TOKEN, and the existing voice-provider configuration. Production uses `production` / `live`; local development uses `development` with `simulated` or `live`. This migration changes only each environment's DATABASE_URL. Missing configuration remains a clear error, not a fallback.
 
 Web server-only: API_ORIGIN, matching SERVICE_KEY, APP_ORIGIN. Production origins use the public aliases above. `API_PROTECTION_BYPASS_SECRET` is only needed if a protected API is ever deployed again; production does not use it. Never disable deployment protection globally or introduce NEXT_PUBLIC secrets.
 

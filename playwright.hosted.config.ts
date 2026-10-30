@@ -3,12 +3,11 @@ import { defineConfig } from "@playwright/test";
 const origin = process.env.HOSTED_URL;
 if (
   ![
-    "https://evidencedesk-web.vercel.app",
-    "https://evidencedesk-web-git-dev-umitvices-projects.vercel.app",
+    "https://evidencedesk.umitvice.com",
   ].includes(origin || "")
 )
   throw new Error(
-    "Set HOSTED_URL to the existing dev or production web origin.",
+    "Set HOSTED_URL to the production web origin.",
   );
 
 export default defineConfig({
