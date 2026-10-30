@@ -17,9 +17,27 @@ EvidenceDesk is implemented as a three-route ticket investigation desk. The prod
 - **Supabase retirement:** the former production (`xjizbcmayuojydvwykfu`) and development (`vgeyikjybphzrrarcwaj`) databases were restored for consistent export. All records, real BGE vectors, immutable notes/proposals, and quota counters were preserved. Source resources were manually paused after verification, and restricted local backups are retained for recovery; deployed EvidenceDesk no longer depends on their inactivity lifecycle. Final release evidence is recorded in `docs/neon-migration.md`.
 
 
+## Open items and handoff
+
+State on 2026-10-30: production is complete and fully in the cloud. Web runs on Netlify, the API on Render Free (it sleeps when idle), the database on Neon Free (it suspends when idle), and generation on OpenAI GPT-6 Luna with Cloudflare Workers AI as fallback. No scheduled job, keepalive, or local process is needed, and none should be added: this is a portfolio project with no real customers, and the maintainer wants nothing running regularly from their machine. CI runs only on push and pull requests.
+
+Nothing is required. When a new session is asked to "continue", start here and confirm with the maintainer before doing any of these optional items:
+
+1. **Hosted smoke against the live domain.** `HOSTED_URL=https://evidencedesk.umitvice.com npx playwright test --config playwright.hosted.config.ts` now targets the current domain but has not been run since the switch. It uses two live analyses.
+2. **GPT-6 Luna with graph expansion on.** Production runs `GRAPH_EXPANSION=true`, but Luna was measured with expansion off only (`reports/compare-openai-gpt-6-luna-graph-false.json`). One 48-case run costs about one cent. The maintainer asked to keep the pilot small, so run it only on request.
+3. **Fine-tuned Gemma on `support-v5`.** Retraining with relation lines is the next step for the self-hosted path (`reports/release-2026-10-23.md`). This is research only and does not affect production.
+4. **Old Supabase sources and local backups.** They are paused and kept for rollback (`docs/neon-migration.md`). Deleting them is the maintainer's decision.
+5. **Old `*.vercel.app` links.** A one-time reminder outside this repository (`~/.claude/scheduled-tasks/vercel-redirects-after-pause`, due 2026-11-24) deploys redirect-only bundles from `~/developer/personal/vercel-exit` once the paused Vercel team is active again.
+
+Operating notes:
+- **Flagged answers.** Review them on demand only. `/evaluations` shows seven-day counts. `npm run review:flags` opens the details locally from `REVIEW_DATABASE_URL`, which `python3 scripts/enter-local-secret.py review-database --from-render` stores. A weekly scheduled check was set up and then removed at the maintainer's request.
+- **Spend.** The dedicated OpenAI project `evidence-desk` has a $5 hard monthly limit and auto-reload off. At the limit, analyses fall back to Cloudflare.
+- **Release.** Work on a branch, then merge to master. Deploy with `render deploys create srv-dbehconavr4c73aucb8g --commit <sha> --wait --confirm`, then `npx netlify-cli deploy --build --prod --filter @evidencedesk/web --site bc3555f2-7382-4791-b4c3-1c7508cfac55`, then verify production. Runtime secrets are set by the maintainer in the Render secret file `evidencedesk.env` and in Netlify.
+- **Local test databases.** Start them with `scripts/local-pgserver.py` only while testing, and stop them afterwards. The Homebrew PostgreSQL 17 on this machine also serves another project; leave it alone.
+
 ## Verified evidence and limits
 
-Baseline master CI: [34416525370](https://github.com/UmitVice/evidencedesk/actions/runs/34416525370); baseline dev CI: [34416333589](https://github.com/UmitVice/evidencedesk/actions/runs/34416333589). Both ran 43 Python/API/PostgreSQL tests and six pre-redesign browser tests. The current suite has 65 Python/API/PostgreSQL tests and 25 local browser tests, plus a separately invoked bounded hosted smoke. Native database tests and GitHub's PostgreSQL container are distinct; local Docker was not used.
+Baseline master CI: [34416525370](https://github.com/UmitVice/evidencedesk/actions/runs/34416525370); baseline dev CI: [34416333589](https://github.com/UmitVice/evidencedesk/actions/runs/34416333589). Both ran 43 Python/API/PostgreSQL tests and six pre-redesign browser tests. As of 2026-10-30 the suite has 116 Python/API/PostgreSQL tests and 27 local browser tests, plus a separately invoked bounded hosted smoke. Native database tests and GitHub's PostgreSQL container are distinct; local Docker was not used.
 
 The production baseline BFF checks passed session/ticket creation, real generation, exact authorized quotations, approval of the exact note, repeated approval with one note, rejection without a note, foreign session/run/proposal rejection, tampered content rejection, stale proposals, and unsupported-question abstention. Browser checks independently confirmed live source inspection, approval, refresh persistence, and rejection. Baseline deployments: API `dpl_5413aMmkq1X3BAHZS7yPx8oQq2yT`, web `dpl_HADXaR6cs3HdnYPShg1eTnSYG9t6`.
 
