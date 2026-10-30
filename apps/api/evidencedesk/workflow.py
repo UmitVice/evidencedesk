@@ -144,11 +144,17 @@ def analyze(
         assert "raw" in state and "evidence" in state and "ticket" in state
         result = validate_response(state["raw"], state["evidence"]).model_dump()
         generator = getattr(adapter, "generator", None)
-        trace["review_flags"] = review_flags(
-            result,
-            state["evidence"],
-            question or state["ticket"]["body"],
-            fell_back=bool(trace["attempts"]) and bool(getattr(generator, "fell_back", False)),
+        # Thresholds are calibrated on real embeddings and model answers; fixture vectors and
+        # canned simulated answers would only produce noise.
+        trace["review_flags"] = (
+            review_flags(
+                result,
+                state["evidence"],
+                question or state["ticket"]["body"],
+                fell_back=bool(trace["attempts"]) and bool(getattr(generator, "fell_back", False)),
+            )
+            if config.ai_mode == "live"
+            else []
         )
         return {"result": result}
 

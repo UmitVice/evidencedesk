@@ -10,6 +10,7 @@ const routes = new Map<string, RegExp[]>([
     "GET",
     [
       /^tickets$/,
+      /^quality\/summary$/,
       new RegExp(`^tickets/${uuid}$`),
       new RegExp(`^runs/${uuid}$`),
       new RegExp(`^runs/${uuid}/sources/${uuid}$`),
@@ -119,7 +120,8 @@ async function forward(
   }
   const jar = await cookies();
   const token = jar.get(cookieName)?.value;
-  if (route !== "sessions" && !token)
+  // Session creation and the content-free quality summary are the only routes without a session.
+  if (route !== "sessions" && route !== "quality/summary" && !token)
     return failure("session_expired", "Start a new sandbox session.", 401);
   try {
     const headers: Record<string, string> = {
