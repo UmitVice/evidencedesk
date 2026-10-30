@@ -593,3 +593,74 @@ test("320px reflow and reduced motion keep navigation and controls usable", asyn
   await expect(analysis).toBeEnabled();
   expect((await analysis.boundingBox())!.height).toBeGreaterThanOrEqual(44);
 });
+
+test("flagged answers ask for a closer look; clean answers do not", async ({
+  page,
+}) => {
+  // The workspace re-reads the run after analysis, so the flags are added there.
+  await page.route("**/api/runs/*", async (route) => {
+    const response = await route.fetch();
+    const run = await response.json();
+    await route.fulfill({
+      response,
+      json: {
+        ...run,
+        trace: {
+          ...run.trace,
+          review_flags: [
+            {
+              code: "number_mismatch",
+              severity: "review",
+              message: "A claim states a number its quote does not contain.",
+            },
+            {
+              code: "fallback_model",
+              severity: "info",
+              message:
+                "The fallback model answered instead of the primary model.",
+            },
+          ],
+        },
+      },
+    });
+  });
+  await createDraft(page);
+  const flags = page.getByTestId("review-flags");
+  await expect(flags).toContainText("Check this suggestion closely");
+  await expect(flags).toContainText("number its quote does not contain");
+  await expect(flags).not.toContainText("fallback model");
+  await accessible(page);
+  await page.unroute("**/api/runs/*");
+  await page.reload();
+  await expect(
+    page.getByRole("button", { name: "Approve & save note" }),
+  ).toBeVisible();
+  await expect(page.getByTestId("review-flags")).toHaveCount(0);
+});
+
+test("evaluation page shows live counts without answer content", async ({
+  page,
+}) => {
+  await page.route("**/api/quality/summary", (route) =>
+    route.fulfill({
+      json: {
+        days: 7,
+        complete: 12,
+        failed: 1,
+        flagged: 2,
+        flags: [{ code: "weak_retrieval", count: 2 }],
+        models: [{ model: "gpt-6-luna", count: 12 }],
+        generated_at: "2026-10-30T10:00:00Z",
+      },
+    }),
+  );
+  await page.goto("/evaluations");
+  const section = page.getByRole("region", {
+    name: "Production answer checks",
+  });
+  await expect(section).toContainText("Flagged for review");
+  await expect(section).toContainText("Weak retrieval match: 2");
+  await expect(section).toContainText("gpt-6-luna (12)");
+  await expect(page.getByText("Automatic fact checks")).toBeVisible();
+  await accessible(page);
+});

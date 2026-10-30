@@ -2,6 +2,7 @@ import argparse
 import hashlib
 import json
 import platform
+import re
 import statistics
 import subprocess
 import time
@@ -17,12 +18,51 @@ from evidencedesk.errors import DomainError
 from evidencedesk.live_ingest import corpus_hash
 from evidencedesk.models import Answer
 from evidencedesk.providers import PROMPT_VERSION, FixtureProvider, provider
+from evidencedesk.quality import NEGATIONS, review_flags
 from evidencedesk.quotas import reserve
 from evidencedesk.retrieval import Mode, search_knowledge
 from evidencedesk.workflow import validate_response
 
 ROOT = Path(__file__).resolve().parents[3]
 DATASET = Path(__file__).resolve().parents[1] / "evals" / "cases.json"
+
+
+def normalize(text: str) -> str:
+    text = text.lower().replace("\u2019", "'").replace("\u2011", "-").replace("\u2013", "-")
+    return re.sub(r"\s+", " ", text)
+
+
+def fact_check(answer: dict[str, Any] | None, case: dict[str, Any]) -> dict[str, Any]:
+    """Automatic semantic check against the case's labeled facts.
+
+    An answered case passes when the status is right, every required fact appears in the claims
+    or note (any listed wording), and no forbidden fact appears in a sentence that is not negated
+    ("expire after 90 days, not 365" does not assert the obsolete 365-day lifetime).
+    """
+    status_ok = bool(answer) and answer.get("status") == case["expected_status"]
+    if case["expected_status"] != "answered" or not answer:
+        return {"fact_pass": status_ok, "missing_facts": [], "forbidden_found": []}
+    text = normalize(
+        " ".join(claim.get("text", "") for claim in answer.get("claims", []))
+        + " "
+        + (answer.get("proposed_note") or "")
+    )
+    missing = [
+        options[0]
+        for options in case.get("required_facts", [])
+        if not any(normalize(option) in text for option in options)
+    ]
+    sentences = re.split(r"(?<=[.;!?])\s+", text)
+    forbidden = [
+        phrase
+        for phrase in case.get("forbidden_facts", [])
+        if any(normalize(phrase) in s and not NEGATIONS.search(s) for s in sentences)
+    ]
+    return {
+        "fact_pass": status_ok and not missing and not forbidden,
+        "missing_facts": missing,
+        "forbidden_found": forbidden,
+    }
 
 
 def retrieval_metrics(rankings: list[list[str]], labels: list[list[str]]) -> dict[str, Any]:
@@ -127,6 +167,11 @@ def run_evaluation(mode: str, split: str, limit: int) -> dict[str, Any]:
                 outcome["generation_model"] = getattr(adapter, "model_id", "unknown")
                 outcome["usage"] = usage
                 answer = validate_response(raw, evidence)
+                outcome["review_flags"] = [
+                    flag["code"]
+                    for flag in review_flags(answer.model_dump(), evidence, case["question"])
+                ]
+            outcome.update(fact_check(answer.model_dump(), case))
             outcome.update(
                 status="evaluated",
                 schema_valid=True,
@@ -153,14 +198,7 @@ def run_evaluation(mode: str, split: str, limit: int) -> dict[str, Any]:
         outcomes.append(outcome)
     durations = [outcome["elapsed_ms"] for outcome in outcomes if "elapsed_ms" in outcome]
     generated = [outcome for outcome in outcomes if outcome["generation_completed"]]
-    # Model-quality denominators exclude infrastructure failures such as quota or timeouts.
-    judged = [
-        outcome
-        for outcome in outcomes
-        if outcome.get("status") == "evaluated"
-        or outcome.get("error_code")
-        in ("invalid_model_output", "invalid_citation", "generation_truncated")
-    ]
+    judged = judged_outcomes(outcomes)
     return {
         "mode": mode,
         "label": "Live model evaluation"
@@ -223,6 +261,31 @@ def run_evaluation(mode: str, split: str, limit: int) -> dict[str, Any]:
     }
 
 
+def judged_outcomes(outcomes: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Model-quality denominators exclude infrastructure failures such as quota or timeouts."""
+    return [
+        outcome
+        for outcome in outcomes
+        if outcome.get("status") == "evaluated"
+        or outcome.get("error_code")
+        in ("invalid_model_output", "invalid_citation", "generation_truncated")
+    ]
+
+
+def rescore(path: Path) -> dict[str, Any]:
+    """Re-apply the current fact labels to a saved live report without calling any model."""
+    report = json.loads(path.read_text())
+    cases = {case["id"]: case for case in json.loads(DATASET.read_text())}
+    for outcome in report["outcomes"]:
+        if outcome.get("status") == "evaluated" and outcome["case_id"] in cases:
+            outcome.update(fact_check(outcome.get("answer"), cases[outcome["case_id"]]))
+    report["quality"] = quality_metrics(judged_outcomes(report["outcomes"]))
+    report["fact_labels_hash"] = hashlib.sha256(DATASET.read_bytes()).hexdigest()
+    report["rescored_at"] = datetime.now(UTC).isoformat()
+    write_report(report, path.parent, path.stem)
+    return report
+
+
 def quality_metrics(outcomes: list[dict[str, Any]]) -> dict[str, Any]:
     """Rates over generation cases; a failed case counts against every rate it could affect."""
     n = len(outcomes)
@@ -236,6 +299,8 @@ def quality_metrics(outcomes: list[dict[str, Any]]) -> dict[str, Any]:
     )
     citation_valid = sum(1 for outcome in outcomes if outcome.get("citation_integrity"))
     abstention = sum(1 for outcome in outcomes if outcome.get("correct_abstention"))
+    facts = sum(1 for outcome in outcomes if outcome.get("fact_pass"))
+    flagged = [outcome for outcome in outcomes if outcome.get("review_flags")]
     return {
         "n": n,
         "schema_valid_rate": round(schema_valid / n, 4),
@@ -250,6 +315,10 @@ def quality_metrics(outcomes: list[dict[str, Any]]) -> dict[str, Any]:
             / n,
             4,
         ),
+        # Status right, labeled facts present, no obsolete fact asserted (see fact_check).
+        "fact_pass_rate": round(facts / n, 4),
+        "flagged_for_review": len(flagged),
+        "flagged_fact_failures": sum(1 for outcome in flagged if not outcome.get("fact_pass")),
     }
 
 
@@ -271,7 +340,7 @@ def write_report(report: dict[str, Any], output: Path, name: str | None = None) 
     lines = [
         "# " + report["label"],
         "",
-        "Human review: pending.",
+        "Human review: only answers with review flags or failed fact checks.",
         "",
         f"Commit: `{report['commit_sha']}`",
         "",
@@ -302,6 +371,14 @@ def write_report(report: dict[str, Any], output: Path, name: str | None = None) 
             "",
             f"Served models: {report.get('served_models')}. Tokens: {report.get('tokens')}.",
         ]
+        if "fact_pass_rate" in quality:
+            lines += [
+                "",
+                f"Automatic fact checks: {quality['fact_pass_rate']} pass "
+                f"(status right, labeled facts present, no obsolete fact asserted). "
+                f"Review flags raised on {quality['flagged_for_review']} answers, "
+                f"{quality['flagged_fact_failures']} of them failing the fact check.",
+            ]
     if report.get("latency"):
         timing = report["latency"]
         lines += [
@@ -337,10 +414,21 @@ def main() -> None:
     parser.add_argument(
         "--name", default=None, help="Report file stem, for example compare-gemma-finetuned"
     )
+    parser.add_argument(
+        "--rescore",
+        type=Path,
+        nargs="+",
+        help="Re-apply fact labels to saved live reports (no model calls) and exit",
+    )
     args = parser.parse_args()
+    if args.rescore:
+        for path in args.rescore:
+            quality = rescore(path)["quality"]
+            print(f"{path.name}: fact pass {quality.get('fact_pass_rate')} (n={quality['n']})")
+        return
     report = run_evaluation(args.mode, args.split, args.limit)
     write_report(report, ROOT / "reports", args.name)
-    print("Report saved; live human quality review remains pending.")
+    print("Report saved; fact checks are automatic, flagged answers need a look.")
 
 
 if __name__ == "__main__":

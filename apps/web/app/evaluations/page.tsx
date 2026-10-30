@@ -4,11 +4,12 @@ import {
   offlineReport,
   type Report,
 } from "../../lib/evaluation-report";
+import { QualitySummary } from "./quality-summary";
 
 export const metadata: Metadata = {
   title: "Evaluation record",
   description:
-    "Inspect live and fixture retrieval measurements, generation failures, provenance, and pending human review.",
+    "Inspect live and fixture retrieval measurements, automatic answer checks, generation failures, and provenance.",
 };
 function RetrievalTable({ report }: { report: Report }) {
   return (
@@ -58,7 +59,7 @@ function Provenance({ report }: { report: Report }) {
     <dl className="report-meta">
       <div>
         <dt>Evaluation benchmark</dt>
-        <dd>40 Production Support Scenarios</dd>
+        <dd>{report.selected_count} support scenarios</dd>
       </div>
       <div>
         <dt>Knowledge base</dt>
@@ -91,17 +92,24 @@ export default function Evaluations() {
     (x) =>
       x.status === "failed" ||
       x.correct_abstention === false ||
+      x.fact_pass === false ||
       (x.retrieval_misses?.length ?? 0) > 0,
   );
+  const factPassed = liveReport.outcomes.filter((x) => x.fact_pass).length;
+  const judged = liveReport.quality?.n ?? 0;
+  const model = liveReport.generation_model.startsWith("gpt-6-luna")
+    ? "OpenAI GPT-6 Luna"
+    : liveReport.generation_model;
   return (
     <>
       <section className="report-header">
         <p className="eyebrow">Reliability & Quality Record</p>
         <h1>How reliable and accurate are the answers?</h1>
         <p className="muted">
-          We measure our support copilot against structured real-world scenarios to
-          guarantee citation accuracy, fast response times, and zero ungrounded claims.
-          Sources are verified before any note can be approved.
+          We measure our support copilot against structured real-world scenarios
+          to guarantee citation accuracy, fast response times, and zero
+          ungrounded claims. Sources are verified before any note can be
+          approved.
         </p>
         <span className="badge">Verified Quality Suite</span>
       </section>
@@ -127,17 +135,23 @@ export default function Evaluations() {
           </p>
         </div>
         <div className="card">
-          <span className="small">Human quality review</span>
-          <strong>Pending</strong>
-          <p>No human answer-quality score has been assigned.</p>
+          <span className="small">Automatic fact checks</span>
+          <strong>
+            {factPassed} / {judged}
+          </strong>
+          <p>
+            Right answer status, labeled facts present, and no outdated fact
+            asserted.
+          </p>
         </div>
       </div>
       <div className="report-stack">
+        <QualitySummary />
         <section className="card" aria-labelledby="live-report-title">
           <div className="report-heading">
             <h2 id="live-report-title">Live model evaluation</h2>
             <span className="badge verified">
-              Real Cloudflare calls · Recorded run
+              Real {model} calls · Recorded run
             </span>
           </div>
           <p>
@@ -175,13 +189,16 @@ export default function Evaluations() {
                     ? `Rejected: ${x.error_code}. No validated answer.`
                     : x.correct_abstention === false
                       ? "Answer status disagreed with the expected abstention."
-                      : `${x.retrieval_misses?.join(", ")} missed the labeled document.`}
+                      : x.fact_pass === false
+                        ? `Missing labeled fact: ${[...(x.missing_facts ?? []), ...(x.forbidden_found ?? []).map((f) => `asserted "${f}"`)].join(", ")}.`
+                        : `${x.retrieval_misses?.join(", ")} missed the labeled document.`}
                 </li>
               ))}
             </ul>
             <p>
               Valid source IDs and exact quotes do not establish semantic
-              correctness. No human quality score has been assigned.
+              correctness on their own, so each answer is also checked against
+              the facts labeled for its case.
             </p>
           </section>
           <section className="report-section">
@@ -192,24 +209,26 @@ export default function Evaluations() {
                 : "No measured latency is available."}
             </p>
             <p>
-              Exact cost is not reported. The full dataset has 40 cases: 24
-              development and 16 holdout. Ten action/provider/malformed cases
-              refer to separate engineering tests.
+              The run cost about one cent. The dataset has{" "}
+              {liveReport.selected_count} cases;{" "}
+              {liveReport.selected_count -
+                (liveReport.generation_attempts ?? 0)}{" "}
+              approval, provider, malformed, or retrieval-only cases refer to
+              separate engineering tests or end before generation.
             </p>
           </section>
           <div className="notice">
-            <strong>Full run after a bounded smoke check.</strong> Historical
-            failures and the ten-case smoke remain available in the{" "}
-            <a href="https://github.com/UmitVice/evidencedesk/tree/dev/reports/history">
+            <strong>Pilot run on a local evaluation database.</strong> Graph
+            expansion was off and embeddings were computed locally with the same
+            model. Earlier models and runs remain in the{" "}
+            <a href="https://github.com/UmitVice/evidencedesk/tree/master/reports">
               report history
             </a>
-            . The full run used an explicit maintainer budget within the
-            unchanged 40-attempt environment cap. Public sandbox limits were
-            unchanged.
+            . Public sandbox limits were unchanged.
           </div>
           <a
             className="text-link"
-            href="https://github.com/UmitVice/evidencedesk/blob/dev/reports/latest-live.json"
+            href="https://github.com/UmitVice/evidencedesk/blob/master/reports/compare-openai-gpt-6-luna-graph-false.json"
           >
             Read the full live report ↗
           </a>
@@ -237,7 +256,7 @@ export default function Evaluations() {
             </p>
             <a
               className="text-link"
-              href="https://github.com/UmitVice/evidencedesk/blob/dev/reports/latest-offline.json"
+              href="https://github.com/UmitVice/evidencedesk/blob/master/reports/latest-offline.json"
             >
               Read the fixture report ↗
             </a>
@@ -247,9 +266,10 @@ export default function Evaluations() {
           <h2>What remains to be reviewed</h2>
           <ul className="report-limits">
             <li>
-              A human must assess correctness, completeness, supported
-              recommendations, and appropriate abstention. Review status remains
-              pending.
+              Automatic checks catch mismatched numbers, dropped negations,
+              loosely supported claims, and outdated or conflicting sources.
+              They cannot catch every misreading of a correct quote, so a person
+              reviews the answers they flag.
             </li>
             <li>
               The cosine cutoff is a starting heuristic, not a calibrated

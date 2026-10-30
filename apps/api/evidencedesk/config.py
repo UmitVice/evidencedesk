@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     environment: Literal["development", "test", "production"] = "development"
     database_url: SecretStr = SecretStr("")
     migration_database_url: SecretStr = SecretStr("")
+    # Local maintainer reports only (`cli review-report`); never set on the hosted API.
+    review_database_url: SecretStr = SecretStr("")
     service_key: SecretStr = SecretStr("")
     ai_mode: Literal["simulated", "live"] = "simulated"
     ai_enabled: bool = True

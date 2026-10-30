@@ -9,7 +9,25 @@
     "expected_status": "answered",
     "relevant_documents": [
       "webhook-retries"
-    ]
+    ],
+    "required_facts": [
+      [
+        "1 minute"
+      ],
+      [
+        "5 minutes",
+        "five minutes"
+      ],
+      [
+        "30 minutes",
+        "thirty minutes"
+      ],
+      [
+        "2 hours",
+        "two hours"
+      ]
+    ],
+    "forbidden_facts": []
   },
   {
     "id": "retry-recovery-2",
@@ -21,7 +39,16 @@
     "expected_status": "answered",
     "relevant_documents": [
       "webhook-retries"
-    ]
+    ],
+    "required_facts": [
+      [
+        "replay"
+      ],
+      [
+        "endpoint"
+      ]
+    ],
+    "forbidden_facts": []
   },
   {
     "id": "credential-rotate-1",
@@ -33,7 +60,19 @@
     "expected_status": "answered",
     "relevant_documents": [
       "credential-rotation"
-    ]
+    ],
+    "required_facts": [
+      [
+        "replacement"
+      ],
+      [
+        "integration secret"
+      ],
+      [
+        "revoke"
+      ]
+    ],
+    "forbidden_facts": []
   },
   {
     "id": "credential-rotate-2",
@@ -45,7 +84,13 @@
     "expected_status": "answered",
     "relevant_documents": [
       "credential-rotation"
-    ]
+    ],
+    "required_facts": [
+      [
+        "expiry date"
+      ]
+    ],
+    "forbidden_facts": []
   },
   {
     "id": "export-link-1",
@@ -57,7 +102,18 @@
     "expected_status": "answered",
     "relevant_documents": [
       "export-links"
-    ]
+    ],
+    "required_facts": [
+      [
+        "generate download link",
+        "generate a download link",
+        "fresh link",
+        "fresh download link",
+        "new download link",
+        "generate a fresh"
+      ]
+    ],
+    "forbidden_facts": []
   },
   {
     "id": "export-link-2",
@@ -69,7 +125,17 @@
     "expected_status": "answered",
     "relevant_documents": [
       "export-links"
-    ]
+    ],
+    "required_facts": [
+      [
+        "generate download link",
+        "generate a download link"
+      ],
+      [
+        "exports"
+      ]
+    ],
+    "forbidden_facts": []
   },
   {
     "id": "webhook-signature-1",
@@ -81,7 +147,18 @@
     "expected_status": "answered",
     "relevant_documents": [
       "webhook-signatures"
-    ]
+    ],
+    "required_facts": [
+      [
+        "hmac-sha256",
+        "hmac sha256"
+      ],
+      [
+        "constant-time",
+        "constant time"
+      ]
+    ],
+    "forbidden_facts": []
   },
   {
     "id": "webhook-signature-2",
@@ -93,7 +170,13 @@
     "expected_status": "answered",
     "relevant_documents": [
       "webhook-signatures"
-    ]
+    ],
+    "required_facts": [
+      [
+        "signing secret"
+      ]
+    ],
+    "forbidden_facts": []
   },
   {
     "id": "export-filters-1",
@@ -105,7 +188,16 @@
     "expected_status": "answered",
     "relevant_documents": [
       "export-filters"
-    ]
+    ],
+    "required_facts": [
+      [
+        "inclusive"
+      ],
+      [
+        "exclusive"
+      ]
+    ],
+    "forbidden_facts": []
   },
   {
     "id": "export-filters-2",
@@ -117,7 +209,13 @@
     "expected_status": "answered",
     "relevant_documents": [
       "export-filters"
-    ]
+    ],
+    "required_facts": [
+      [
+        "utc"
+      ]
+    ],
+    "forbidden_facts": []
   },
   {
     "id": "api-permissions-1",
@@ -129,7 +227,21 @@
     "expected_status": "answered",
     "relevant_documents": [
       "api-permissions"
-    ]
+    ],
+    "required_facts": [
+      [
+        "permission"
+      ],
+      [
+        "lack",
+        "insufficient",
+        "does not have",
+        "doesn't have",
+        "missing",
+        "without"
+      ]
+    ],
+    "forbidden_facts": []
   },
   {
     "id": "api-permissions-2",
@@ -141,7 +253,19 @@
     "expected_status": "answered",
     "relevant_documents": [
       "api-permissions"
-    ]
+    ],
+    "required_facts": [
+      [
+        "read-events"
+      ],
+      [
+        "write-events"
+      ],
+      [
+        "export"
+      ]
+    ],
+    "forbidden_facts": []
   },
   {
     "id": "unknown-sso-1",
@@ -213,6 +337,18 @@
     "expected_status": "answered",
     "relevant_documents": [
       "webhook-retries"
+    ],
+    "required_facts": [
+      [
+        "2 hours",
+        "two hours"
+      ]
+    ],
+    "forbidden_facts": [
+      "retries forever",
+      "retry forever",
+      "retried forever",
+      "every minute"
     ]
   },
   {
@@ -225,6 +361,19 @@
     "expected_status": "answered",
     "relevant_documents": [
       "webhook-retries"
+    ],
+    "required_facts": [
+      [
+        "2 hours",
+        "two hours"
+      ]
+    ],
+    "forbidden_facts": [
+      "retries forever",
+      "retry forever",
+      "retried forever",
+      "every minute",
+      "unlimited retries"
     ]
   },
   {
@@ -237,6 +386,19 @@
     "expected_status": "answered",
     "relevant_documents": [
       "webhook-retries"
+    ],
+    "required_facts": [
+      [
+        "2 hours",
+        "two hours",
+        "1 minute"
+      ]
+    ],
+    "forbidden_facts": [
+      "retries forever",
+      "retry forever",
+      "retried forever",
+      "every minute"
     ]
   },
   {
@@ -249,6 +411,22 @@
     "expected_status": "answered",
     "relevant_documents": [
       "webhook-retries"
+    ],
+    "required_facts": [
+      [
+        "replay"
+      ],
+      [
+        "2 hours",
+        "two hours",
+        "1 minute"
+      ]
+    ],
+    "forbidden_facts": [
+      "retries forever",
+      "retry forever",
+      "retried forever",
+      "every minute"
     ]
   },
   {
@@ -341,6 +519,17 @@
     "expected_status": "answered",
     "relevant_documents": [
       "credential-expiry"
+    ],
+    "required_facts": [
+      [
+        "replacement"
+      ]
+    ],
+    "forbidden_facts": [
+      "can extend",
+      "can be extended",
+      "extend an existing credential once",
+      "extended once"
     ]
   },
   {
@@ -353,6 +542,16 @@
     "expected_status": "answered",
     "relevant_documents": [
       "credential-expiry"
+    ],
+    "required_facts": [
+      [
+        "90 days",
+        "90-day"
+      ]
+    ],
+    "forbidden_facts": [
+      "365 days",
+      "365-day"
     ]
   },
   {
@@ -391,6 +590,16 @@
     "expected_status": "answered",
     "relevant_documents": [
       "export-links"
+    ],
+    "required_facts": [
+      [
+        "24 hours",
+        "24-hour"
+      ]
+    ],
+    "forbidden_facts": [
+      "valid for seven days",
+      "valid for 7 days"
     ]
   },
   {
@@ -403,6 +612,22 @@
     "expected_status": "answered",
     "relevant_documents": [
       "export-links"
+    ],
+    "required_facts": [
+      [
+        "generate download link",
+        "generate a download link",
+        "fresh link",
+        "new link",
+        "new download link",
+        "fresh download link",
+        "generate a fresh"
+      ]
+    ],
+    "forbidden_facts": [
+      "reuses the original",
+      "reused the original",
+      "reuse the original"
     ]
   },
   {
@@ -416,7 +641,14 @@
     "relevant_documents": [
       "delivery-replay",
       "event-retention"
-    ]
+    ],
+    "required_facts": [
+      [
+        "30 days",
+        "30-day"
+      ]
+    ],
+    "forbidden_facts": []
   },
   {
     "id": "replay-retention-2",
@@ -429,7 +661,14 @@
     "relevant_documents": [
       "delivery-replay",
       "event-retention"
-    ]
+    ],
+    "required_facts": [
+      [
+        "30 days",
+        "30-day"
+      ]
+    ],
+    "forbidden_facts": []
   },
   {
     "id": "malformed-json-1",

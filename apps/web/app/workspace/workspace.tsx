@@ -52,6 +52,19 @@ function modelName(id: unknown): string | null {
   if (id.startsWith("evidencedesk-gemma")) return "Fine-tuned Gemma 4 12B";
   return id.slice(0, 40);
 }
+type ReviewFlag = { code: string; severity: string; message: string };
+// Review-level flags the API attached to this answer; info flags stay in the trace.
+function reviewFlags(trace: Record<string, unknown> | undefined): ReviewFlag[] {
+  const flags = trace?.review_flags;
+  if (!Array.isArray(flags)) return [];
+  return flags.filter(
+    (flag): flag is ReviewFlag =>
+      typeof flag === "object" &&
+      flag !== null &&
+      (flag as ReviewFlag).severity === "review" &&
+      typeof (flag as ReviewFlag).message === "string",
+  );
+}
 function issueFor(error: unknown, operation: Operation): Issue {
   const code = error instanceof ApiError ? error.code : "connection_failed";
   if (operation === "source" && code === "connection_failed") {
@@ -569,6 +582,20 @@ export default function Workspace() {
                 </div>
               ) : (
                 <>
+                  {reviewFlags(run.trace).length > 0 && (
+                    <div
+                      className="notice review-flags"
+                      data-testid="review-flags"
+                    >
+                      <h3>Check this suggestion closely</h3>
+                      <p>Automatic checks found something unusual:</p>
+                      <ul>
+                        {reviewFlags(run.trace).map((flag) => (
+                          <li key={flag.code}>{flag.message}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                   <p className="small muted">
                     Open a source to compare the original text with each
                     suggestion. Sources do not guarantee correctness.

@@ -88,3 +88,23 @@ class DecisionResponse(BaseModel):
     status: Literal["applied", "rejected"]
     note_id: str | None
     replayed: bool
+
+
+class FlagCount(BaseModel):
+    code: str
+    count: int
+
+
+class ModelCount(BaseModel):
+    model: str
+    count: int
+
+
+class QualitySummaryResponse(BaseModel):
+    days: int
+    complete: int
+    failed: int
+    flagged: int
+    flags: list[FlagCount]
+    models: list[ModelCount]
+    generated_at: datetime

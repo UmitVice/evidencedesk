@@ -7,7 +7,7 @@ import pytest
 from evidencedesk.config import settings
 from evidencedesk.db import connection
 from evidencedesk.errors import DomainError
-from evidencedesk.evaluation import DATASET, retrieval_metrics
+from evidencedesk.evaluation import DATASET, fact_check, retrieval_metrics
 from evidencedesk.quotas import reserve
 
 
@@ -19,6 +19,37 @@ def test_dataset_split_integrity():
     for case in cases:
         groups.setdefault(case["group"], set()).add(case["split"])
     assert all(len(splits) == 1 for splits in groups.values())
+
+
+def test_every_answerable_case_has_fact_labels():
+    for case in json.loads(DATASET.read_text()):
+        labeled = bool(case.get("required_facts"))
+        assert labeled == (case["expected_status"] == "answered"), case["id"]
+        assert all(options and all(o == o.lower() for o in options)
+                   for options in case.get("required_facts", []))
+
+
+def test_fact_check_requires_facts_and_rejects_asserted_obsolete_facts():
+    case = {
+        "expected_status": "answered",
+        "required_facts": [["90 days", "90-day"]],
+        "forbidden_facts": ["365 days"],
+    }
+
+    def answer(text):
+        return {"status": "answered", "claims": [{"text": text}], "proposed_note": None}
+
+    assert fact_check(answer("New credentials expire after 90 days."), case)["fact_pass"]
+    # A negated mention of the obsolete value is a correction, not an assertion.
+    assert fact_check(answer("They expire after 90 days, not 365 days."), case)["fact_pass"]
+    assert fact_check(answer("Credentials expire after 365 days."), case)["missing_facts"] == [
+        "90 days"
+    ]
+    wrong = fact_check(answer("They last 90 days. Old ones last 365 days."), case)
+    assert wrong["forbidden_found"] == ["365 days"] and not wrong["fact_pass"]
+    abstain = {"status": "insufficient_evidence", "claims": [], "proposed_note": None}
+    assert not fact_check(abstain, case)["fact_pass"]
+    assert fact_check(abstain, {"expected_status": "insufficient_evidence"})["fact_pass"]
 
 
 def test_document_metrics_denominator_and_duplicate_citations():

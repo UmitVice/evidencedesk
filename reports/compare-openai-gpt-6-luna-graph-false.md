@@ -1,6 +1,6 @@
 # Live model evaluation
 
-Human review: pending.
+Human review: only answers with review flags or failed fact checks.
 
 Commit: `45df8765945ec4abe7479b167a15e2d1e5286aa6`
 
@@ -22,6 +22,8 @@ Generation attempts/completions: 38 / 38.
 | gpt-6-luna | 38 | 1.0 | 1.0 | 0.8158 | 0.8158 |
 
 Served models: {'gpt-6-luna': 38}. Tokens: {'prompt_tokens': 56219, 'completion_tokens': 8769}.
+
+Automatic fact checks: 0.8158 pass (status right, labeled facts present, no obsolete fact asserted). Review flags raised on 0 answers, 0 of them failing the fact check.
 
 Latency n=38: p50 3139.2349999999997 ms; p95 6174.2515 ms. Live embedding, three retrieval methods, and optional generation; includes failures.
 

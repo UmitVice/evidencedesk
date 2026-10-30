@@ -242,6 +242,47 @@
         }
       }
     },
+    "/quality/summary": {
+      "get": {
+        "summary": "Summary",
+        "description": "Seven-day counts of live analyses and review flags; no ticket or answer content.",
+        "operationId": "summary_quality_summary_get",
+        "parameters": [
+          {
+            "name": "x-service-key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "X-Service-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QualitySummaryResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/tickets": {
       "get": {
         "summary": "Tickets",
@@ -864,6 +905,24 @@
         ],
         "title": "DecisionResponse"
       },
+      "FlagCount": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "count"
+        ],
+        "title": "FlagCount"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -876,6 +935,24 @@
         },
         "type": "object",
         "title": "HTTPValidationError"
+      },
+      "ModelCount": {
+        "properties": {
+          "model": {
+            "type": "string",
+            "title": "Model"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "model",
+          "count"
+        ],
+        "title": "ModelCount"
       },
       "NoteResponse": {
         "properties": {
@@ -946,6 +1023,56 @@
           "expected_version"
         ],
         "title": "ProposalResponse"
+      },
+      "QualitySummaryResponse": {
+        "properties": {
+          "days": {
+            "type": "integer",
+            "title": "Days"
+          },
+          "complete": {
+            "type": "integer",
+            "title": "Complete"
+          },
+          "failed": {
+            "type": "integer",
+            "title": "Failed"
+          },
+          "flagged": {
+            "type": "integer",
+            "title": "Flagged"
+          },
+          "flags": {
+            "items": {
+              "$ref": "#/components/schemas/FlagCount"
+            },
+            "type": "array",
+            "title": "Flags"
+          },
+          "models": {
+            "items": {
+              "$ref": "#/components/schemas/ModelCount"
+            },
+            "type": "array",
+            "title": "Models"
+          },
+          "generated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Generated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "days",
+          "complete",
+          "failed",
+          "flagged",
+          "flags",
+          "models",
+          "generated_at"
+        ],
+        "title": "QualitySummaryResponse"
       },
       "RunResponse": {
         "properties": {

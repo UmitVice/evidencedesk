@@ -18,7 +18,9 @@ export type DecisionResponse = {
   note_id: string | null;
   replayed: boolean;
 };
+export type FlagCount = { code: string; count: number };
 export type HTTPValidationError = { detail?: Array<ValidationError> };
+export type ModelCount = { model: string; count: number };
 export type NoteResponse = { id: string; content: string; created_at: string };
 export type ProposalResponse = {
   id: string;
@@ -27,6 +29,15 @@ export type ProposalResponse = {
   status: "pending" | "applied" | "rejected";
   expires_at: string;
   expected_version: number;
+};
+export type QualitySummaryResponse = {
+  days: number;
+  complete: number;
+  failed: number;
+  flagged: number;
+  flags: Array<FlagCount>;
+  models: Array<ModelCount>;
+  generated_at: string;
 };
 export type RunResponse = {
   id: string;

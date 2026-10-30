@@ -13,9 +13,17 @@ from evidencedesk.errors import DomainError
 
 
 @contextmanager
-def connection(*, migration: bool = False) -> Iterator[psycopg.Connection[dict[str, Any]]]:
+def connection(
+    *, migration: bool = False, review: bool = False
+) -> Iterator[psycopg.Connection[dict[str, Any]]]:
     config = settings()
-    url = (config.migration_database_url if migration else config.database_url).get_secret_value()
+    url = (
+        config.migration_database_url
+        if migration
+        else config.review_database_url
+        if review and config.review_database_url.get_secret_value()
+        else config.database_url
+    ).get_secret_value()
     if not url:
         raise DomainError("database_unavailable", "The sandbox database is not configured.", 503)
     try:

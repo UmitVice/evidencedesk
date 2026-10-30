@@ -20,7 +20,7 @@ Former Supabase sources `xjizbcmayuojydvwykfu` and `vgeyikjybphzrrarcwaj` are ma
 
 ## Environment scopes
 
-API server-only: DATABASE_URL, SERVICE_KEY, ENVIRONMENT, AI_MODE, AI_ENABLED, CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_API_TOKEN, and the existing voice-provider configuration. Production uses `production` / `live`; dev uses `development` / `live` with branch-specific Preview values. This migration changes only each environment's DATABASE_URL. Missing configuration remains a clear error, not a fallback.
+API server-only: DATABASE_URL, SERVICE_KEY, ENVIRONMENT, AI_MODE, AI_ENABLED, CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_API_TOKEN, and the existing voice-provider configuration. Production uses `production` / `live`; local development uses `development` with `simulated` or `live`. This migration changes only each environment's DATABASE_URL. Missing configuration remains a clear error, not a fallback.
 
 Web server-only: API_ORIGIN, matching SERVICE_KEY, APP_ORIGIN. Production origins use the public aliases above. `API_PROTECTION_BYPASS_SECRET` is only needed if a protected API is ever deployed again; production does not use it. Never disable deployment protection globally or introduce NEXT_PUBLIC secrets.
 
@@ -51,7 +51,18 @@ GENERATION_API_KEY=<key from the evidence-desk OpenAI project>
 GENERATION_FALLBACK=true
 ```
 
-Leave `GENERATION_BASE_URL` and `GENERATION_MODEL` unset to use `https://api.openai.com/v1` and `gpt-6-luna`. Locally, `python3 scripts/enter-openai-key.py` stores the key in the ignored `.env` without echoing it. Setting `GENERATION_PROVIDER=cloudflare` returns to the free path.
+Leave `GENERATION_BASE_URL` and `GENERATION_MODEL` unset to use `https://api.openai.com/v1` and `gpt-6-luna`. Locally, `python3 scripts/enter-local-secret.py openai` stores the key in the ignored `.env` without echoing it. Setting `GENERATION_PROVIDER=cloudflare` returns to the free path.
+
+## Answer checks and flagged-answer review
+
+Live answers get deterministic review flags (method and calibration in
+[answer checks](../reports/answer-checks.md)). The evaluation page shows seven-day counts from
+`GET /quality/summary`, which returns no ticket or answer content. To read the flagged answers
+themselves, store the production runtime connection string once with
+`python3 scripts/enter-local-secret.py review-database` (input hidden, written to the ignored
+`.env`), then run `npm run review:flags` and open `.local/review/flagged.html`. Without
+`REVIEW_DATABASE_URL` the command reads the local database. Never set `REVIEW_DATABASE_URL` on
+the hosted API.
 
 ## Development and release
 
