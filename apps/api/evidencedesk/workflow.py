@@ -1,4 +1,5 @@
 import json
+import logging
 import time
 from typing import Any, TypedDict
 
@@ -11,9 +12,12 @@ from evidencedesk.db import connection
 from evidencedesk.errors import DomainError, missing
 from evidencedesk.models import Answer
 from evidencedesk.providers import PROMPT_VERSION, Provider, provider
+from evidencedesk.quality import needs_review, review_flags
 from evidencedesk.quotas import reserve
 from evidencedesk.retrieval import search_knowledge
 from evidencedesk.sessions import get_ticket
+
+logger = logging.getLogger("evidencedesk")
 
 
 class State(TypedDict, total=False):
@@ -137,14 +141,34 @@ def analyze(
         raise RuntimeError("Unreachable generation state")
 
     def validate(state: State) -> State:
-        assert "raw" in state and "evidence" in state
-        return {"result": validate_response(state["raw"], state["evidence"]).model_dump()}
+        assert "raw" in state and "evidence" in state and "ticket" in state
+        result = validate_response(state["raw"], state["evidence"]).model_dump()
+        generator = getattr(adapter, "generator", None)
+        trace["review_flags"] = review_flags(
+            result,
+            state["evidence"],
+            question or state["ticket"]["body"],
+            fell_back=bool(trace["attempts"]) and bool(getattr(generator, "fell_back", False)),
+        )
+        return {"result": result}
 
     def persist(state: State) -> State:
         assert "result" in state and "evidence" in state
         if time.monotonic() - started > deadline:
             raise DomainError("request_timeout", "Analysis deadline reached.", 504)
         trace["elapsed_ms"] = round((time.monotonic() - started) * 1000)
+        if needs_review(trace.get("review_flags", [])):
+            # Codes only: ticket text and answers never go to logs.
+            logger.info(
+                json.dumps(
+                    {
+                        "event": "analysis_flagged",
+                        "run_id": str(run_id),
+                        "request_id": request_id,
+                        "codes": [flag["code"] for flag in trace["review_flags"]],
+                    }
+                )
+            )
         with connection() as conn:
             conn.execute(
                 "UPDATE evidence.runs SET status='complete',result=%s::jsonb,"

@@ -34,10 +34,13 @@ def migrate() -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description="EvidenceDesk maintenance (never runs on startup)")
     parser.add_argument(
-        "command", choices=["migrate", "seed", "ingest-live", "provider-smoke", "cleanup"]
+        "command",
+        choices=["migrate", "seed", "ingest-live", "provider-smoke", "cleanup", "review-report"],
     )
     parser.add_argument("--allow-production", action="store_true")
     parser.add_argument("--smoke-receipt", type=Path)
+    parser.add_argument("--days", type=int, choices=range(1, 31), default=7)
+    parser.add_argument("--output", type=Path, default=Path(".local/review/flagged.html"))
     args = parser.parse_args()
     if args.command == "migrate":
         migrate()
@@ -50,6 +53,12 @@ def main() -> None:
             "Live chunks embedded:",
             ingest_live(allow_production=args.allow_production, smoke_receipt=args.smoke_receipt),
         )
+    elif args.command == "review-report":
+        from evidencedesk.monitoring import review_report
+
+        count = review_report(args.output, args.days)
+        # The file holds ticket text and answers: it stays in the ignored .local folder.
+        print(f"Flagged analyses: {count}. Report: {args.output.resolve()}")
     elif args.command == "provider-smoke":
         from evidencedesk.smoke import provider_smoke
 

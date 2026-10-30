@@ -13,8 +13,10 @@ from evidencedesk.config import settings
 from evidencedesk.db import connection
 from evidencedesk.errors import DomainError, missing
 from evidencedesk.models import AnalyzeRequest, DecisionRequest
+from evidencedesk.monitoring import quality_summary
 from evidencedesk.responses import (
     DecisionResponse,
+    QualitySummaryResponse,
     RunResponse,
     SessionResponse,
     SourceResponse,
@@ -126,6 +128,16 @@ def health() -> dict[str, str]:
 @app.post("/sessions", dependencies=[Depends(require_service)], response_model=SessionResponse)
 def start_session() -> dict[str, Any]:
     return create_session()
+
+
+@app.get(
+    "/quality/summary",
+    dependencies=[Depends(require_service)],
+    response_model=QualitySummaryResponse,
+)
+def summary() -> dict[str, Any]:
+    """Seven-day counts of live analyses and review flags; no ticket or answer content."""
+    return quality_summary(7)
 
 
 @app.get("/tickets", response_model=TicketsResponse)
