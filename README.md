@@ -12,7 +12,7 @@ Live demo: [web](https://evidencedesk.umitvice.com) · [evaluation record](https
 
 ![Investigation, saved note, and audit timeline in the local fixture demo](docs/screenshots/workspace.png)
 
-This personal portfolio/reference project makes AI-assisted support decisions inspectable. The hosted production path runs 24/7 with real retrieval and OpenAI GPT-6 Luna generation, with free Cloudflare Workers AI as fallback; each answer names the model that produced it. Explicit approval persists the exact reviewed note. **Human answer review remains pending.** The complete 40-case live evaluation includes validation and abstention failures. Current resources and limitations are in [implementation status](docs/implementation.md).
+This personal portfolio/reference project makes AI-assisted support decisions inspectable. The hosted production path runs 24/7 with real retrieval and OpenAI GPT-6 Luna generation, with free Cloudflare Workers AI as fallback; each answer names the model that produced it. Explicit approval persists the exact reviewed note. Instead of a person reading every answer, automatic checks flag suspicious answers in the interface and on the [evaluation page](https://evidencedesk.umitvice.com/evaluations), and evaluation answers are checked against labeled facts ([answer checks](reports/answer-checks.md)). Current resources and limitations are in [implementation status](docs/implementation.md).
 
 ## Try it locally
 
@@ -89,7 +89,7 @@ The [fixed dataset](apps/api/evals/cases.json) contains 40 grouped scenarios: 24
 
 Use a separate database named `evidencedesk_eval*`, set DATABASE_URL and MIGRATION_DATABASE_URL to it, then migrate and seed. Run `npm run eval:offline`. Never use a public production database for evaluations.
 
-For live checks, configure server-side Cloudflare credentials in development, run the provider smoke and idempotent live ingestion, then `npm run eval:smoke`. After inspecting that ten-case run and confirming free account capacity, an explicit maintainer run can evaluate all 40 cases. The support-v3 full live suite at clean `b1943513cef15e6f42335fbf2642bf094c09217c` processed all 40 cases: 30 real generation attempts/completions and ten engineering-control references. Twenty-eight outputs passed schema/citation checks, two failed structured validation, and five valid outputs disagreed with the expected answer/abstention status. Retrieval n=16: Recall@5 1.0 for all methods; MRR lexical 0.703125, vector 0.921875, hybrid 0.875. Latency n=30: p50 1.15 s, p95 2.44 s. Human semantic review remains pending. The held-out results were measured after prompt tuning and were not used to tune the released prompt. Historical reports and the ten-case smoke remain in [reports/history](reports/history). See the [method, budgets, and review rubric](docs/evaluation.md).
+For live checks, configure server-side Cloudflare credentials in development, run the provider smoke and idempotent live ingestion, then `npm run eval:smoke`. After inspecting that ten-case run and confirming free account capacity, an explicit maintainer run can evaluate all 40 cases. The support-v3 full live suite at clean `b1943513cef15e6f42335fbf2642bf094c09217c` processed all 40 cases: 30 real generation attempts/completions and ten engineering-control references. Twenty-eight outputs passed schema/citation checks, two failed structured validation, and five valid outputs disagreed with the expected answer/abstention status. Retrieval n=16: Recall@5 1.0 for all methods; MRR lexical 0.703125, vector 0.921875, hybrid 0.875. Latency n=30: p50 1.15 s, p95 2.44 s. Semantic quality is now checked automatically against labeled facts (see [answer checks](reports/answer-checks.md)). The held-out results were measured after prompt tuning and were not used to tune the released prompt. Historical reports and the ten-case smoke remain in [reports/history](reports/history). See the [method, budgets, and review rubric](docs/evaluation.md).
 
 ### Fine-tuned Gemma 4 12B
 
@@ -142,7 +142,8 @@ but not identical, and the local evaluation database ran with an environment bud
 per day (production limits are unchanged). It cost about one cent (56k input, 9k output
 tokens); the working tree flag in the report is the ignored Netlify build output. Luna still fails both
 obsolete-vs-current cases, both sandbox conflicts, and both source-injection cases. Production
-runs with graph expansion on, which was not measured with Luna. See the
+runs with graph expansion on, which was not measured with Luna. Rescored against the new fact labels, Luna passes 0.816, the fine-tuned Gemma 0.816, and
+Cloudflare 0.684 ([answer checks](reports/answer-checks.md)). See the
 [report](reports/compare-openai-gpt-6-luna-graph-false.md) and
 [setup](docs/deployment.md#openai-generation-optional-paid).
 

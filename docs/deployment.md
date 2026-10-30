@@ -51,7 +51,18 @@ GENERATION_API_KEY=<key from the evidence-desk OpenAI project>
 GENERATION_FALLBACK=true
 ```
 
-Leave `GENERATION_BASE_URL` and `GENERATION_MODEL` unset to use `https://api.openai.com/v1` and `gpt-6-luna`. Locally, `python3 scripts/enter-openai-key.py` stores the key in the ignored `.env` without echoing it. Setting `GENERATION_PROVIDER=cloudflare` returns to the free path.
+Leave `GENERATION_BASE_URL` and `GENERATION_MODEL` unset to use `https://api.openai.com/v1` and `gpt-6-luna`. Locally, `python3 scripts/enter-local-secret.py openai` stores the key in the ignored `.env` without echoing it. Setting `GENERATION_PROVIDER=cloudflare` returns to the free path.
+
+## Answer checks and flagged-answer review
+
+Live answers get deterministic review flags (method and calibration in
+[answer checks](../reports/answer-checks.md)). The evaluation page shows seven-day counts from
+`GET /quality/summary`, which returns no ticket or answer content. To read the flagged answers
+themselves, store the production runtime connection string once with
+`python3 scripts/enter-local-secret.py review-database` (input hidden, written to the ignored
+`.env`), then run `npm run review:flags` and open `.local/review/flagged.html`. Without
+`REVIEW_DATABASE_URL` the command reads the local database. Never set `REVIEW_DATABASE_URL` on
+the hosted API.
 
 ## Development and release
 
