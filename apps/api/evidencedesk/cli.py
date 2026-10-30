@@ -41,6 +41,7 @@ def main() -> None:
     parser.add_argument("--smoke-receipt", type=Path)
     parser.add_argument("--days", type=int, choices=range(1, 31), default=7)
     parser.add_argument("--output", type=Path, default=Path(".local/review/flagged.html"))
+    parser.add_argument("--open", action="store_true", help="Open the report when it lists any")
     args = parser.parse_args()
     if args.command == "migrate":
         migrate()
@@ -59,6 +60,10 @@ def main() -> None:
         count = review_report(args.output, args.days)
         # The file holds ticket text and answers: it stays in the ignored .local folder.
         print(f"Flagged analyses: {count}. Report: {args.output.resolve()}")
+        if args.open and count:
+            import webbrowser
+
+            webbrowser.open(args.output.resolve().as_uri())
     elif args.command == "provider-smoke":
         from evidencedesk.smoke import provider_smoke
 

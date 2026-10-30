@@ -151,3 +151,22 @@ def test_quality_summary_counts_live_runs_without_content(client, owner):
     }
     assert "secret question" not in response.text
     assert client.get("/quality/summary", headers={"X-Service-Key": "wrong"}).status_code == 401
+
+
+@pytest.mark.parametrize(("count", "opened"), [(0, False), (2, True)])
+def test_review_report_opens_only_when_something_is_flagged(monkeypatch, tmp_path, count, opened):
+    import sys
+    import webbrowser
+
+    import evidencedesk.monitoring as monitoring
+    from evidencedesk.cli import main
+
+    calls: list[str] = []
+    monkeypatch.setattr(monitoring, "review_report", lambda output, days: count)
+    monkeypatch.setattr(webbrowser, "open", calls.append)
+    output = tmp_path / "flagged.html"
+    monkeypatch.setattr(
+        sys, "argv", ["cli", "review-report", "--open", "--output", str(output)]
+    )
+    main()
+    assert calls == ([output.resolve().as_uri()] if opened else [])
