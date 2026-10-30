@@ -60,7 +60,7 @@ Live answers get deterministic review flags (method and calibration in
 `GET /quality/summary`, which returns no ticket or answer content. To read the flagged answers
 themselves, store the production runtime connection string once with
 `python3 scripts/enter-local-secret.py review-database` (input hidden, written to the ignored
-`.env`), then run `npm run review:flags` and open `.local/review/flagged.html`. Without
+`.env`), then run `npm run review:flags`; it writes `.local/review/flagged.html` and opens it in the browser when anything is flagged. Without
 `REVIEW_DATABASE_URL` the command reads the local database. Never set `REVIEW_DATABASE_URL` on
 the hosted API.
 
